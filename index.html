@@ -49,7 +49,8 @@ const party=[
  {id:"berdly",name:"BERDLY",hp:54,max:54,role:"TECH SUPPORT",guard:false,color:"#e2c75c"}
 ];
 const boss={hp:260,max:260,phase:1,exposed:0,chill:0,frozenTurns:0};
-let tp=35,active=0,actions=[],busy=false,won=false,lost=false,turn=1,anim=0;\nconst inventory={darkCandy:3};\nlet hitCursor=0,lastBossDamage=0;
+let tp=35,active=0,actions=[],busy=false,won=false,lost=false,turn=1,anim=0;
+const inventory={darkCandy:3};\nlet hitCursor=0,lastBossDamage=0;
 let knightDisrupted=0,domainHazardTimer=null;
 let bulletMode=false,bullets=[],soul={x:320,y:190,r:7,invuln:0},bulletClock=null,patternClock=null,attackClock=null,patternType="star_swarm",box={x:210,y:82,w:220,h:145},keys={};
 const shadows=[
@@ -94,7 +95,8 @@ function render(){
  scene();
  $("hud").innerHTML=party.map(p=>'<div class="card"><div class="name" style="color:'+p.color+'">'+p.name+'</div><div class="stats">'+p.role+' · HP '+p.hp+'/'+p.max+'</div><div class="hpbar"><div class="hpfill" style="width:'+(p.hp/p.max*100)+'%"></div></div></div>').join("");
  $("bossfill").style.width=(boss.hp/boss.max*100)+"%";
- $("bossstatus").textContent=boss.frozenTurns>0?"FROZEN":(boss.chill>0?"CHILL "+boss.chill+"/3 · ":"")+(boss.exposed>0?"ARMOR: EXPOSED":"PHASE "+boss.phase+" · "+(boss.hp>0?boss.hp+" HP":"DEFEATED"));\n $("tpstatus").textContent="TP: "+tp+" / 100";\n $("itemstatus").textContent="DARK CANDY: "+inventory.darkCandy;
+ $("bossstatus").textContent=boss.frozenTurns>0?"FROZEN":(boss.chill>0?"CHILL "+boss.chill+"/3 · ":"")+(boss.exposed>0?"ARMOR: EXPOSED":"PHASE "+boss.phase+" · "+(boss.hp>0?boss.hp+" HP":"DEFEATED"));
+ $("tpstatus").textContent="TP: "+tp+" / 100";\n $("itemstatus").textContent="DARK CANDY: "+inventory.darkCandy;
 }
 function say(t){$("dialogue").textContent=t}
 function setMenu(items){$("menu").innerHTML="";items.forEach(it=>{let b=document.createElement("button");b.textContent=it.label;b.disabled=!!it.disabled;b.onclick=it.run;$("menu").appendChild(b)})}
