@@ -48,7 +48,7 @@ const party=[
  {id:"noelle",name:"NOELLE",hp:50,max:50,role:"ICE / CONTROL",guard:false,color:"#83c9ef"},
  {id:"berdly",name:"BERDLY",hp:54,max:54,role:"TECH SUPPORT",guard:false,color:"#e2c75c"}
 ];
-const boss={hp:260,max:260,phase:1,exposed:0};
+const boss={hp:260,max:260,phase:1,exposed:0,chill:0,frozenTurns:0};
 let tp=35,active=0,actions=[],busy=false,won=false,lost=false,turn=1,anim=0;
 let knightDisrupted=0,domainHazardTimer=null;
 let bulletMode=false,bullets=[],soul={x:320,y:190,r:7,invuln:0},bulletClock=null,patternClock=null,attackClock=null,patternType="star_swarm",box={x:210,y:82,w:220,h:145},keys={};
@@ -94,7 +94,7 @@ function render(){
  scene();
  $("hud").innerHTML=party.map(p=>'<div class="card"><div class="name" style="color:'+p.color+'">'+p.name+'</div><div class="stats">'+p.role+' · HP '+p.hp+'/'+p.max+'</div><div class="hpbar"><div class="hpfill" style="width:'+(p.hp/p.max*100)+'%"></div></div></div>').join("");
  $("bossfill").style.width=(boss.hp/boss.max*100)+"%";
- $("bossstatus").textContent=boss.exposed>0?"ARMOR: EXPOSED":"PHASE "+boss.phase+" · "+(boss.hp>0?boss.hp+" HP":"DEFEATED");
+ $("bossstatus").textContent=boss.frozenTurns>0?"FROZEN":(boss.chill>0?"CHILL "+boss.chill+"/3 · ":"")+(boss.exposed>0?"ARMOR: EXPOSED":"PHASE "+boss.phase+" · "+(boss.hp>0?boss.hp+" HP":"DEFEATED"));
 }
 function say(t){$("dialogue").textContent=t}
 function setMenu(items){$("menu").innerHTML="";items.forEach(it=>{let b=document.createElement("button");b.textContent=it.label;b.disabled=!!it.disabled;b.onclick=it.run;$("menu").appendChild(b)})}
@@ -133,7 +133,8 @@ function chooseActor(){
   {label:"☻ ACT",run:()=>actMenu(p)}
  ]);
  if(p.id==="noelle")setMenu([
-  {label:"❄ ICE SHOCK · 16 TP",disabled:tp<16,run:()=>controlMove(p,"IceShock",16,20)},
+  {label:"❄ ICE SHOCK · 16 TP",disabled:tp<16,run:()=>iceMove(p,"IceShock",16,18,1)},
+  {label:"❄ ICE WAVE · 28 TP",disabled:tp<28,run:()=>iceMove(p,"IceWave",28,30,2)},
   {label:"⚔ FIGHT",run:()=>attack(p,15,"Noelle sends a sharp strike of ice.")},
   {label:"🛡 DEFEND",run:()=>defend(p)},
   {label:"☻ ACT",run:()=>actMenu(p)}
@@ -156,6 +157,19 @@ function damageBoss(amount){
  return "";
 }
 function attack(p,dmg,msg){if(busy)return;let extra=damageBoss(dmg);anim=8;window.currentShadow=null;say("* "+msg+" ("+dmg+(boss.exposed>0?" + exposed bonus":"")+" damage.)"+extra);render();afterAction(msg)}
+function iceMove(p,name,cost,dmg,chill){
+ if(busy||tp<cost)return;
+ tp-=cost;
+ const before=boss.chill;
+ boss.chill=Math.min(3,boss.chill+chill);
+ const extra=damageBoss(dmg);
+ let effect=" The Knight is rimed with frost ("+boss.chill+"/3 CHILL).";
+ if(boss.chill>=3){boss.chill=0;boss.frozenTurns=1;boss.exposed=Math.max(boss.exposed,1);effect=" The Knight is FROZEN! Its next attack will be cancelled, and its armor is exposed."}
+ if(window.WeirdRouteIce)WeirdRouteIce.recordIceAction(name+" applied "+chill+" chill");
+ window.currentShadow=name;anim=12;
+ say("* Noelle casts "+(name==="IceShock"?"ICE SHOCK":"ICE WAVE")+"! ("+dmg+" damage.)"+effect+extra);
+ render();afterAction("Noelle used "+name);
+}
 function controlMove(p,name,cost,dmg){
  if(tp<cost)return;
  tp-=cost;
@@ -280,6 +294,11 @@ function startBulletPhase(attack,disrupted){
 }
 function enemyTurn(){
  if(won||lost||busy)return;
+ if(boss.frozenTurns>0){
+  boss.frozenTurns--;boss.exposed=Math.max(boss.exposed,1);tp=Math.min(100,tp+8);
+  say("* The Knight is frozen solid. Its attack cannot begin! (+8 TP)");
+  render();busy=false;turn++;$("turnlabel").textContent="PARTY TURN";setMenu([{label:"CONTINUE",run:begin}]);setSub([]);return;
+ }
  busy=true;$("turnlabel").textContent="DODGE THE KNIGHT";setMenu([]);setSub([]);
  const attack=chooseKnightAttack(),disrupted=knightDisrupted>0;
  if(disrupted)knightDisrupted--;
