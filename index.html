@@ -103,6 +103,7 @@ function begin(){
 }
 function chooseActor(){
  if(won||lost)return;
+ if(boss.hp<=0){victory();return;}
  while(active<party.length&&party[active].hp<=0)active++;
  if(active>=party.length){enemyTurn();return}
  const p=party[active];
