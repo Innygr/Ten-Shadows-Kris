@@ -49,6 +49,7 @@ const party=[
 const boss={hp:260,max:260,phase:1,exposed:0};
 let tp=35,active=0,actions=[],busy=false,won=false,lost=false,turn=1,anim=0;
 let knightDisrupted=0,domainHazardTimer=null;
+let bulletMode=false,bullets=[],soul={x:320,y:190,r:7,invuln:0},bulletClock=null,patternClock=null,attackClock=null,patternType="star_swarm",box={x:210,y:82,w:220,h:145},keys={};
 const shadows=[
  {name:"TOAD",cost:0,dmg:13,desc:"Toad hops forward and trips the Knight's targeting system."},
  {name:"NUE",cost:20,dmg:24,desc:"Nue dives through the arena in a crackle of dark energy."},
@@ -191,32 +192,15 @@ function itemMenu(){
 const knightSystem={
  domain:false,domainTurns:0,lastAttack:"",
  attacks:[
-  {id:"north_wind",name:"NORTH WIND",phases:[1,2,3],weight:2},
-  {id:"east_wind",name:"EAST WIND",phases:[1,2,3],weight:2},
-  {id:"star_swarm",name:"STAR SWARM",phases:[1,2,3],weight:2},
-  {id:"bird_attack",name:"BIRD ATTACK",phases:[1,2,3],weight:1},
+  {id:"star_swarm",name:"STAR SWARM",phases:[1,2,3],weight:3},
+  {id:"bird_attack",name:"BIRD ATTACK",phases:[1,2,3],weight:2},
   {id:"sword_rain",name:"SWORD RAIN",phases:[2,3],weight:2},
-  {id:"box_cutter",name:"BOX CUTTER",phases:[2,3],weight:1},
+  {id:"box_cutter",name:"BOX CUTTER",phases:[2,3],weight:2},
   {id:"black_flash",name:"BLACK FLASH",phases:[3],weight:1}
  ]
 };
-function startKnightDomain(){
- knightSystem.domain=true;knightSystem.domainTurns=3;
- if(domainHazardTimer)clearInterval(domainHazardTimer);
- domainHazardTimer=setInterval(()=>{
-  if(!knightSystem.domain||won||lost){clearInterval(domainHazardTimer);domainHazardTimer=null;return;}
-  const alive=living();if(!alive.length)return;
-  const target=alive[Math.floor(Math.random()*alive.length)];
-  target.hp=Math.max(0,target.hp-4);
-  say("* A falling star strikes "+target.name+"! (-4 HP)\\n* The Kingdom of the Roaring is still active.");
-  render();
-  if(living().length===0)checkLoss();
- },1800);
-}
-function endKnightDomain(){
- knightSystem.domain=false;
- if(domainHazardTimer){clearInterval(domainHazardTimer);domainHazardTimer=null;}
-}
+function startKnightDomain(){knightSystem.domain=true;knightSystem.domainTurns=3;}
+function endKnightDomain(){knightSystem.domain=false;}
 function chooseKnightAttack(){
  const pool=knightSystem.attacks.filter(a=>a.phases.includes(boss.phase)&&a.id!==knightSystem.lastAttack);
  const weighted=pool.flatMap(a=>Array(a.weight).fill(a));
@@ -225,53 +209,85 @@ function chooseKnightAttack(){
 }
 function hitParty(target,raw){
  if(!target||target.hp<=0)return 0;
- const dmg=target.guard?Math.max(2,Math.floor(raw*.35)):raw;
+ const dmg=target.guard?Math.max(1,Math.floor(raw*.35)):raw;
  target.hp=Math.max(0,target.hp-dmg);return dmg;
+}
+function drawBulletArena(){
+ ctx.fillStyle="#05050a";ctx.fillRect(box.x,box.y,box.w,box.h);
+ ctx.strokeStyle="#f4f0ff";ctx.lineWidth=3;ctx.strokeRect(box.x,box.y,box.w,box.h);
+ if(knightSystem.domain){ctx.strokeStyle="#a78bfa";ctx.lineWidth=2;ctx.strokeRect(box.x+5,box.y+5,box.w-10,box.h-10);}
+ ctx.fillStyle="#ff3f70";ctx.beginPath();ctx.moveTo(soul.x,soul.y-8);ctx.lineTo(soul.x+7,soul.y);ctx.lineTo(soul.x,soul.y+8);ctx.lineTo(soul.x-7,soul.y);ctx.closePath();ctx.fill();
+ for(const b of bullets){ctx.fillStyle=b.color||"#f7e9ff";ctx.beginPath();if(b.kind==="sword"){ctx.save();ctx.translate(b.x,b.y);ctx.rotate(b.angle||0);ctx.fillRect(-3,-b.r,6,b.r*2);ctx.restore();}else{ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill();}}
+ ctx.fillStyle="#d9d4e8";ctx.font="10px monospace";ctx.fillText("DODGE!  ARROWS / WASD",box.x,box.y-8);
+}
+function spawnBullet(x,y,vx,vy,r=5,color="#f4e9ff",kind="orb",angle=0){bullets.push({x,y,vx,vy,r,color,kind,angle});}
+function spawnPattern(){
+ if(!bulletMode)return;
+ const cx=box.x+box.w/2,cy=box.y+box.h/2;
+ if(patternType==="star_swarm"||knightSystem.domain){
+  for(let i=0;i<3;i++){let x=box.x+12+Math.random()*(box.w-24);spawnBullet(x,box.y-8,0,2.5+Math.random()*1.5,5,"#e5d6ff");}
+  if(knightSystem.domain&&Math.random()<.7){let x=box.x+12+Math.random()*(box.w-24);spawnBullet(x,box.y-8,0,3.8,4,"#b28cff","sword");}
+ }else if(patternType==="bird_attack"){
+  const x=soul.x+(Math.random()-.5)*130;spawnBullet(Math.max(box.x+8,Math.min(box.x+box.w-8,x)),box.y-8,(soul.x-x)*.018,4.2,8,"#e8d5ff","swoop");
+ }else if(patternType==="sword_rain"){
+  for(let i=0;i<2;i++){let x=box.x+18+Math.random()*(box.w-36);spawnBullet(x,box.y-15,0,4.2,12,"#e6d9ff","sword");}
+ }else if(patternType==="box_cutter"){
+  const side=Math.random()<.5?box.x+4:box.x+box.w-4;spawnBullet(side,box.y+Math.random()*box.h,side<cx?3.6:-3.6,0,7,"#ff8ca5","orb");
+ }else if(patternType==="black_flash"){
+  for(let i=0;i<5;i++){let angle=Math.atan2(soul.y-cy,soul.x-cx)+(i-2)*.22;spawnBullet(cx,cy,Math.cos(angle)*4.3,Math.sin(angle)*4.3,6,"#ff3f70");}
+ }
+}
+function stopBulletPhase(disrupted){
+ bulletMode=false;clearInterval(bulletClock);clearInterval(patternClock);clearTimeout(attackClock);bulletClock=patternClock=attackClock=null;bullets=[];
+ party.forEach(p=>p.guard=false);boss.exposed=Math.max(0,boss.exposed-1);tp=Math.min(100,tp+5);
+ if(knightSystem.domain){knightSystem.domainTurns--;if(knightSystem.domainTurns<=0)endKnightDomain();}
+ busy=false;turn++;render();
+ if(living().length===0){checkLoss();return;}
+ say("* The Knight withdraws for a moment."+(disrupted?" Its attack was weakened by Tornado.":"")+"\\n* The party regains 5 TP.");
+ $("turnlabel").textContent="PARTY TURN";setMenu([{label:"CONTINUE",run:begin}]);setSub([]);
+}
+function startBulletPhase(attack,disrupted){
+ bulletMode=true;bullets=[];soul.x=box.x+box.w/2;soul.y=box.y+box.h-24;soul.invuln=0;patternType=attack.id;
+ const duration=attack.id==="black_flash"?5200:6500;
+ say("* "+attack.name+"! Dodge the Knight's attacks.\\n* Move with the arrow keys or WASD.");
+ render();
+ patternClock=setInterval(spawnPattern,attack.id==="black_flash"?600:430);
+ bulletClock=setInterval(()=>{
+  if(!bulletMode)return;
+  const speed=3.3;
+  if(keys.ArrowLeft||keys.a||keys.A)soul.x-=speed;
+  if(keys.ArrowRight||keys.d||keys.D)soul.x+=speed;
+  if(keys.ArrowUp||keys.w||keys.W)soul.y-=speed;
+  if(keys.ArrowDown||keys.s||keys.S)soul.y+=speed;
+  soul.x=Math.max(box.x+10,Math.min(box.x+box.w-10,soul.x));soul.y=Math.max(box.y+10,Math.min(box.y+box.h-10,soul.y));
+  for(let i=bullets.length-1;i>=0;i--){
+   const q=bullets[i];q.x+=q.vx;q.y+=q.vy;
+   if(q.x<box.x-25||q.x>box.x+box.w+25||q.y<box.y-30||q.y>box.y+box.h+30){bullets.splice(i,1);continue;}
+   if(soul.invuln<=0&&Math.hypot(q.x-soul.x,q.y-soul.y)<q.r+5){
+    const target=living()[0];if(target){const dmg=hitParty(target,disrupted?3:Math.max(2,Math.round((boss.phase===1?5:boss.phase===2?7:9)*(target.guard?.35:1))));say("* "+target.name+" was hit! -"+dmg+" HP");render();}
+    soul.invuln=38;bullets.splice(i,1);
+    if(living().length===0){stopBulletPhase(disrupted);checkLoss();return;}
+   }
+  }
+  if(soul.invuln>0)soul.invuln--;
+  scene();
+ },16);
+ attackClock=setTimeout(()=>stopBulletPhase(disrupted),duration);
 }
 function enemyTurn(){
  if(won||lost||busy)return;
- busy=true;$("turnlabel").textContent="KNIGHT'S TURN";setMenu([]);setSub([]);
- const attack=chooseKnightAttack(),phase=boss.phase,disrupted=knightDisrupted>0;
+ busy=true;$("turnlabel").textContent="DODGE THE KNIGHT";setMenu([]);setSub([]);
+ const attack=chooseKnightAttack(),disrupted=knightDisrupted>0;
  if(disrupted)knightDisrupted--;
- if(phase===3&&!knightSystem.domain&&Math.random()<.45){
-  startKnightDomain();
-  say("* THE ROARING KNIGHT: DOMAIN EXPANSION — KINGDOM OF THE ROARING.\\n* Stars and swords begin falling through the arena.");
- }else{
-  const lines={
-   north_wind:"* The North Wind tears across the arena. All the winds blow fiercely.",
-   east_wind:"* The East Wind sweeps the party off balance.",
-   star_swarm:"* STAR SWARM — a storm of shining projectiles descends.",
-   bird_attack:"* The Knight twists into its bird form and dives toward the party.",
-   sword_rain:"* SWORD RAIN — blades fall across the battlefield.",
-   box_cutter:"* BOX CUTTER — the battle box is split in half!",
-   black_flash:"* The Knight lands a BLACK FLASH. Nobody knows why."
-  };
-  say(lines[attack.id]+(knightSystem.domain?"\\n* The Kingdom of the Roaring continues.":""));
- }
- render();
- setTimeout(()=>{
-  const alive=living();if(!alive.length){checkLoss();return}
-  const rawBase=phase===1?10:phase===2?14:18,scale=disrupted?.55:1;
-  let hitLog=[];
-  const hit=(p,mult=1)=>{const dmg=hitParty(p,Math.max(3,Math.round(rawBase*mult*scale)));if(dmg)hitLog.push(p.name+" -"+dmg);};
-  if(attack.id==="north_wind"||attack.id==="east_wind")alive.forEach(p=>hit(p,.65));
-  else if(attack.id==="star_swarm")for(let i=0;i<(phase===3?7:5);i++)hit(alive[Math.floor(Math.random()*alive.length)],.48);
-  else if(attack.id==="bird_attack"||attack.id==="black_flash"){const target=alive[Math.floor(Math.random()*alive.length)];hit(target,attack.id==="black_flash"?1.8:1.35);}
-  else if(attack.id==="sword_rain")[...alive].sort(()=>Math.random()-.5).slice(0,Math.min(3,alive.length)).forEach(p=>hit(p,.95));
-  else if(attack.id==="box_cutter")[...alive].sort(()=>Math.random()-.5).slice(0,Math.ceil(alive.length/2)).forEach(p=>hit(p,1.15));
-  if(knightSystem.domain){
-   const target=living()[Math.floor(Math.random()*living().length)];
-   if(target){const chip=hitParty(target,disrupted?2:5);if(chip)hitLog.push("DOMAIN: "+target.name+" -"+chip);}
-   knightSystem.domainTurns--;
-   if(knightSystem.domainTurns<=0){endKnightDomain();say("* The Kingdom of the Roaring fades. The Knight lowers its weapon.");}
-  }
-  party.forEach(p=>p.guard=false);boss.exposed=Math.max(0,boss.exposed-1);tp=Math.min(100,tp+5);
-  busy=false;turn++;render();
-  if(living().length===0){checkLoss();return}
-  say("* "+attack.name+(disrupted?" — disrupted!":"")+"\\n* "+(hitLog.length?hitLog.join(" · "):"No one was hit.")+"\\n* The party regains 5 TP.");
-  $("turnlabel").textContent="PARTY TURN";setMenu([{label:"CONTINUE",run:begin}]);setSub([]);
- },950);
+ if(boss.phase===3&&!knightSystem.domain&&Math.random()<.45){
+  startKnightDomain();say("* THE ROARING KNIGHT: DOMAIN EXPANSION — KINGDOM OF THE ROARING.\\n* Stars and swords now fall inside the battle box.");
+  patternType="star_swarm";
+ }else say("* "+attack.name+"!");
+ startBulletPhase(attack,disrupted);
 }
+document.addEventListener("keydown",e=>{if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," "].includes(e.key))e.preventDefault();keys[e.key]=true;});
+document.addEventListener("keyup",e=>{keys[e.key]=false;});
+canvas.addEventListener("pointermove",e=>{if(!bulletMode)return;const r=canvas.getBoundingClientRect();soul.x=box.x+(e.clientX-r.left)/r.width*640-box.x;soul.y=box.y+(e.clientY-r.top)/r.height*300-box.y;soul.x=Math.max(box.x+8,Math.min(box.x+box.w-8,soul.x));soul.y=Math.max(box.y+8,Math.min(box.y+box.h-8,soul.y));});
 function checkLoss(){endKnightDomain();lost=true;busy=false;say("* The party falls back. The Knight remains before the fountain.\n* (Refresh the page to try again.)");setMenu([]);setSub([]);$("turnlabel").textContent="PARTY DOWN"}
 function victory(){endKnightDomain();won=true;busy=false;boss.hp=0;render();say("* The Roaring Knight staggers. Its device flickers out.\n* Kris's shadows settle. Susie says that was 'kinda sick'.\n* Ralsei is already checking if everyone is okay.\n\n* YOU WON! (For now.)");setMenu([{label:"PLAY AGAIN",run:()=>location.reload()}]);setSub([]);$("turnlabel").textContent="VICTORY"}
 render();setMenu([{label:"FIGHT",run:begin}]);setSub([]);
