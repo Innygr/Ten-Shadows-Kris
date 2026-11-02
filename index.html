@@ -49,7 +49,7 @@ const party=[
  {id:"berdly",name:"BERDLY",hp:54,max:54,role:"TECH SUPPORT",guard:false,color:"#e2c75c"}
 ];
 const boss={hp:260,max:260,phase:1,exposed:0,chill:0,frozenTurns:0};
-let tp=35,active=0,actions=[],busy=false,won=false,lost=false,turn=1,anim=0;\nconst inventory={darkCandy:3};\nlet hitCursor=0;
+let tp=35,active=0,actions=[],busy=false,won=false,lost=false,turn=1,anim=0;\nconst inventory={darkCandy:3};\nlet hitCursor=0,lastBossDamage=0;
 let knightDisrupted=0,domainHazardTimer=null;
 let bulletMode=false,bullets=[],soul={x:320,y:190,r:7,invuln:0},bulletClock=null,patternClock=null,attackClock=null,patternType="star_swarm",box={x:210,y:82,w:220,h:145},keys={};
 const shadows=[
@@ -151,12 +151,12 @@ function afterAction(message){
  actions.push(message);active++;render();setTimeout(chooseActor,300);
 }
 function damageBoss(amount){
- let bonus=boss.exposed>0?1.4:1;let dealt=Math.round(amount*bonus);boss.hp=Math.max(0,boss.hp-dealt);
+ let bonus=boss.exposed>0?1.4:1;let dealt=Math.round(amount*bonus);lastBossDamage=dealt;boss.hp=Math.max(0,boss.hp-dealt);
  if(boss.hp<=175&&boss.phase===1){boss.phase=2;return " The Knight's armor shifts. The Roaring grows louder."}
  if(boss.hp<=78&&boss.phase===2){boss.phase=3;return " THE KNIGHT ENTERS ITS FINAL PHASE."}
  return "";
 }
-function attack(p,dmg,msg){if(busy)return;let extra=damageBoss(dmg);anim=8;window.currentShadow=null;say("* "+msg+" ("+dmg+(boss.exposed>0?" + exposed bonus":"")+" damage.)"+extra);render();afterAction(msg)}
+function attack(p,dmg,msg){if(busy)return;let extra=damageBoss(dmg);anim=8;window.currentShadow=null;say("* "+msg+" ("+lastBossDamage+" damage.)"+extra);render();afterAction(msg)}
 function iceMove(p,name,cost,dmg,chill){
  if(busy||tp<cost)return;
  tp-=cost;
@@ -167,7 +167,7 @@ function iceMove(p,name,cost,dmg,chill){
  if(boss.chill>=3){boss.chill=0;boss.frozenTurns=1;boss.exposed=Math.max(boss.exposed,1);effect=" The Knight is FROZEN! Its next attack will be cancelled, and its armor is exposed."}
  if(window.WeirdRouteIce)WeirdRouteIce.recordIceAction(name+" applied "+chill+" chill");
  window.currentShadow=name;anim=12;
- say("* Noelle casts "+(name==="IceShock"?"ICE SHOCK":"ICE WAVE")+"! ("+dmg+" damage.)"+effect+extra);
+ say("* Noelle casts "+(name==="IceShock"?"ICE SHOCK":"ICE WAVE")+"! ("+lastBossDamage+" damage.)"+effect+extra);
  render();afterAction("Noelle used "+name);
 }
 function controlMove(p,name,cost,dmg){
@@ -190,11 +190,12 @@ function actMenu(p){
 }
 function shadowMenu(p){
  setMenu(shadows.map(s=>({label:s.name+" · "+s.cost+" TP",disabled:tp<s.cost,run:()=>{
-  tp-=s.cost;let extra=damageBoss(s.dmg);window.currentShadow=s.name;anim=12;say("* "+s.desc+" ("+s.dmg+" damage.)"+extra);render();afterAction("summoned "+s.name)
+  tp-=s.cost;let extra=damageBoss(s.dmg);window.currentShadow=s.name;anim=12;say("* "+s.desc+" ("+lastBossDamage+" damage.)"+extra);render();afterAction("summoned "+s.name)
  }})));
  setSub([{label:"Back",run:chooseActor}]);
 }
 function healMenu(p){
+ if(tp<16){say("* Not enough TP to heal.");return;}
  setMenu(party.map(target=>({label:target.name+" · "+target.hp+"/"+target.max,disabled:target.hp===target.max||target.hp===0,run:()=>{
   if(tp<16){say("* Not enough TP!");return}
   tp-=16;target.hp=Math.min(target.max,target.hp+22);say("* Ralsei casts a gentle healing spell. "+target.name+" recovered HP.");render();afterAction("healed "+target.name)
@@ -202,6 +203,7 @@ function healMenu(p){
  setSub([{label:"Back",run:chooseActor}]);
 }
 function itemMenu(){
+ if(inventory.darkCandy<=0){say("* No Dark Candy left.");return;}
  setMenu(party.map(target=>({label:target.name+" · "+target.hp+"/"+target.max,disabled:target.hp===target.max||target.hp===0,run:()=>{
  inventory.darkCandy--;target.hp=Math.min(target.max,target.hp+18);say("* Dark Candy restored 18 HP to "+target.name+". ("+inventory.darkCandy+" remaining)");render();afterAction("used Dark Candy")
  }})));
