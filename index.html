@@ -35,6 +35,7 @@ button:disabled{opacity:.35;cursor:not-allowed}
 <div id="menu"></div><div id="sub"></div>
 <footer id="footer"><span>DEFEND reduces damage and builds TP.</span><span id="turnlabel">PARTY TURN</span></footer>
 </main>
+<script src="flavor-text.js"></script>
 <script>
 const $=id=>document.getElementById(id), canvas=$("stage"),ctx=canvas.getContext("2d");
 ctx.imageSmoothingEnabled=false;
@@ -94,7 +95,7 @@ function living(){return party.filter(p=>p.hp>0)}
 function begin(){
  if(won||lost||busy)return;
  active=0;actions=[];party.forEach(p=>p.guard=false);
- say("* Kris, Susie, and Ralsei face the Roaring Knight.\n* The Knight's device-like armor begins to glow.");
+ say("* Kris, Susie, and Ralsei face the Roaring Knight.\\n* " + FlavorText.get("roaring_knight.opening"));
  render();chooseActor();
 }
 function chooseActor(){
