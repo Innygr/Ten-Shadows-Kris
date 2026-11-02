@@ -72,4 +72,15 @@
   register("items.odd_radio.inspect", [
     "A very, very interesting old radio. Wonder what it's for."
   ]);
+
+  // The mysterious armor that is, inexplicably, a jar of mayonnaise.
+  register("items.mayo_armor.inspect", [
+    "It's mayonnaise. Somehow, it's protective."
+  ]);
+
+  // Gaster-related text can be rendered with the Wingdings-style font later.
+  // Keep the source text separate from its display font/encoding.
+  register("gaster.radio_hint", [
+    "Very, very interesting."
+  ]);
 })(typeof window !== "undefined" ? window : globalThis);
