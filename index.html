@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TEN SHADOWS: DARK WORLD INCIDENT</title>
+<style>
+:root{color-scheme:dark;--white:#f5f4ff;--muted:#aaa8bd;--line:#e9e7f2;--gold:#ffe66d}
+*{box-sizing:border-box}body{margin:0;background:#08080e;color:var(--white);font:16px "Courier New",monospace;min-height:100vh;display:grid;place-items:center;padding:16px}
+#game{width:min(980px,100%);background:#08080e;border:3px solid var(--line);padding:12px;box-shadow:0 0 0 5px #22202d,0 0 35px #24204c}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:2px 2px 10px;border-bottom:2px solid #625d72}
+h1{font-size:clamp(17px,3vw,25px);letter-spacing:2px;margin:0}.tag{font-size:11px;color:var(--muted);text-align:right}
+#stage{display:block;width:100%;height:auto;aspect-ratio:640/300;background:#0b0b16;border:2px solid #b9b6c8;margin:12px 0;image-rendering:pixelated}
+#hud{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
+.card{border:1px solid #777286;padding:8px;background:#10101a;min-width:0}.name{font-weight:bold;font-size:14px}.stats{font-size:12px;color:#d4d1e2;margin-top:5px}.hpbar{height:7px;background:#3b3546;margin-top:5px}.hpfill{height:100%;background:#f4d45e;width:100%}
+#bossbar{border:1px solid #777286;padding:8px;background:#10101a;margin-bottom:10px;font-size:13px}.bossline{display:flex;justify-content:space-between;gap:10px}.bossfill{height:9px;background:#e65d78;width:100%;margin-top:6px}
+#dialogue{min-height:76px;padding:12px;border:2px solid var(--line);background:#050509;line-height:1.5;margin-bottom:10px;white-space:pre-wrap}
+#menu{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+button{font: bold 14px "Courier New",monospace;color:white;background:#10101b;border:2px solid #c5c1d5;padding:12px 8px;cursor:pointer;min-height:45px}
+button:hover:not(:disabled),button:focus-visible{outline:none;border-color:var(--gold);color:var(--gold);background:#25213a}
+button:disabled{opacity:.35;cursor:not-allowed}
+#sub{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+#sub button{font-size:12px;min-height:38px;padding:8px}
+#footer{display:flex;justify-content:space-between;gap:8px;color:#9995ac;font-size:11px;margin-top:10px}
+@media(max-width:620px){body{padding:6px}#game{padding:8px}#hud{grid-template-columns:1fr}#menu{grid-template-columns:repeat(2,1fr)}.tag{max-width:110px}}
+</style>
+</head>
+<body>
+<main id="game">
+<header><h1>TEN SHADOWS: DARK WORLD INCIDENT</h1><div class="tag">A VERY NORMAL DELTARUNE-ISH BOSS FIGHT<br>DEMO 0.2 • DEVICE KNIGHT ENCOUNTER</div></header>
+<canvas id="stage" width="640" height="300" aria-label="Pixel-art battle scene"></canvas>
+<section id="hud" aria-label="Party status"></section>
+<section id="bossbar"><div class="bossline"><b id="bossname">THE ROARING KNIGHT</b><span id="bossstatus">ARMOR: INTACT</span></div><div class="bossfill" id="bossfill"></div></section>
+<div id="dialogue" aria-live="polite">* The air shakes. A huge silhouette blocks the way forward.\n* Kris feels their shadow move before they do.</div>
+<div id="menu"></div><div id="sub"></div>
+<footer id="footer"><span>DEFEND reduces damage and builds TP.</span><span id="turnlabel">PARTY TURN</span></footer>
+</main>
+<script>
+const $=id=>document.getElementById(id), canvas=$("stage"),ctx=canvas.getContext("2d");
+ctx.imageSmoothingEnabled=false;
+const party=[
+ {id:"kris",name:"KRIS",hp:48,max:48,role:"TEN SHADOWS",guard:false,color:"#40b9a4"},
+ {id:"susie",name:"SUSIE",hp:62,max:62,role:"HEAVY HITTER",guard:false,color:"#bd75e8"},
+ {id:"ralsei",name:"RALSEI",hp:44,max:44,role:"SUPPORT",guard:false,color:"#75c78c"}
+];
+const boss={hp:260,max:260,phase:1,exposed:0};
+let tp=20,active=0,actions=[],busy=false,won=false,lost=false,turn=1,anim=0;
+const shadows=[
+ {name:"TOAD",cost:0,dmg:13,desc:"Toad hops forward and trips the Knight's targeting system."},
+ {name:"NUE",cost:20,dmg:24,desc:"Nue dives through the arena in a crackle of dark energy."},
+ {name:"DIVINE DOG",cost:25,dmg:31,desc:"Divine Dog lunges. The Knight's armor rings."},
+ {name:"MAX ELEPHANT",cost:35,dmg:42,desc:"Max Elephant lands with a tremendous splash of shadow."},
+ {name:"MAHORAGA",cost:100,dmg:95,desc:"Mahoraga appears. The adaptation wheel turns. The Knight reconsiders."}
+];
+const sprite={
+ kris:["....bbbb....","...bccccb...","...bccccb...","....bbbb....","..gggggggg..","..gwwggwwg..","..gggggggg..","....bbbb....","....b..b....","...bb..bb...","...b....b...","..bb....bb.."],
+ susie:["....pppp....","...pppppp...","..pppppppp..","..pppppppp..","...pppppp...","....pppp....","..rrrrrrrr..","..rwwrrwwr..","..rrrrrrrr..","....pppp....","...pp..pp...","..pp....pp.."],
+ ralsei:["....hhhh....","...hhhhhh...","..hhhhhhhh..","..hhwwwwhh..","..hhhhhhhh..","...hhhhhh...","....gggg....","...gwwwwg...","...gggggg...","....gggg....","...gg..gg...","..gg....gg.."],
+ knight:["........kkkk........","......kkkkkkkk......",".....kkkwwwwkkk.....","....kkkwwwwwwkkk....","...kkkwwkwwkwwkkk...","...kkkwwwwwwwwkkk...","....kkkkkkkkkkkk....","......kkksskkk......",".....kkkksssskk.....","....kkkkksssskkk....","...kkkkkksssskkkk...","...kkkkksssssskkk...","....kkksssssskkk....",".....kkksssskkk......","....kkk..ss..kkk.....","...kkk...ss...kkk....","..kkk....ss....kkk...","..kk.....ss.....kk..."]
+};
+const palettes={b:"#254d58",c:"#3f9f98",g:"#294b3d",w:"#f0d5c4",p:"#9d58bc",r:"#632c83",h:"#e5e4dc",k:"#303445",s:"#d0b8ef"};
+function drawSprite(data,x,y,scale,pal){data.forEach((row,yy)=>[...row].forEach((ch,xx)=>{if(pal[ch]){ctx.fillStyle=pal[ch];ctx.fillRect(x+xx*scale,y+yy*scale,scale,scale)}}))}
+function scene(){
+ ctx.fillStyle="#090a15";ctx.fillRect(0,0,640,300);
+ for(let i=0;i<70;i++){ctx.fillStyle=i%3?"#34334d":"#77708d";ctx.fillRect((i*83)%640,(i*47)%160,2,2)}
+ ctx.fillStyle="#17152b";ctx.fillRect(0,205,640,95);
+ ctx.fillStyle="#35304e";ctx.fillRect(0,222,640,3);
+ for(let x=0;x<640;x+=48){ctx.fillStyle="#28243d";ctx.fillRect(x,225,2,75)}
+ // distant pillars
+ ctx.fillStyle="#121323";ctx.fillRect(34,115,22,105);ctx.fillRect(580,90,24,130);
+ // boss glow + knight
+ ctx.fillStyle=boss.phase===3?"#65334f":"#292748";ctx.globalAlpha=.23;ctx.beginPath();ctx.ellipse(470,192,110,100,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+ drawSprite(sprite.knight,408,77,7,palettes);
+ // party
+ drawSprite(sprite.kris,80,175,4,palettes);
+ drawSprite(sprite.susie,145,170,4,palettes);
+ drawSprite(sprite.ralsei,210,177,4,palettes);
+ // shadow summon
+ if(window.currentShadow){ctx.globalAlpha=.9;ctx.fillStyle="#a78bfa";ctx.font="bold 15px monospace";ctx.fillText(window.currentShadow,305,248);ctx.globalAlpha=1}
+ // phase text
+ ctx.fillStyle="#d7d2e8";ctx.font="12px monospace";ctx.fillText("THE DARK FOUNTAIN HUMS...",16,20);
+ if(anim>0){ctx.fillStyle="#ffe66d";ctx.font="bold 16px monospace";ctx.fillText(anim%2?"✦":"✧",330,125);anim--}
+}
+function render(){
+ scene();
+ $("hud").innerHTML=party.map(p=>'<div class="card"><div class="name" style="color:'+p.color+'">'+p.name+'</div><div class="stats">'+p.role+' · HP '+p.hp+'/'+p.max+'</div><div class="hpbar"><div class="hpfill" style="width:'+(p.hp/p.max*100)+'%"></div></div></div>').join("");
+ $("bossfill").style.width=(boss.hp/boss.max*100)+"%";
+ $("bossstatus").textContent=boss.exposed>0?"ARMOR: EXPOSED":"PHASE "+boss.phase+" · "+(boss.hp>0?boss.hp+" HP":"DEFEATED");
+}
+function say(t){$("dialogue").textContent=t}
+function setMenu(items){$("menu").innerHTML="";items.forEach(it=>{let b=document.createElement("button");b.textContent=it.label;b.disabled=!!it.disabled;b.onclick=it.run;$("menu").appendChild(b)})}
+function setSub(items){$("sub").innerHTML="";items.forEach(it=>{let b=document.createElement("button");b.textContent=it.label;b.disabled=!!it.disabled;b.onclick=it.run;$("sub").appendChild(b)})}
+function living(){return party.filter(p=>p.hp>0)}
+function begin(){
+ if(won||lost||busy)return;
+ active=0;actions=[];party.forEach(p=>p.guard=false);
+ say("* Kris, Susie, and Ralsei face the Roaring Knight.\n* The Knight's device-like armor begins to glow.");
+ render();chooseActor();
+}
+function chooseActor(){
+ if(won||lost)return;
+ while(active<party.length&&party[active].hp<=0)active++;
+ if(active>=party.length){enemyTurn();return}
+ const p=party[active];
+ $("turnlabel").textContent=p.name+"'S TURN";
+ say("* "+p.name+"'s turn. What will they do?");
+ if(p.id==="kris")setMenu([
+  {label:"⚔ FIGHT",run:()=>attack(p,17,"Kris strikes with their blade.")},
+  {label:"☻ ACT",run:()=>actMenu(p)},
+  {label:"🛡 DEFEND",run:()=>defend(p)},
+  {label:"☾ SHADOWS",run:()=>shadowMenu(p)}
+ ]);
+ if(p.id==="susie")setMenu([
+  {label:"⚔ FIGHT",run:()=>attack(p,24,"Susie swings with all her strength.")},
+  {label:"💥 RUSH",run:()=>attack(p,34,"Susie charges. The Knight's armor shudders.")},
+  {label:"🛡 DEFEND",run:()=>defend(p)},
+  {label:"☻ ACT",run:()=>actMenu(p)}
+ ]);
+ if(p.id==="ralsei")setMenu([
+  {label:"✦ PACIFY",run:()=>actMenu(p)},
+  {label:"♡ HEAL",run:()=>healMenu(p)},
+  {label:"🛡 DEFEND",run:()=>defend(p)},
+  {label:"☻ ACT",run:()=>actMenu(p)}
+ ]);
+ setSub([{label:"ITEM: Dark Candy (+18 HP)",run:()=>itemMenu()},{label:"Back",run:()=>chooseActor()}]);
+}
+function afterAction(message){
+ actions.push(message);active++;render();setTimeout(chooseActor,300);
+}
+function damageBoss(amount){
+ let bonus=boss.exposed>0?1.4:1;let dealt=Math.round(amount*bonus);boss.hp=Math.max(0,boss.hp-dealt);
+ if(boss.hp<=175&&boss.phase===1){boss.phase=2;return " The Knight's armor shifts. The Roaring grows louder."}
+ if(boss.hp<=78&&boss.phase===2){boss.phase=3;return " THE KNIGHT ENTERS ITS FINAL PHASE."}
+ return "";
+}
+function attack(p,dmg,msg){if(busy)return;let extra=damageBoss(dmg);anim=8;window.currentShadow=null;say("* "+msg+" ("+dmg+(boss.exposed>0?" + exposed bonus":"")+" damage.)"+extra);render();afterAction(msg)}
+function defend(p){p.guard=true;tp=Math.min(100,tp+14);say("* "+p.name+" braces for impact. (+14 TP)");render();afterAction(p.name+" defended")}
+function actMenu(p){
+ setMenu([
+  {label:"CHECK",run:()=>{say("* THE ROARING KNIGHT — a towering machine wrapped in a dark mantle.\n* Its armor is sturdy. Its movements are strangely deliberate. (ATK ?? DEF ??)");if(boss.exposed===0)tp=Math.min(100,tp+8);render();afterAction("checked the Knight")}},
+  {label:"DISTRACT",run:()=>{boss.exposed=2;tp=Math.min(100,tp+12);say("* "+p.name+" draws the Knight's attention. Its guard is exposed! (+12 TP)");render();afterAction("distracted the Knight")}},
+  {label:"Back",run:chooseActor}
+ ]);
+}
+function shadowMenu(p){
+ setMenu(shadows.map(s=>({label:s.name+" · "+s.cost+" TP",disabled:tp<s.cost,run:()=>{
+  tp-=s.cost;let extra=damageBoss(s.dmg);window.currentShadow=s.name;anim=12;say("* "+s.desc+" ("+s.dmg+" damage.)"+extra);render();afterAction("summoned "+s.name)
+ }})));
+ setSub([{label:"Back",run:chooseActor}]);
+}
+function healMenu(p){
+ setMenu(party.map(target=>({label:target.name+" · "+target.hp+"/"+target.max,disabled:target.hp===target.max||target.hp===0,run:()=>{
+  if(tp<16){say("* Not enough TP!");return}
+  tp-=16;target.hp=Math.min(target.max,target.hp+22);say("* Ralsei casts a gentle healing spell. "+target.name+" recovered HP.");render();afterAction("healed "+target.name)
+ }})));
+ setSub([{label:"Back",run:chooseActor}]);
+}
+function itemMenu(){
+ setMenu(party.map(target=>({label:target.name+" · "+target.hp+"/"+target.max,disabled:target.hp===target.max||target.hp===0,run:()=>{
+ target.hp=Math.min(target.max,target.hp+18);say("* Dark Candy restored 18 HP to "+target.name+".");render();afterAction("used Dark Candy")
+ }})));
+ setSub([{label:"Back",run:chooseActor}]);
+}
+function enemyTurn(){
+ if(won||lost)return;
+ busy=true;$("turnlabel").textContent="KNIGHT'S TURN";setMenu([]);setSub([]);
+ const phase=boss.phase;
+ say(phase===1?"* The Knight raises its weapon. A pulse of dark energy spreads across the floor.":phase===2?"* The Knight's device flashes. Its attacks come faster now.":"* THE ROARING KNIGHT UNLEASHES A FINAL SURGE.");
+ render();
+ setTimeout(()=>{
+  let target= living()[Math.floor(Math.random()*living().length)];
+  if(!target){checkLoss();return}
+  let raw=phase===1?12:phase===2?17:22;
+  let dmg=target.guard?Math.max(2,Math.floor(raw*.35)):raw;
+  target.hp=Math.max(0,target.hp-dmg);
+  let text="* The Knight targets "+target.name+". "+target.name+" takes "+dmg+" damage"+(target.guard?" (DEFENDED!)":"")+"!";
+  if(target.hp===0)text+=" "+target.name+" can no longer fight.";
+  party.forEach(p=>p.guard=false);tp=Math.min(100,tp+5);
+  busy=false;turn++;render();
+  if(boss.hp<=0){victory();return}
+  if(living().length===0){checkLoss();return}
+  say(text+"\n* The party regains 5 TP.");$("turnlabel").textContent="PARTY TURN";
+  setMenu([{label:"CONTINUE",run:begin}]);setSub([]);
+ },950);
+}
+function checkLoss(){lost=true;busy=false;say("* The party falls back. The Knight remains before the fountain.\n* (Refresh the page to try again.)");setMenu([]);setSub([]);$("turnlabel").textContent="PARTY DOWN"}
+function victory(){won=true;busy=false;boss.hp=0;render();say("* The Roaring Knight staggers. Its device flickers out.\n* Kris's shadows settle. Susie says that was 'kinda sick'.\n* Ralsei is already checking if everyone is okay.\n\n* YOU WON! (For now.)");setMenu([{label:"PLAY AGAIN",run:()=>location.reload()}]);setSub([]);$("turnlabel").textContent="VICTORY"}
+render();setMenu([{label:"FIGHT",run:begin}]);setSub([]);
+</script>
+</body>
+</html>
