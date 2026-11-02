@@ -37,6 +37,7 @@ button:disabled{opacity:.35;cursor:not-allowed}
 </main>
 <script src="sprite-sheet.js"></script>
 <script src="flavor-text.js"></script>
+<script src="weird-route-ice.js"></script>
 <script>
 const $=id=>document.getElementById(id), canvas=$("stage"),ctx=canvas.getContext("2d");
 ctx.imageSmoothingEnabled=false;
@@ -159,7 +160,7 @@ function controlMove(p,name,cost,dmg){
  if(tp<cost)return;
  tp-=cost;
  const extra=damageBoss(dmg);
- if(name==="IceShock")boss.exposed=Math.max(boss.exposed,1);
+ if(name==="IceShock"){boss.exposed=Math.max(boss.exposed,1);if(window.WeirdRouteIce)WeirdRouteIce.recordIceAction("Noelle used Ice Shock");}
  if(name==="Tornado")knightDisrupted=1;
  anim=10;window.currentShadow=name;
  say("* "+p.name+" uses "+name+"! "+(name==="Tornado"?"The swirling wind disrupts the Knight's next attack.":"The Knight's movements slow under the ice.")+" ("+dmg+" damage.)"+extra);
