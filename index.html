@@ -201,7 +201,7 @@ const knightSystem={
  ]
 };
 function startKnightDomain(){
- startKnightDomain();
+ knightSystem.domain=true;knightSystem.domainTurns=3;
  if(domainHazardTimer)clearInterval(domainHazardTimer);
  domainHazardTimer=setInterval(()=>{
   if(!knightSystem.domain||won||lost){clearInterval(domainHazardTimer);domainHazardTimer=null;return;}
@@ -234,7 +234,7 @@ function enemyTurn(){
  const attack=chooseKnightAttack(),phase=boss.phase,disrupted=knightDisrupted>0;
  if(disrupted)knightDisrupted--;
  if(phase===3&&!knightSystem.domain&&Math.random()<.45){
-  knightSystem.domain=true;knightSystem.domainTurns=3;
+  startKnightDomain();
   say("* THE ROARING KNIGHT: DOMAIN EXPANSION — KINGDOM OF THE ROARING.\\n* Stars and swords begin falling through the arena.");
  }else{
   const lines={
