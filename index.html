@@ -101,7 +101,8 @@ function render(){
  $("hud").innerHTML=party.map(p=>'<div class="card"><div class="name" style="color:'+p.color+'">'+p.name+'</div><div class="stats">'+p.role+' · HP '+p.hp+'/'+p.max+'</div><div class="hpbar"><div class="hpfill" style="width:'+(p.hp/p.max*100)+'%"></div></div></div>').join("");
  $("bossfill").style.width=(boss.hp/boss.max*100)+"%";
  $("bossstatus").textContent=boss.frozenTurns>0?"FROZEN":(boss.chill>0?"CHILL "+boss.chill+"/3 · ":"")+(boss.exposed>0?"ARMOR: EXPOSED":"PHASE "+boss.phase+" · "+(boss.hp>0?boss.hp+" HP":"DEFEATED"));
- $("tpstatus").textContent="TP: "+tp+" / 100";\n $("itemstatus").textContent="DARK CANDY: "+inventory.darkCandy;
+ $("tpstatus").textContent="TP: "+tp+" / 100";
+ $("itemstatus").textContent="DARK CANDY: "+inventory.darkCandy;
 }
 function say(t){$("dialogue").textContent=t}
 function setMenu(items){$("menu").innerHTML="";items.forEach(it=>{let b=document.createElement("button");b.textContent=it.label;b.disabled=!!it.disabled;b.onclick=it.run;$("menu").appendChild(b)})}
