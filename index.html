@@ -50,7 +50,8 @@ const party=[
 ];
 const boss={hp:260,max:260,phase:1,exposed:0,chill:0,frozenTurns:0};
 let tp=35,active=0,actions=[],busy=false,won=false,lost=false,turn=1,anim=0;
-const inventory={darkCandy:3};\nlet hitCursor=0,lastBossDamage=0;
+const inventory={darkCandy:3};
+let hitCursor=0,lastBossDamage=0;
 let knightDisrupted=0,domainHazardTimer=null;
 let bulletMode=false,bullets=[],soul={x:320,y:190,r:7,invuln:0},bulletClock=null,patternClock=null,attackClock=null,patternType="star_swarm",box={x:210,y:82,w:220,h:145},keys={};
 const shadows=[
