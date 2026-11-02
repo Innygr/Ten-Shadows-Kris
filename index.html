@@ -243,8 +243,11 @@ function drawBulletArena(){
  ctx.fillStyle="#05050a";ctx.fillRect(box.x,box.y,box.w,box.h);
  ctx.strokeStyle="#f4f0ff";ctx.lineWidth=3;ctx.strokeRect(box.x,box.y,box.w,box.h);
  if(knightSystem.domain){ctx.strokeStyle="#a78bfa";ctx.lineWidth=2;ctx.strokeRect(box.x+5,box.y+5,box.w-10,box.h-10);ctx.fillStyle="#c4a7ff";ctx.font="10px monospace";ctx.fillText("KINGDOM OF THE ROARING",box.x+25,box.y+16);}
- ctx.fillStyle="#ff3f70";ctx.beginPath();ctx.moveTo(soul.x,soul.y-8);ctx.lineTo(soul.x+7,soul.y);ctx.lineTo(soul.x,soul.y+8);ctx.lineTo(soul.x-7,soul.y);ctx.closePath();ctx.fill();
- for(const b of bullets){ctx.fillStyle=b.color||"#f7e9ff";ctx.beginPath();if(b.kind==="sword"){ctx.save();ctx.translate(b.x,b.y);ctx.rotate(b.angle||0);ctx.fillRect(-3,-b.r,6,b.r*2);ctx.restore();}else{ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill();}}
+ if(soul.invuln<=0||Math.floor(soul.invuln/4)%2===0){
+  ctx.save();ctx.shadowBlur=soul.invuln>0?18:8;ctx.shadowColor=soul.invuln>0?"#ff3f70":"#ff8aa8";
+  ctx.fillStyle="#ff3f70";ctx.beginPath();ctx.moveTo(soul.x,soul.y-8);ctx.lineTo(soul.x+7,soul.y);ctx.lineTo(soul.x,soul.y+8);ctx.lineTo(soul.x-7,soul.y);ctx.closePath();ctx.fill();ctx.restore();
+ }
+ for(const b of bullets){ctx.save();ctx.shadowBlur=8;ctx.shadowColor=b.color||"#f7e9ff";ctx.fillStyle=b.color||"#f7e9ff";if(b.kind==="sword"){ctx.translate(b.x,b.y);ctx.rotate(b.angle||0);ctx.fillRect(-3,-b.r,6,b.r*2);}else{ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill();}ctx.restore();}
  ctx.fillStyle="#d9d4e8";ctx.font="10px monospace";ctx.fillText("DODGE!  ARROWS / WASD",box.x,box.y-8);
 }
 function spawnBullet(x,y,vx,vy,r=5,color="#f4e9ff",kind="orb",angle=0){bullets.push({x,y,vx,vy,r,color,kind,angle});}
@@ -291,8 +294,8 @@ function startBulletPhase(attack,disrupted){
    const q=bullets[i];q.x+=q.vx;q.y+=q.vy;
    if(q.x<box.x-25||q.x>box.x+box.w+25||q.y<box.y-30||q.y>box.y+box.h+30){bullets.splice(i,1);continue;}
    if(soul.invuln<=0&&Math.hypot(q.x-soul.x,q.y-soul.y)<q.r+5){
-    const survivors=living();const target=survivors.length?survivors[hitCursor++%survivors.length]:null;if(target){const raw=disrupted?3:(boss.phase===1?5:boss.phase===2?7:9);const dmg=hitParty(target,raw);say("* "+target.name+" was hit! -"+dmg+" HP");render();}
-    soul.invuln=38;bullets.splice(i,1);
+    const survivors=living();const target=survivors.length?survivors[hitCursor++%survivors.length]:null;if(target){const raw=disrupted?3:(boss.phase===1?5:boss.phase===2?7:9);const guarded=target.guard;const dmg=hitParty(target,raw);say("* "+target.name+" was hit! -"+dmg+" HP"+(guarded?" (GUARDED)":""));}
+    soul.invuln=52;bullets.splice(i,1);render();
     if(living().length===0){stopBulletPhase(disrupted);return;}
    }
   }
