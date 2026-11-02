@@ -64,10 +64,12 @@ const shadows=[
 const sprite={
  kris:["....bbbb....","...bccccb...","...bccccb...","....bbbb....","..gggggggg..","..gwwggwwg..","..gggggggg..","....bbbb....","....b..b....","...bb..bb...","...b....b...","..bb....bb.."],
  susie:["....pppp....","...pppppp...","..pppppppp..","..pppppppp..","...pppppp...","....pppp....","..rrrrrrrr..","..rwwrrwwr..","..rrrrrrrr..","....pppp....","...pp..pp...","..pp....pp.."],
+ noelle:["....hhhh....","...hhhhhh...","..hhhhhhhh..","..hhwwwwhh..","..hhhhhhhh..","...hhhhhh...","....bbbb....","...bwwwwb...","...bbbbbb...","....bbbb....","...bb..bb...","..bb....bb.."],
+ berdly:["....yyyy....","...yyyyyy...","..yyyyyyyy..","..yywwwwyy..","..yyyyyyyy..","...yyyyyy...","....bbbb....","...bwwwwb...","...bbbbbb...","....bbbb....","...bb..bb...","..bb....bb.."],
  ralsei:["....hhhh....","...hhhhhh...","..hhhhhhhh..","..hhwwwwhh..","..hhhhhhhh..","...hhhhhh...","....gggg....","...gwwwwg...","...gggggg...","....gggg....","...gg..gg...","..gg....gg.."],
  knight:["........kkkk........","......kkkkkkkk......",".....kkkwwwwkkk.....","....kkkwwwwwwkkk....","...kkkwwkwwkwwkkk...","...kkkwwwwwwwwkkk...","....kkkkkkkkkkkk....","......kkksskkk......",".....kkkksssskk.....","....kkkkksssskkk....","...kkkkkksssskkkk...","...kkkkksssssskkk...","....kkksssssskkk....",".....kkksssskkk......","....kkk..ss..kkk.....","...kkk...ss...kkk....","..kkk....ss....kkk...","..kk.....ss.....kk..."]
 };
-const palettes={b:"#254d58",c:"#3f9f98",g:"#294b3d",w:"#f0d5c4",p:"#9d58bc",r:"#632c83",h:"#e5e4dc",k:"#303445",s:"#d0b8ef"};
+const palettes={b:"#254d58",c:"#3f9f98",g:"#294b3d",w:"#f0d5c4",p:"#9d58bc",r:"#632c83",h:"#e5e4dc",k:"#303445",s:"#d0b8ef",y:"#b69b35"};
 // Native-resolution Kris sheet; displayed at crisp 2x. Frame rectangles are configured in source pixels.
 const krisSheet=new PixelSpriteSheet({image:"assets/sprites/kris-sheet.png",scale:2,smoothing:false,frames:{},animations:{idle:{frames:[],fps:5,loop:true},walk:{frames:[],fps:8,loop:true},run:{frames:[],fps:12,loop:true},battle:{frames:[],fps:6,loop:true}}}).load();
 function drawSprite(data,x,y,scale,pal){if(data===sprite.kris&&krisSheet.draw(ctx,"idle",x,y))return;data.forEach((row,yy)=>[...row].forEach((ch,xx)=>{if(pal[ch]){ctx.fillStyle=pal[ch];ctx.fillRect(x+xx*scale,y+yy*scale,scale,scale)}}))}
@@ -86,6 +88,8 @@ function scene(){
  drawSprite(sprite.kris,80,175,4,palettes);
  drawSprite(sprite.susie,145,170,4,palettes);
  drawSprite(sprite.ralsei,210,177,4,palettes);
+ drawSprite(sprite.noelle,275,177,4,palettes);
+ drawSprite(sprite.berdly,340,177,4,palettes);
  // shadow summon
  if(window.currentShadow){ctx.globalAlpha=.9;ctx.fillStyle="#a78bfa";ctx.font="bold 15px monospace";ctx.fillText(window.currentShadow,305,248);ctx.globalAlpha=1}
  // phase text
@@ -174,16 +178,15 @@ function iceMove(p,name,cost,dmg,chill){
  render();afterAction("Noelle used "+name);
 }
 function controlMove(p,name,cost,dmg){
- if(tp<cost)return;
+ if(busy||tp<cost)return;
  tp-=cost;
  const extra=damageBoss(dmg);
- if(name==="IceShock"){boss.exposed=Math.max(boss.exposed,1);if(window.WeirdRouteIce)WeirdRouteIce.recordIceAction("Noelle used Ice Shock");}
  if(name==="Tornado")knightDisrupted=1;
  anim=10;window.currentShadow=name;
- say("* "+p.name+" uses "+name+"! "+(name==="Tornado"?"The swirling wind disrupts the Knight's next attack.":"The Knight's movements slow under the ice.")+" ("+dmg+" damage.)"+extra);
+ say("* "+p.name+" uses "+name+"! "+(name==="Tornado"?"The swirling wind disrupts the Knight's next attack.":"The Knight's movements slow under the ice.")+" ("+lastBossDamage+" damage.)"+extra);
  render();afterAction(p.name+" used "+name);
 }
-function defend(p){p.guard=true;tp=Math.min(100,tp+14);say("* "+p.name+" braces for impact. (+14 TP)");render();afterAction(p.name+" defended")}
+function defend(p){if(busy)return;p.guard=true;tp=Math.min(100,tp+14);say("* "+p.name+" braces for impact. (+14 TP)");render();afterAction(p.name+" defended")}
 function actMenu(p){
  setMenu([
   {label:"CHECK",run:()=>{say("* THE ROARING KNIGHT — a towering machine wrapped in a dark mantle.\n* Its armor is sturdy. Its movements are strangely deliberate. (ATK ?? DEF ??)");if(boss.exposed===0)tp=Math.min(100,tp+8);render();afterAction("checked the Knight")}},
@@ -238,7 +241,7 @@ function hitParty(target,raw){
 function drawBulletArena(){
  ctx.fillStyle="#05050a";ctx.fillRect(box.x,box.y,box.w,box.h);
  ctx.strokeStyle="#f4f0ff";ctx.lineWidth=3;ctx.strokeRect(box.x,box.y,box.w,box.h);
- if(knightSystem.domain){ctx.strokeStyle="#a78bfa";ctx.lineWidth=2;ctx.strokeRect(box.x+5,box.y+5,box.w-10,box.h-10);}
+ if(knightSystem.domain){ctx.strokeStyle="#a78bfa";ctx.lineWidth=2;ctx.strokeRect(box.x+5,box.y+5,box.w-10,box.h-10);ctx.fillStyle="#c4a7ff";ctx.font="10px monospace";ctx.fillText("KINGDOM OF THE ROARING",box.x+25,box.y+16);}
  ctx.fillStyle="#ff3f70";ctx.beginPath();ctx.moveTo(soul.x,soul.y-8);ctx.lineTo(soul.x+7,soul.y);ctx.lineTo(soul.x,soul.y+8);ctx.lineTo(soul.x-7,soul.y);ctx.closePath();ctx.fill();
  for(const b of bullets){ctx.fillStyle=b.color||"#f7e9ff";ctx.beginPath();if(b.kind==="sword"){ctx.save();ctx.translate(b.x,b.y);ctx.rotate(b.angle||0);ctx.fillRect(-3,-b.r,6,b.r*2);ctx.restore();}else{ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill();}}
  ctx.fillStyle="#d9d4e8";ctx.font="10px monospace";ctx.fillText("DODGE!  ARROWS / WASD",box.x,box.y-8);
@@ -293,7 +296,7 @@ function startBulletPhase(attack,disrupted){
    }
   }
   if(soul.invuln>0)soul.invuln--;
-  scene();
+  scene();drawBulletArena();
  },16);
  attackClock=setTimeout(()=>stopBulletPhase(disrupted),duration);
 }
