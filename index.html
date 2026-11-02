@@ -188,27 +188,71 @@ function itemMenu(){
  }})));
  setSub([{label:"Back",run:chooseActor}]);
 }
+const knightSystem={
+ domain:false,domainTurns:0,lastAttack:"",
+ attacks:[
+  {id:"north_wind",name:"NORTH WIND",phases:[1,2,3],weight:2},
+  {id:"east_wind",name:"EAST WIND",phases:[1,2,3],weight:2},
+  {id:"star_swarm",name:"STAR SWARM",phases:[1,2,3],weight:2},
+  {id:"bird_attack",name:"BIRD ATTACK",phases:[1,2,3],weight:1},
+  {id:"sword_rain",name:"SWORD RAIN",phases:[2,3],weight:2},
+  {id:"box_cutter",name:"BOX CUTTER",phases:[2,3],weight:1},
+  {id:"black_flash",name:"BLACK FLASH",phases:[3],weight:1}
+ ]
+};
+function chooseKnightAttack(){
+ const pool=knightSystem.attacks.filter(a=>a.phases.includes(boss.phase)&&a.id!==knightSystem.lastAttack);
+ const weighted=pool.flatMap(a=>Array(a.weight).fill(a));
+ const picked=weighted[Math.floor(Math.random()*weighted.length)]||knightSystem.attacks[0];
+ knightSystem.lastAttack=picked.id;return picked;
+}
+function hitParty(target,raw){
+ if(!target||target.hp<=0)return 0;
+ const dmg=target.guard?Math.max(2,Math.floor(raw*.35)):raw;
+ target.hp=Math.max(0,target.hp-dmg);return dmg;
+}
 function enemyTurn(){
- if(won||lost)return;
+ if(won||lost||busy)return;
  busy=true;$("turnlabel").textContent="KNIGHT'S TURN";setMenu([]);setSub([]);
- const phase=boss.phase;
- say(phase===1?"* The Knight raises its weapon. A pulse of dark energy spreads across the floor.":phase===2?"* The Knight's device flashes. Its attacks come faster now.":"* THE ROARING KNIGHT UNLEASHES A FINAL SURGE.");
+ const attack=chooseKnightAttack(),phase=boss.phase,disrupted=knightDisrupted>0;
+ if(disrupted)knightDisrupted--;
+ if(phase===3&&!knightSystem.domain&&Math.random()<.45){
+  knightSystem.domain=true;knightSystem.domainTurns=3;
+  say("* THE ROARING KNIGHT: DOMAIN EXPANSION — KINGDOM OF THE ROARING.\\n* Stars and swords begin falling through the arena.");
+ }else{
+  const lines={
+   north_wind:"* The North Wind tears across the arena. All the winds blow fiercely.",
+   east_wind:"* The East Wind sweeps the party off balance.",
+   star_swarm:"* STAR SWARM — a storm of shining projectiles descends.",
+   bird_attack:"* The Knight twists into its bird form and dives toward the party.",
+   sword_rain:"* SWORD RAIN — blades fall across the battlefield.",
+   box_cutter:"* BOX CUTTER — the battle box is split in half!",
+   black_flash:"* The Knight lands a BLACK FLASH. Nobody knows why."
+  };
+  say(lines[attack.id]+(knightSystem.domain?"\\n* The Kingdom of the Roaring continues.":""));
+ }
  render();
  setTimeout(()=>{
-  let target= living()[Math.floor(Math.random()*living().length)];
-  if(!target){checkLoss();return}
-  let raw=phase===1?12:phase===2?17:22;
-  if(knightDisrupted>0){raw=Math.max(5,Math.floor(raw*.55));knightDisrupted--;}
-  let dmg=target.guard?Math.max(2,Math.floor(raw*.35)):raw;
-  target.hp=Math.max(0,target.hp-dmg);
-  let text="* The Knight targets "+target.name+". "+target.name+" takes "+dmg+" damage"+(target.guard?" (DEFENDED!)":"")+"!";
-  if(target.hp===0)text+=" "+target.name+" can no longer fight.";
+  const alive=living();if(!alive.length){checkLoss();return}
+  const rawBase=phase===1?10:phase===2?14:18,scale=disrupted?.55:1;
+  let hitLog=[];
+  const hit=(p,mult=1)=>{const dmg=hitParty(p,Math.max(3,Math.round(rawBase*mult*scale)));if(dmg)hitLog.push(p.name+" -"+dmg);};
+  if(attack.id==="north_wind"||attack.id==="east_wind")alive.forEach(p=>hit(p,.65));
+  else if(attack.id==="star_swarm")for(let i=0;i<(phase===3?7:5);i++)hit(alive[Math.floor(Math.random()*alive.length)],.48);
+  else if(attack.id==="bird_attack"||attack.id==="black_flash"){const target=alive[Math.floor(Math.random()*alive.length)];hit(target,attack.id==="black_flash"?1.8:1.35);}
+  else if(attack.id==="sword_rain")[...alive].sort(()=>Math.random()-.5).slice(0,Math.min(3,alive.length)).forEach(p=>hit(p,.95));
+  else if(attack.id==="box_cutter")[...alive].sort(()=>Math.random()-.5).slice(0,Math.ceil(alive.length/2)).forEach(p=>hit(p,1.15));
+  if(knightSystem.domain){
+   const target=living()[Math.floor(Math.random()*living().length)];
+   if(target){const chip=hitParty(target,disrupted?2:5);if(chip)hitLog.push("DOMAIN: "+target.name+" -"+chip);}
+   knightSystem.domainTurns--;
+   if(knightSystem.domainTurns<=0){knightSystem.domain=false;say("* The Kingdom of the Roaring fades. The Knight lowers its weapon.");}
+  }
   party.forEach(p=>p.guard=false);boss.exposed=Math.max(0,boss.exposed-1);tp=Math.min(100,tp+5);
   busy=false;turn++;render();
-  if(boss.hp<=0){victory();return}
   if(living().length===0){checkLoss();return}
-  say(text+"\n* The party regains 5 TP.");$("turnlabel").textContent="PARTY TURN";
-  setMenu([{label:"CONTINUE",run:begin}]);setSub([]);
+  say("* "+attack.name+(disrupted?" — disrupted!":"")+"\\n* "+(hitLog.length?hitLog.join(" · "):"No one was hit.")+"\\n* The party regains 5 TP.");
+  $("turnlabel").textContent="PARTY TURN";setMenu([{label:"CONTINUE",run:begin}]);setSub([]);
  },950);
 }
 function checkLoss(){lost=true;busy=false;say("* The party falls back. The Knight remains before the fountain.\n* (Refresh the page to try again.)");setMenu([]);setSub([]);$("turnlabel").textContent="PARTY DOWN"}
