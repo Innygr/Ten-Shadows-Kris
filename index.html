@@ -175,7 +175,7 @@ function enemyTurn(){
   target.hp=Math.max(0,target.hp-dmg);
   let text="* The Knight targets "+target.name+". "+target.name+" takes "+dmg+" damage"+(target.guard?" (DEFENDED!)":"")+"!";
   if(target.hp===0)text+=" "+target.name+" can no longer fight.";
-  party.forEach(p=>p.guard=false);tp=Math.min(100,tp+5);
+  party.forEach(p=>p.guard=false);boss.exposed=Math.max(0,boss.exposed-1);tp=Math.min(100,tp+5);
   busy=false;turn++;render();
   if(boss.hp<=0){victory();return}
   if(living().length===0){checkLoss();return}
