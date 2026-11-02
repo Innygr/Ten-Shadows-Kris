@@ -35,6 +35,7 @@ button:disabled{opacity:.35;cursor:not-allowed}
 <div id="menu"></div><div id="sub"></div>
 <footer id="footer"><span>DEFEND reduces damage and builds TP.</span><span id="turnlabel">PARTY TURN</span></footer>
 </main>
+<script src="sprite-sheet.js"></script>
 <script src="flavor-text.js"></script>
 <script>
 const $=id=>document.getElementById(id), canvas=$("stage"),ctx=canvas.getContext("2d");
@@ -64,7 +65,9 @@ const sprite={
  knight:["........kkkk........","......kkkkkkkk......",".....kkkwwwwkkk.....","....kkkwwwwwwkkk....","...kkkwwkwwkwwkkk...","...kkkwwwwwwwwkkk...","....kkkkkkkkkkkk....","......kkksskkk......",".....kkkksssskk.....","....kkkkksssskkk....","...kkkkkksssskkkk...","...kkkkksssssskkk...","....kkksssssskkk....",".....kkksssskkk......","....kkk..ss..kkk.....","...kkk...ss...kkk....","..kkk....ss....kkk...","..kk.....ss.....kk..."]
 };
 const palettes={b:"#254d58",c:"#3f9f98",g:"#294b3d",w:"#f0d5c4",p:"#9d58bc",r:"#632c83",h:"#e5e4dc",k:"#303445",s:"#d0b8ef"};
-function drawSprite(data,x,y,scale,pal){data.forEach((row,yy)=>[...row].forEach((ch,xx)=>{if(pal[ch]){ctx.fillStyle=pal[ch];ctx.fillRect(x+xx*scale,y+yy*scale,scale,scale)}}))}
+// Native-resolution Kris sheet; displayed at crisp 2x. Frame rectangles are configured in source pixels.
+const krisSheet=new PixelSpriteSheet({image:"assets/sprites/kris-sheet.png",scale:2,smoothing:false,frames:{},animations:{idle:{frames:[],fps:5,loop:true},walk:{frames:[],fps:8,loop:true},run:{frames:[],fps:12,loop:true},battle:{frames:[],fps:6,loop:true}}}).load();
+function drawSprite(data,x,y,scale,pal){if(data===sprite.kris&&krisSheet.draw(ctx,"idle",x,y))return;data.forEach((row,yy)=>[...row].forEach((ch,xx)=>{if(pal[ch]){ctx.fillStyle=pal[ch];ctx.fillRect(x+xx*scale,y+yy*scale,scale,scale)}}))}
 function scene(){
  ctx.fillStyle="#090a15";ctx.fillRect(0,0,640,300);
  for(let i=0;i<70;i++){ctx.fillStyle=i%3?"#34334d":"#77708d";ctx.fillRect((i*83)%640,(i*47)%160,2,2)}
