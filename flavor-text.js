@@ -62,4 +62,14 @@
   register("roaring_knight.opening", [
     "You feel incoming dread."
   ]);
+
+  // Base Knight battle flavor: the North and East winds.
+  register("roaring_knight.battle", [
+    "All the winds blow fiercely."
+  ]);
+
+  // The Odd Radio's description deliberately gives away nothing.
+  register("items.odd_radio.inspect", [
+    "A very, very interesting old radio. Wonder what it's for."
+  ]);
 })(typeof window !== "undefined" ? window : globalThis);
