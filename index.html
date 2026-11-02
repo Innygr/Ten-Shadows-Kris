@@ -99,7 +99,7 @@ function living(){return party.filter(p=>p.hp>0)}
 function begin(){
  if(won||lost||busy)return;
  active=0;actions=[];party.forEach(p=>p.guard=false);
- say("* Kris, Susie, and Ralsei face the Roaring Knight.\\n* " + FlavorText.get("roaring_knight.opening"));
+ say("* Kris, Susie, Ralsei, Noelle, and Berdly face the Roaring Knight.\\n* " + FlavorText.get("roaring_knight.opening"));
  render();chooseActor();
 }
 function chooseActor(){
@@ -266,7 +266,7 @@ function startBulletPhase(attack,disrupted){
    if(soul.invuln<=0&&Math.hypot(q.x-soul.x,q.y-soul.y)<q.r+5){
     const target=living()[0];if(target){const dmg=hitParty(target,disrupted?3:Math.max(2,Math.round((boss.phase===1?5:boss.phase===2?7:9)*(target.guard?.35:1))));say("* "+target.name+" was hit! -"+dmg+" HP");render();}
     soul.invuln=38;bullets.splice(i,1);
-    if(living().length===0){stopBulletPhase(disrupted);checkLoss();return;}
+    if(living().length===0){stopBulletPhase(disrupted);return;}
    }
   }
   if(soul.invuln>0)soul.invuln--;
@@ -287,7 +287,7 @@ function enemyTurn(){
 }
 document.addEventListener("keydown",e=>{if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," "].includes(e.key))e.preventDefault();keys[e.key]=true;});
 document.addEventListener("keyup",e=>{keys[e.key]=false;});
-canvas.addEventListener("pointermove",e=>{if(!bulletMode)return;const r=canvas.getBoundingClientRect();soul.x=box.x+(e.clientX-r.left)/r.width*640-box.x;soul.y=box.y+(e.clientY-r.top)/r.height*300-box.y;soul.x=Math.max(box.x+8,Math.min(box.x+box.w-8,soul.x));soul.y=Math.max(box.y+8,Math.min(box.y+box.h-8,soul.y));});
+canvas.addEventListener("pointermove",e=>{if(!bulletMode)return;const r=canvas.getBoundingClientRect();soul.x=(e.clientX-r.left)/r.width*640;soul.y=(e.clientY-r.top)/r.height*300;soul.x=Math.max(box.x+8,Math.min(box.x+box.w-8,soul.x));soul.y=Math.max(box.y+8,Math.min(box.y+box.h-8,soul.y));});
 function checkLoss(){endKnightDomain();lost=true;busy=false;say("* The party falls back. The Knight remains before the fountain.\n* (Refresh the page to try again.)");setMenu([]);setSub([]);$("turnlabel").textContent="PARTY DOWN"}
 function victory(){endKnightDomain();won=true;busy=false;boss.hp=0;render();say("* The Roaring Knight staggers. Its device flickers out.\n* Kris's shadows settle. Susie says that was 'kinda sick'.\n* Ralsei is already checking if everyone is okay.\n\n* YOU WON! (For now.)");setMenu([{label:"PLAY AGAIN",run:()=>location.reload()}]);setSub([]);$("turnlabel").textContent="VICTORY"}
 render();setMenu([{label:"FIGHT",run:begin}]);setSub([]);
