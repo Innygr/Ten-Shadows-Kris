@@ -53,7 +53,7 @@ let tp=35,active=0,actions=[],busy=false,won=false,lost=false,turn=1,anim=0;
 const inventory={darkCandy:3};
 let hitCursor=0,lastBossDamage=0;
 let knightDisrupted=0,domainHazardTimer=null;
-let bulletMode=false,bullets=[],soul={x:320,y:190,r:7,invuln:0},bulletClock=null,patternClock=null,attackClock=null,patternType="star_swarm",box={x:210,y:82,w:220,h:145},keys={};
+let bulletMode=false,bullets=[],soul={x:320,y:190,targetX:320,targetY:190,r:7,invuln:0},bulletClock=null,patternClock=null,attackClock=null,patternType="star_swarm",box={x:210,y:82,w:220,h:145},keys={};
 const shadows=[
  {name:"TOAD",cost:0,dmg:13,desc:"Toad hops forward and trips the Knight's targeting system."},
  {name:"NUE",cost:20,dmg:24,desc:"Nue dives through the arena in a crackle of dark energy."},
@@ -248,7 +248,7 @@ function drawBulletArena(){
   ctx.fillStyle="#ff3f70";ctx.beginPath();ctx.moveTo(soul.x,soul.y-8);ctx.lineTo(soul.x+7,soul.y);ctx.lineTo(soul.x,soul.y+8);ctx.lineTo(soul.x-7,soul.y);ctx.closePath();ctx.fill();ctx.restore();
  }
  for(const b of bullets){ctx.save();ctx.shadowBlur=8;ctx.shadowColor=b.color||"#f7e9ff";ctx.fillStyle=b.color||"#f7e9ff";if(b.kind==="sword"){ctx.translate(b.x,b.y);ctx.rotate(b.angle||0);ctx.fillRect(-3,-b.r,6,b.r*2);}else{ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill();}ctx.restore();}
- ctx.fillStyle="#d9d4e8";ctx.font="10px monospace";ctx.fillText("DODGE!  ARROWS / WASD",box.x,box.y-8);
+ ctx.fillStyle="#d9d4e8";ctx.font="10px monospace";ctx.fillText("DODGE!  ARROWS / WASD / POINTER",box.x,box.y-8);
 }
 function spawnBullet(x,y,vx,vy,r=5,color="#f4e9ff",kind="orb",angle=0){bullets.push({x,y,vx,vy,r,color,kind,angle});}
 function spawnPattern(){
@@ -277,19 +277,17 @@ function stopBulletPhase(disrupted){
  $("turnlabel").textContent="PARTY TURN";setMenu([{label:"CONTINUE",run:begin}]);setSub([]);
 }
 function startBulletPhase(attack,disrupted){
- bulletMode=true;bullets=[];soul.x=box.x+box.w/2;soul.y=box.y+box.h-24;soul.invuln=0;patternType=attack.id;
+ bulletMode=true;bullets=[];soul.x=box.x+box.w/2;soul.y=box.y+box.h-24;soul.targetX=soul.x;soul.targetY=soul.y;soul.invuln=0;patternType=attack.id;
  const duration=attack.id==="black_flash"?5200:6500;
- say("* "+attack.name+"! Dodge the Knight's attacks.\\n* Move with the arrow keys or WASD.");
+ say("* "+attack.name+"! Dodge the Knight's attacks.\\n* Move with arrows, WASD, or guide the SOUL with your pointer / touch.");
  render();
  patternClock=setInterval(spawnPattern,attack.id==="black_flash"?600:430);
  bulletClock=setInterval(()=>{
   if(!bulletMode)return;
-  const speed=3.3;
-  if(keys.ArrowLeft||keys.a||keys.A)soul.x-=speed;
-  if(keys.ArrowRight||keys.d||keys.D)soul.x+=speed;
-  if(keys.ArrowUp||keys.w||keys.W)soul.y-=speed;
-  if(keys.ArrowDown||keys.s||keys.S)soul.y+=speed;
-  soul.x=Math.max(box.x+10,Math.min(box.x+box.w-10,soul.x));soul.y=Math.max(box.y+10,Math.min(box.y+box.h-10,soul.y));
+  const speed=3.6,dx=(keys.ArrowRight||keys.d||keys.D?1:0)-(keys.ArrowLeft||keys.a||keys.A?1:0),dy=(keys.ArrowDown||keys.s||keys.S?1:0)-(keys.ArrowUp||keys.w||keys.W?1:0);
+  if(dx||dy){const length=Math.hypot(dx,dy);soul.x+=dx/length*speed;soul.y+=dy/length*speed;soul.targetX=soul.x;soul.targetY=soul.y;}
+  else{const follow=0.24;soul.x+=(soul.targetX-soul.x)*follow;soul.y+=(soul.targetY-soul.y)*follow;}
+  soul.x=Math.max(box.x+soul.r,Math.min(box.x+box.w-soul.r,soul.x));soul.y=Math.max(box.y+soul.r,Math.min(box.y+box.h-soul.r,soul.y));
   for(let i=bullets.length-1;i>=0;i--){
    const q=bullets[i];q.x+=q.vx;q.y+=q.vy;
    if(q.x<box.x-25||q.x>box.x+box.w+25||q.y<box.y-30||q.y>box.y+box.h+30){bullets.splice(i,1);continue;}
@@ -322,7 +320,9 @@ function enemyTurn(){
 }
 document.addEventListener("keydown",e=>{if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," "].includes(e.key))e.preventDefault();keys[e.key]=true;});
 document.addEventListener("keyup",e=>{keys[e.key]=false;});
-canvas.addEventListener("pointermove",e=>{if(!bulletMode)return;const r=canvas.getBoundingClientRect();soul.x=(e.clientX-r.left)/r.width*640;soul.y=(e.clientY-r.top)/r.height*300;soul.x=Math.max(box.x+8,Math.min(box.x+box.w-8,soul.x));soul.y=Math.max(box.y+8,Math.min(box.y+box.h-8,soul.y));});
+function aimSoul(e){if(!bulletMode)return;const r=canvas.getBoundingClientRect();soul.targetX=(e.clientX-r.left)/r.width*canvas.width;soul.targetY=(e.clientY-r.top)/r.height*canvas.height;soul.targetX=Math.max(box.x+soul.r,Math.min(box.x+box.w-soul.r,soul.targetX));soul.targetY=Math.max(box.y+soul.r,Math.min(box.y+box.h-soul.r,soul.targetY));}
+canvas.addEventListener("pointerdown",e=>{if(bulletMode){if(canvas.setPointerCapture)canvas.setPointerCapture(e.pointerId);aimSoul(e);}});
+canvas.addEventListener("pointermove",aimSoul);
 function checkLoss(){endKnightDomain();lost=true;busy=false;say("* The party falls back. The Knight remains before the fountain.\n* (Refresh the page to try again.)");setMenu([]);setSub([]);$("turnlabel").textContent="PARTY DOWN"}
 function victory(){endKnightDomain();won=true;busy=false;boss.hp=0;render();say("* The Roaring Knight staggers. Its device flickers out.\n* Kris's shadows settle. Susie says that was 'kinda sick'.\n* Ralsei is already checking if everyone is okay.\n\n* YOU WON! (For now.)");setMenu([{label:"PLAY AGAIN",run:()=>location.reload()}]);setSub([]);$("turnlabel").textContent="VICTORY"}
 render();setMenu([{label:"FIGHT",run:begin}]);setSub([]);
