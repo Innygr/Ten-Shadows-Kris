@@ -11,7 +11,7 @@
 header{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:2px 2px 10px;border-bottom:2px solid #625d72}
 h1{font-size:clamp(17px,3vw,25px);letter-spacing:2px;margin:0}.tag{font-size:11px;color:var(--muted);text-align:right}
 #stage{display:block;width:100%;height:auto;aspect-ratio:640/300;background:#0b0b16;border:2px solid #b9b6c8;margin:12px 0;image-rendering:pixelated}
-#hud{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
+#hud{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:10px 0}
 .card{border:1px solid #777286;padding:8px;background:#10101a;min-width:0}.name{font-weight:bold;font-size:14px}.stats{font-size:12px;color:#d4d1e2;margin-top:5px}.hpbar{height:7px;background:#3b3546;margin-top:5px}.hpfill{height:100%;background:#f4d45e;width:100%}
 #bossbar{border:1px solid #777286;padding:8px;background:#10101a;margin-bottom:10px;font-size:13px}.bossline{display:flex;justify-content:space-between;gap:10px}.bossfill{height:9px;background:#e65d78;width:100%;margin-top:6px}
 #dialogue{min-height:76px;padding:12px;border:2px solid var(--line);background:#050509;line-height:1.5;margin-bottom:10px;white-space:pre-wrap}
@@ -22,7 +22,7 @@ button:disabled{opacity:.35;cursor:not-allowed}
 #sub{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 #sub button{font-size:12px;min-height:38px;padding:8px}
 #footer{display:flex;justify-content:space-between;gap:8px;color:#9995ac;font-size:11px;margin-top:10px}
-@media(max-width:620px){body{padding:6px}#game{padding:8px}#hud{grid-template-columns:1fr}#menu{grid-template-columns:repeat(2,1fr)}.tag{max-width:110px}}
+@media(max-width:760px){#hud{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:620px){body{padding:6px}#game{padding:8px}#hud{grid-template-columns:1fr}#menu{grid-template-columns:repeat(2,1fr)}.tag{max-width:110px}}
 </style>
 </head>
 <body>
@@ -42,10 +42,13 @@ ctx.imageSmoothingEnabled=false;
 const party=[
  {id:"kris",name:"KRIS",hp:48,max:48,role:"TEN SHADOWS",guard:false,color:"#40b9a4"},
  {id:"susie",name:"SUSIE",hp:62,max:62,role:"HEAVY HITTER",guard:false,color:"#bd75e8"},
- {id:"ralsei",name:"RALSEI",hp:44,max:44,role:"SUPPORT",guard:false,color:"#75c78c"}
+ {id:"ralsei",name:"RALSEI",hp:44,max:44,role:"SUPPORT",guard:false,color:"#75c78c"},
+ {id:"noelle",name:"NOELLE",hp:50,max:50,role:"ICE / CONTROL",guard:false,color:"#83c9ef"},
+ {id:"berdly",name:"BERDLY",hp:54,max:54,role:"TECH SUPPORT",guard:false,color:"#e2c75c"}
 ];
 const boss={hp:260,max:260,phase:1,exposed:0};
-let tp=20,active=0,actions=[],busy=false,won=false,lost=false,turn=1,anim=0;
+let tp=35,active=0,actions=[],busy=false,won=false,lost=false,turn=1,anim=0;
+let knightDisrupted=0;
 const shadows=[
  {name:"TOAD",cost:0,dmg:13,desc:"Toad hops forward and trips the Knight's targeting system."},
  {name:"NUE",cost:20,dmg:24,desc:"Nue dives through the arena in a crackle of dark energy."},
@@ -123,6 +126,18 @@ function chooseActor(){
   {label:"🛡 DEFEND",run:()=>defend(p)},
   {label:"☻ ACT",run:()=>actMenu(p)}
  ]);
+ if(p.id==="noelle")setMenu([
+  {label:"❄ ICE SHOCK · 16 TP",disabled:tp<16,run:()=>controlMove(p,"IceShock",16,20)},
+  {label:"⚔ FIGHT",run:()=>attack(p,15,"Noelle sends a sharp strike of ice.")},
+  {label:"🛡 DEFEND",run:()=>defend(p)},
+  {label:"☻ ACT",run:()=>actMenu(p)}
+ ]);
+ if(p.id==="berdly")setMenu([
+  {label:"🌪 TORNADO · 20 TP",disabled:tp<20,run:()=>controlMove(p,"Tornado",20,16)},
+  {label:"⚔ FIGHT",run:()=>attack(p,18,"Berdly fires a precise energy shot.")},
+  {label:"🛡 DEFEND",run:()=>defend(p)},
+  {label:"☻ ACT",run:()=>actMenu(p)}
+ ]);
  setSub([{label:"ITEM: Dark Candy (+18 HP)",run:()=>itemMenu()},{label:"Back",run:()=>chooseActor()}]);
 }
 function afterAction(message){
@@ -135,6 +150,16 @@ function damageBoss(amount){
  return "";
 }
 function attack(p,dmg,msg){if(busy)return;let extra=damageBoss(dmg);anim=8;window.currentShadow=null;say("* "+msg+" ("+dmg+(boss.exposed>0?" + exposed bonus":"")+" damage.)"+extra);render();afterAction(msg)}
+function controlMove(p,name,cost,dmg){
+ if(tp<cost)return;
+ tp-=cost;
+ const extra=damageBoss(dmg);
+ if(name==="IceShock")boss.exposed=Math.max(boss.exposed,1);
+ if(name==="Tornado")knightDisrupted=1;
+ anim=10;window.currentShadow=name;
+ say("* "+p.name+" uses "+name+"! "+(name==="Tornado"?"The swirling wind disrupts the Knight's next attack.":"The Knight's movements slow under the ice.")+" ("+dmg+" damage.)"+extra);
+ render();afterAction(p.name+" used "+name);
+}
 function defend(p){p.guard=true;tp=Math.min(100,tp+14);say("* "+p.name+" braces for impact. (+14 TP)");render();afterAction(p.name+" defended")}
 function actMenu(p){
  setMenu([
@@ -172,6 +197,7 @@ function enemyTurn(){
   let target= living()[Math.floor(Math.random()*living().length)];
   if(!target){checkLoss();return}
   let raw=phase===1?12:phase===2?17:22;
+  if(knightDisrupted>0){raw=Math.max(5,Math.floor(raw*.55));knightDisrupted--;}
   let dmg=target.guard?Math.max(2,Math.floor(raw*.35)):raw;
   target.hp=Math.max(0,target.hp-dmg);
   let text="* The Knight targets "+target.name+". "+target.name+" takes "+dmg+" damage"+(target.guard?" (DEFENDED!)":"")+"!";
