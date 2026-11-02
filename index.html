@@ -30,7 +30,7 @@ button:disabled{opacity:.35;cursor:not-allowed}
 <header><h1>TEN SHADOWS: DARK WORLD INCIDENT</h1><div class="tag">A VERY NORMAL DELTARUNE-ISH BOSS FIGHT<br>DEMO 0.2 • DEVICE KNIGHT ENCOUNTER</div></header>
 <canvas id="stage" width="640" height="300" aria-label="Pixel-art battle scene"></canvas>
 <section id="hud" aria-label="Party status"></section>
-<section id="bossbar"><div class="bossline"><b id="bossname">THE ROARING KNIGHT</b><span id="bossstatus">ARMOR: INTACT</span></div><div class="bossfill" id="bossfill"></div></section>
+<section id="bossbar"><div class="bossline"><b id="bossname">THE ROARING KNIGHT</b><span id="bossstatus">ARMOR: INTACT</span></div><div class="bossfill" id="bossfill"></div><div class="bossline" style="margin-top:8px"><span id="tpstatus">TP: 35 / 100</span><span id="itemstatus">DARK CANDY: 3</span></div></section>
 <div id="dialogue" aria-live="polite">* The air shakes. A huge silhouette blocks the way forward.\n* Kris feels their shadow move before they do.</div>
 <div id="menu"></div><div id="sub"></div>
 <footer id="footer"><span>DEFEND reduces damage and builds TP.</span><span id="turnlabel">PARTY TURN</span></footer>
@@ -49,7 +49,7 @@ const party=[
  {id:"berdly",name:"BERDLY",hp:54,max:54,role:"TECH SUPPORT",guard:false,color:"#e2c75c"}
 ];
 const boss={hp:260,max:260,phase:1,exposed:0,chill:0,frozenTurns:0};
-let tp=35,active=0,actions=[],busy=false,won=false,lost=false,turn=1,anim=0;
+let tp=35,active=0,actions=[],busy=false,won=false,lost=false,turn=1,anim=0;\nconst inventory={darkCandy:3};\nlet hitCursor=0;
 let knightDisrupted=0,domainHazardTimer=null;
 let bulletMode=false,bullets=[],soul={x:320,y:190,r:7,invuln:0},bulletClock=null,patternClock=null,attackClock=null,patternType="star_swarm",box={x:210,y:82,w:220,h:145},keys={};
 const shadows=[
@@ -94,7 +94,7 @@ function render(){
  scene();
  $("hud").innerHTML=party.map(p=>'<div class="card"><div class="name" style="color:'+p.color+'">'+p.name+'</div><div class="stats">'+p.role+' · HP '+p.hp+'/'+p.max+'</div><div class="hpbar"><div class="hpfill" style="width:'+(p.hp/p.max*100)+'%"></div></div></div>').join("");
  $("bossfill").style.width=(boss.hp/boss.max*100)+"%";
- $("bossstatus").textContent=boss.frozenTurns>0?"FROZEN":(boss.chill>0?"CHILL "+boss.chill+"/3 · ":"")+(boss.exposed>0?"ARMOR: EXPOSED":"PHASE "+boss.phase+" · "+(boss.hp>0?boss.hp+" HP":"DEFEATED"));
+ $("bossstatus").textContent=boss.frozenTurns>0?"FROZEN":(boss.chill>0?"CHILL "+boss.chill+"/3 · ":"")+(boss.exposed>0?"ARMOR: EXPOSED":"PHASE "+boss.phase+" · "+(boss.hp>0?boss.hp+" HP":"DEFEATED"));\n $("tpstatus").textContent="TP: "+tp+" / 100";\n $("itemstatus").textContent="DARK CANDY: "+inventory.darkCandy;
 }
 function say(t){$("dialogue").textContent=t}
 function setMenu(items){$("menu").innerHTML="";items.forEach(it=>{let b=document.createElement("button");b.textContent=it.label;b.disabled=!!it.disabled;b.onclick=it.run;$("menu").appendChild(b)})}
@@ -145,7 +145,7 @@ function chooseActor(){
   {label:"🛡 DEFEND",run:()=>defend(p)},
   {label:"☻ ACT",run:()=>actMenu(p)}
  ]);
- setSub([{label:"ITEM: Dark Candy (+18 HP)",run:()=>itemMenu()},{label:"Back",run:()=>chooseActor()}]);
+ setSub([{label:"ITEM: Dark Candy ×"+inventory.darkCandy+" (+18 HP)",disabled:inventory.darkCandy<=0,run:()=>itemMenu()},{label:"Back",run:()=>chooseActor()}]);
 }
 function afterAction(message){
  actions.push(message);active++;render();setTimeout(chooseActor,300);
@@ -203,7 +203,7 @@ function healMenu(p){
 }
 function itemMenu(){
  setMenu(party.map(target=>({label:target.name+" · "+target.hp+"/"+target.max,disabled:target.hp===target.max||target.hp===0,run:()=>{
- target.hp=Math.min(target.max,target.hp+18);say("* Dark Candy restored 18 HP to "+target.name+".");render();afterAction("used Dark Candy")
+ inventory.darkCandy--;target.hp=Math.min(target.max,target.hp+18);say("* Dark Candy restored 18 HP to "+target.name+". ("+inventory.darkCandy+" remaining)");render();afterAction("used Dark Candy")
  }})));
  setSub([{label:"Back",run:chooseActor}]);
 }
@@ -282,7 +282,7 @@ function startBulletPhase(attack,disrupted){
    const q=bullets[i];q.x+=q.vx;q.y+=q.vy;
    if(q.x<box.x-25||q.x>box.x+box.w+25||q.y<box.y-30||q.y>box.y+box.h+30){bullets.splice(i,1);continue;}
    if(soul.invuln<=0&&Math.hypot(q.x-soul.x,q.y-soul.y)<q.r+5){
-    const target=living()[0];if(target){const dmg=hitParty(target,disrupted?3:Math.max(2,Math.round((boss.phase===1?5:boss.phase===2?7:9)*(target.guard?.35:1))));say("* "+target.name+" was hit! -"+dmg+" HP");render();}
+    const survivors=living();const target=survivors.length?survivors[hitCursor++%survivors.length]:null;if(target){const raw=disrupted?3:(boss.phase===1?5:boss.phase===2?7:9);const dmg=hitParty(target,raw);say("* "+target.name+" was hit! -"+dmg+" HP");render();}
     soul.invuln=38;bullets.splice(i,1);
     if(living().length===0){stopBulletPhase(disrupted);return;}
    }
