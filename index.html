@@ -48,7 +48,7 @@ const party=[
 ];
 const boss={hp:260,max:260,phase:1,exposed:0};
 let tp=35,active=0,actions=[],busy=false,won=false,lost=false,turn=1,anim=0;
-let knightDisrupted=0;
+let knightDisrupted=0,domainHazardTimer=null;
 const shadows=[
  {name:"TOAD",cost:0,dmg:13,desc:"Toad hops forward and trips the Knight's targeting system."},
  {name:"NUE",cost:20,dmg:24,desc:"Nue dives through the arena in a crackle of dark energy."},
@@ -200,6 +200,23 @@ const knightSystem={
   {id:"black_flash",name:"BLACK FLASH",phases:[3],weight:1}
  ]
 };
+function startKnightDomain(){
+ startKnightDomain();
+ if(domainHazardTimer)clearInterval(domainHazardTimer);
+ domainHazardTimer=setInterval(()=>{
+  if(!knightSystem.domain||won||lost){clearInterval(domainHazardTimer);domainHazardTimer=null;return;}
+  const alive=living();if(!alive.length)return;
+  const target=alive[Math.floor(Math.random()*alive.length)];
+  target.hp=Math.max(0,target.hp-4);
+  say("* A falling star strikes "+target.name+"! (-4 HP)\\n* The Kingdom of the Roaring is still active.");
+  render();
+  if(living().length===0)checkLoss();
+ },1800);
+}
+function endKnightDomain(){
+ knightSystem.domain=false;
+ if(domainHazardTimer){clearInterval(domainHazardTimer);domainHazardTimer=null;}
+}
 function chooseKnightAttack(){
  const pool=knightSystem.attacks.filter(a=>a.phases.includes(boss.phase)&&a.id!==knightSystem.lastAttack);
  const weighted=pool.flatMap(a=>Array(a.weight).fill(a));
@@ -246,7 +263,7 @@ function enemyTurn(){
    const target=living()[Math.floor(Math.random()*living().length)];
    if(target){const chip=hitParty(target,disrupted?2:5);if(chip)hitLog.push("DOMAIN: "+target.name+" -"+chip);}
    knightSystem.domainTurns--;
-   if(knightSystem.domainTurns<=0){knightSystem.domain=false;say("* The Kingdom of the Roaring fades. The Knight lowers its weapon.");}
+   if(knightSystem.domainTurns<=0){endKnightDomain();say("* The Kingdom of the Roaring fades. The Knight lowers its weapon.");}
   }
   party.forEach(p=>p.guard=false);boss.exposed=Math.max(0,boss.exposed-1);tp=Math.min(100,tp+5);
   busy=false;turn++;render();
@@ -255,8 +272,8 @@ function enemyTurn(){
   $("turnlabel").textContent="PARTY TURN";setMenu([{label:"CONTINUE",run:begin}]);setSub([]);
  },950);
 }
-function checkLoss(){lost=true;busy=false;say("* The party falls back. The Knight remains before the fountain.\n* (Refresh the page to try again.)");setMenu([]);setSub([]);$("turnlabel").textContent="PARTY DOWN"}
-function victory(){won=true;busy=false;boss.hp=0;render();say("* The Roaring Knight staggers. Its device flickers out.\n* Kris's shadows settle. Susie says that was 'kinda sick'.\n* Ralsei is already checking if everyone is okay.\n\n* YOU WON! (For now.)");setMenu([{label:"PLAY AGAIN",run:()=>location.reload()}]);setSub([]);$("turnlabel").textContent="VICTORY"}
+function checkLoss(){endKnightDomain();lost=true;busy=false;say("* The party falls back. The Knight remains before the fountain.\n* (Refresh the page to try again.)");setMenu([]);setSub([]);$("turnlabel").textContent="PARTY DOWN"}
+function victory(){endKnightDomain();won=true;busy=false;boss.hp=0;render();say("* The Roaring Knight staggers. Its device flickers out.\n* Kris's shadows settle. Susie says that was 'kinda sick'.\n* Ralsei is already checking if everyone is okay.\n\n* YOU WON! (For now.)");setMenu([{label:"PLAY AGAIN",run:()=>location.reload()}]);setSub([]);$("turnlabel").textContent="VICTORY"}
 render();setMenu([{label:"FIGHT",run:begin}]);setSub([]);
 </script>
 </body>
