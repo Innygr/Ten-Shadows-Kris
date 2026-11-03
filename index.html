@@ -152,7 +152,8 @@ function chooseActor(){
   {label:"⚔ FIGHT",run:()=>attack(p,17,"Kris strikes with their blade.")},
   {label:"☻ ACT",run:()=>actMenu(p)},
   {label:"🛡 DEFEND",run:()=>defend(p)},
-  {label:"☾ SHADOWS",run:()=>shadowMenu(p)}
+  {label:"☾ SHADOWS",run:()=>shadowMenu(p)},
+  {label:"DOMAIN EXPANSION · 60 TP",disabled:tp<60||playerDomain.used,run:expandChimeraDomain}
  ]);
  if(p.id==="susie")setMenu([
   {label:"⚔ FIGHT",run:()=>attack(p,24,"Susie swings with all her strength.")},
@@ -225,11 +226,11 @@ function actMenu(p){
 }
 function shadowMenu(p){
  const roster=ShadowSystem.list();
- setMenu(roster.map(s=>({label:s.name+" · "+s.cost+" TP",disabled:tp<s.cost,run:()=>{
-  if(tp<s.cost)return;
-  tp-=s.cost;
+ setMenu(roster.map(s=>{const cost=playerDomain.active?Math.ceil(s.cost*.75):s.cost;return {label:s.name+" · "+cost+" TP"+(playerDomain.active?" · DOMAIN":"")+" — "+s.desc,disabled:tp<cost,run:()=>{
+  if(tp<cost)return;
+  tp-=cost;
   const result=ShadowSystem.use(s.id,{
-   damageBoss,getDamage:()=>lastBossDamage,party,living,boss,
+   damageBoss,getDamage:()=>lastBossDamage,damageMultiplier:playerDomain.active?1.35:1,party,living,boss,
    gainTP:n=>{tp=Math.min(100,tp+n)},
    expose:n=>{boss.exposed=Math.max(boss.exposed,n)},
    disrupt:()=>{knightDisrupted=1},
@@ -239,7 +240,7 @@ function shadowMenu(p){
   if(result.damage>0)lastBossDamage=result.damage;
   say("* "+result.text+(result.damage>0?" ("+result.damage+" damage.)":""));
   render();afterAction("summoned "+s.name);
- }})));
+ }};}));
  setSub([{label:"Back",run:chooseActor}]);
 }
 function healMenu(p){
@@ -257,6 +258,16 @@ function itemMenu(){
  }})));
  setSub([{label:"Back",run:chooseActor}]);
 }
+const playerDomain={active:false,turns:0,used:false};
+function expandChimeraDomain(){
+ if(playerDomain.used||playerDomain.active||tp<60||busy)return;
+ tp-=60;playerDomain.active=true;playerDomain.turns=3;playerDomain.used=true;
+ window.currentShadow="CHIMERA SHADOW GARDEN";anim=14;
+ say("* DOMAIN EXPANSION — CHIMERA SHADOW GARDEN.\\n* The battlefield sinks into a boundless sea of shadows. The Ten Shadows grow stronger for three enemy turns.");
+ render();afterAction("expanded Chimera Shadow Garden");
+}
+function endPlayerDomain(){playerDomain.active=false;playerDomain.turns=0;}
+function tickPlayerDomain(){if(playerDomain.active){playerDomain.turns--;if(playerDomain.turns<=0){endPlayerDomain();say("* Chimera Shadow Garden recedes. The battlefield returns to normal.");}}}
 const knightSystem={
  domain:false,domainTurns:0,lastAttack:"",
  attacks:[
@@ -283,6 +294,7 @@ function hitParty(target,raw){
 function drawBulletArena(){
  ctx.fillStyle="#05050a";ctx.fillRect(box.x,box.y,box.w,box.h);
  ctx.strokeStyle="#f4f0ff";ctx.lineWidth=3;ctx.strokeRect(box.x,box.y,box.w,box.h);
+ if(playerDomain.active){ctx.save();ctx.strokeStyle="#67d7bd";ctx.lineWidth=3;ctx.globalAlpha=.85;ctx.beginPath();ctx.ellipse(320,155,285,135,0,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=.18;ctx.fillStyle="#39c6a5";ctx.fillRect(0,0,640,300);ctx.globalAlpha=1;ctx.fillStyle="#8fffe2";ctx.font="bold 11px monospace";ctx.fillText("CHIMERA SHADOW GARDEN · "+playerDomain.turns,16,38);ctx.restore();}
  if(knightSystem.domain){ctx.strokeStyle="#a78bfa";ctx.lineWidth=2;ctx.strokeRect(box.x+5,box.y+5,box.w-10,box.h-10);ctx.fillStyle="#c4a7ff";ctx.font="10px monospace";ctx.fillText("KINGDOM OF THE ROARING",box.x+25,box.y+16);}
  if(soul.invuln<=0||Math.floor(soul.invuln/4)%2===0){
   ctx.save();ctx.shadowBlur=soul.invuln>0?18:8;ctx.shadowColor=soul.invuln>0?"#ff3f70":"#ff8aa8";
@@ -313,6 +325,7 @@ function stopBulletPhase(disrupted){
  bulletMode=false;clearInterval(bulletClock);clearInterval(patternClock);clearTimeout(attackClock);bulletClock=patternClock=attackClock=null;bullets=[];
  party.forEach(p=>p.guard=false);boss.exposed=Math.max(0,boss.exposed-1);tp=Math.min(100,tp+5);
  if(knightSystem.domain){knightSystem.domainTurns--;if(knightSystem.domainTurns<=0)endKnightDomain();}
+ tickPlayerDomain();
  busy=false;turn++;render();
  if(living().length===0){checkLoss();return;}
  say("* The Knight withdraws for a moment."+(disrupted?" Its attack was weakened by Tornado.":"")+"\\n* The party regains 5 TP.");
@@ -347,7 +360,7 @@ function startBulletPhase(attack,disrupted){
 function enemyTurn(){
  if(won||lost||busy)return;
  if(boss.frozenTurns>0){
-  boss.frozenTurns--;boss.exposed=Math.max(boss.exposed,1);tp=Math.min(100,tp+8);
+  boss.frozenTurns--;boss.exposed=Math.max(boss.exposed,1);tp=Math.min(100,tp+8);tickPlayerDomain();
   say("* The Knight is frozen solid. Its attack cannot begin! (+8 TP)");
   render();busy=false;turn++;$("turnlabel").textContent="PARTY TURN";setMenu([{label:"CONTINUE",run:begin}]);setSub([]);return;
  }
@@ -365,7 +378,7 @@ document.addEventListener("keyup",e=>{keys[e.key]=false;});
 function aimSoul(e){if(!bulletMode)return;const r=canvas.getBoundingClientRect();soul.targetX=(e.clientX-r.left)/r.width*canvas.width;soul.targetY=(e.clientY-r.top)/r.height*canvas.height;soul.targetX=Math.max(box.x+soul.r,Math.min(box.x+box.w-soul.r,soul.targetX));soul.targetY=Math.max(box.y+soul.r,Math.min(box.y+box.h-soul.r,soul.targetY));}
 canvas.addEventListener("pointerdown",e=>{if(bulletMode){if(canvas.setPointerCapture)canvas.setPointerCapture(e.pointerId);aimSoul(e);}});
 canvas.addEventListener("pointermove",aimSoul);
-function checkLoss(){endKnightDomain();lost=true;busy=false;say("* The party falls back. The Knight remains before the fountain.\n* (Refresh the page to try again.)");setMenu([]);setSub([]);$("turnlabel").textContent="PARTY DOWN"}
+function checkLoss(){endKnightDomain();endPlayerDomain();lost=true;busy=false;say("* The party falls back. The Knight remains before the fountain.\n* (Refresh the page to try again.)");setMenu([]);setSub([]);$("turnlabel").textContent="PARTY DOWN"}
 function victory(){endKnightDomain();won=true;busy=false;boss.hp=0;render();say("* The Roaring Knight staggers. Its device flickers out.\n* Kris's shadows settle. Susie says that was 'kinda sick'.\n* Ralsei is already checking if everyone is okay.\n\n* YOU WON! (For now.)");setMenu([{label:"PLAY AGAIN",run:()=>location.reload()}]);setSub([]);$("turnlabel").textContent="VICTORY"}
 render();setMenu([{label:"FIGHT",run:begin}]);setSub([]);
 </script>
