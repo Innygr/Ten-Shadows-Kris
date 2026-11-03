@@ -53,7 +53,7 @@ let tp=35,active=0,actions=[],busy=false,won=false,lost=false,turn=1,anim=0;
 const inventory={darkCandy:3};
 let hitCursor=0,lastBossDamage=0;
 let knightDisrupted=0,domainHazardTimer=null;
-let bulletMode=false,bullets=[],soul={x:320,y:190,targetX:320,targetY:190,r:7,invuln:0},bulletClock=null,patternClock=null,attackClock=null,patternType="star_swarm",box={x:210,y:82,w:220,h:145},keys={};
+let bulletMode=false,bullets=[],soul={x:320,y:190,targetX:320,targetY:190,r:7,invuln:0},bulletClock=null,patternClock=null,attackClock=null,patternType="star_swarm",box={x:210,y:82,w:220,h:145},keys={},hitNotice="",hitNoticeTimer=0;
 const shadows=[
  {name:"TOAD",cost:0,dmg:13,desc:"Toad hops forward and trips the Knight's targeting system."},
  {name:"NUE",cost:20,dmg:24,desc:"Nue dives through the arena in a crackle of dark energy."},
@@ -251,6 +251,7 @@ function drawBulletArena(){
  }
  for(const b of bullets){ctx.save();ctx.shadowBlur=8;ctx.shadowColor=b.color||"#f7e9ff";ctx.fillStyle=b.color||"#f7e9ff";if(b.kind==="sword"){ctx.translate(b.x,b.y);ctx.rotate(b.angle||0);ctx.fillRect(-3,-b.r,6,b.r*2);}else{ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill();}ctx.restore();}
  ctx.fillStyle="#d9d4e8";ctx.font="10px monospace";ctx.fillText("DODGE!  WASD / POINTER",box.x,box.y-8);
+ if(hitNoticeTimer>0){ctx.fillStyle="#ff7894";ctx.font="bold 13px monospace";ctx.fillText(hitNotice,box.x+8,box.y+box.h+17);hitNoticeTimer--;}
 }
 function spawnBullet(x,y,vx,vy,r=5,color="#f4e9ff",kind="orb",angle=0){bullets.push({x,y,vx,vy,r,color,kind,angle});}
 function spawnPattern(){
@@ -294,7 +295,7 @@ function startBulletPhase(attack,disrupted){
    const q=bullets[i];q.x+=q.vx;q.y+=q.vy;
    if(q.x<box.x-25||q.x>box.x+box.w+25||q.y<box.y-30||q.y>box.y+box.h+30){bullets.splice(i,1);continue;}
    if(soul.invuln<=0&&Math.hypot(q.x-soul.x,q.y-soul.y)<q.r+5){
-    const survivors=living();const target=survivors.length?survivors[hitCursor++%survivors.length]:null;if(target){const raw=disrupted?3:(boss.phase===1?5:boss.phase===2?7:9);const guarded=target.guard;const dmg=hitParty(target,raw);say("* "+target.name+" was hit! -"+dmg+" HP"+(guarded?" (GUARDED)":""));}
+    const survivors=living();const target=survivors.length?survivors[hitCursor++%survivors.length]:null;if(target){const raw=disrupted?3:(boss.phase===1?5:boss.phase===2?7:9);const guarded=target.guard;const dmg=hitParty(target,raw);hitNotice=target.name+"  -"+dmg+" HP"+(guarded?"  GUARD":"");hitNoticeTimer=55;say("* "+target.name+" was hit! -"+dmg+" HP"+(guarded?" (GUARDED)":""));}
     soul.invuln=52;bullets.splice(i,1);render();
     if(living().length===0){stopBulletPhase(disrupted);return;}
    }
