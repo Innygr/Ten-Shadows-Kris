@@ -38,6 +38,7 @@ button:disabled{opacity:.35;cursor:not-allowed}
 <script src="sprite-sheet.js"></script>
 <script src="flavor-text.js"></script>
 <script src="weird-route-ice.js"></script>
+<script src="shadows.js"></script>
 <script>
 const $=id=>document.getElementById(id), canvas=$("stage"),ctx=canvas.getContext("2d");
 ctx.imageSmoothingEnabled=false;
@@ -54,13 +55,6 @@ const inventory={darkCandy:3};
 let hitCursor=0,lastBossDamage=0;
 let knightDisrupted=0,domainHazardTimer=null;
 let bulletMode=false,bullets=[],soul={x:320,y:190,targetX:320,targetY:190,r:7,invuln:0},bulletClock=null,patternClock=null,attackClock=null,patternType="star_swarm",box={x:210,y:82,w:220,h:145},keys={},hitNotice="",hitNoticeTimer=0;
-const shadows=[
- {name:"TOAD",cost:0,dmg:13,desc:"Toad hops forward and trips the Knight's targeting system."},
- {name:"NUE",cost:20,dmg:24,desc:"Nue dives through the arena in a crackle of dark energy."},
- {name:"DIVINE DOG",cost:25,dmg:31,desc:"Divine Dog lunges. The Knight's armor rings."},
- {name:"MAX ELEPHANT",cost:35,dmg:42,desc:"Max Elephant lands with a tremendous splash of shadow."},
- {name:"MAHORAGA",cost:100,dmg:95,desc:"Mahoraga appears. The adaptation wheel turns. The Knight reconsiders."}
-];
 const sprite={
  kris:["....bbbb....","...bccccb...","...bccccb...","....bbbb....","..gggggggg..","..gwwggwwg..","..gggggggg..","....bbbb....","....b..b....","...bb..bb...","...b....b...","..bb....bb.."],
  susie:["....pppp....","...pppppp...","..pppppppp..","..pppppppp..","...pppppp...","....pppp....","..rrrrrrrr..","..rwwrrwwr..","..rrrrrrrr..","....pppp....","...pp..pp...","..pp....pp.."],
@@ -198,8 +192,21 @@ function actMenu(p){
  ]);
 }
 function shadowMenu(p){
- setMenu(shadows.map(s=>({label:s.name+" · "+s.cost+" TP",disabled:tp<s.cost,run:()=>{
-  tp-=s.cost;let extra=damageBoss(s.dmg);window.currentShadow=s.name;anim=12;say("* "+s.desc+" ("+lastBossDamage+" damage.)"+extra);render();afterAction("summoned "+s.name)
+ const roster=ShadowSystem.list();
+ setMenu(roster.map(s=>({label:s.name+" · "+s.cost+" TP",disabled:tp<s.cost,run:()=>{
+  if(tp<s.cost)return;
+  tp-=s.cost;
+  const result=ShadowSystem.use(s.id,{
+   damageBoss,party,living,boss,
+   gainTP:n=>{tp=Math.min(100,tp+n)},
+   expose:n=>{boss.exposed=Math.max(boss.exposed,n)},
+   disrupt:()=>{knightDisrupted=1},
+   setChill:n=>{boss.chill=Math.min(3,boss.chill+n);if(boss.chill>=3){boss.chill=0;boss.frozenTurns=1;boss.exposed=Math.max(1,boss.exposed)}}
+  });
+  window.currentShadow=s.name;anim=14;
+  if(result.damage>0)lastBossDamage=result.damage;
+  say("* "+result.text+(result.damage>0?" ("+result.damage+" damage.)":""));
+  render();afterAction("summoned "+s.name);
  }})));
  setSub([{label:"Back",run:chooseActor}]);
 }
