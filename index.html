@@ -789,6 +789,7 @@ function startBulletPhase(attack,disrupted){
   soul.x=Math.max(box.x+soul.r,Math.min(box.x+box.w-soul.r,soul.x));soul.y=Math.max(box.y+soul.r,Math.min(box.y+box.h-soul.r,soul.y));
   for(let i=bullets.length-1;i>=0;i--){
    const q=bullets[i];
+   if(q.kind==="courage"&&patternType!=="titan_swarm"){q.x+=q.vx;q.y+=q.vy;if(Math.hypot(q.x-soul.x,q.y-soul.y)<15){tp=Math.min(100,tp+1.6);bullets.splice(i,1);}continue;}
    if(patternType==="titan_swarm"&&(q.kind==="titan_spawn"||q.kind==="evolving_spawn"||q.kind==="red_spawn"||q.kind==="courage")){
    ctx.save();ctx.fillStyle=q.kind==="courage"?"#ffd85e":q.kind==="red_spawn"?"#ff4965":"#f4f4ff";ctx.shadowColor=ctx.fillStyle;ctx.shadowBlur=7;ctx.beginPath();ctx.ellipse(q.x,q.y,q.kind==="evolving_spawn"?q.r*.7:q.r,q.kind==="evolving_spawn"?q.r*1.35:q.r,0,0,Math.PI*2);ctx.fill();ctx.restore();continue;
   }
