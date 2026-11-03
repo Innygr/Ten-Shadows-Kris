@@ -272,12 +272,12 @@ const titanSystem={lightRadius:38,courage:[],phase:1,centipedes:[],nextCentipede
 const knightSystem={
  domain:false,domainTurns:0,lastAttack:"",barrageUses:0,barrageVariation:0,twinSlashes:null,knightCombo:null,sanguineSlash:null,
  attacks:[
-  {id:"titan_swarm",name:"TITAN · SWARM",phases:[1,3,5],weight:1},
-  {id:"titan_hands",name:"TITAN · THE HANDS",phases:[1,3,5],weight:1},
+  {id:"titan_swarm",name:"TITAN · SWARM",phases:[1,2,3],weight:1},
+  {id:"titan_hands",name:"TITAN · THE HANDS",phases:[1,2,3],weight:1},
   {id:"titan_big_shots",name:"TITAN · BIG SHOTS 1",phases:[2],weight:1},
-  {id:"titan_big_shots_2",name:"TITAN · BIG SHOTS 2",phases:[4],weight:1},
-  {id:"titan_big_shots_3",name:"TITAN · BIG SHOTS 3",phases:[6],weight:1},
-  {id:"titan_desperation",name:"TITAN · DESPERATION SHOTS",phases:[6],weight:2},
+  {id:"titan_big_shots_2",name:"TITAN · BIG SHOTS 2",phases:[2,3],weight:1},
+  {id:"titan_big_shots_3",name:"TITAN · BIG SHOTS 3",phases:[3],weight:1},
+  {id:"titan_desperation",name:"TITAN · DESPERATION SHOTS",phases:[3],weight:2},
   {id:"crystal_barrage",name:"CRYSTAL BARRAGE",phases:[1,2,3],weight:1},
   {id:"twin_slashes",name:"TWIN SLASHES",phases:[1,2,3],weight:1},
   {id:"knight_combo",name:"KNIGHT COMBO",phases:[1,2,3],weight:1},
@@ -410,7 +410,7 @@ function drawBulletArena(){
    ctx.beginPath();ctx.arc(q.x,q.y,9,0,Math.PI*2);ctx.stroke();ctx.restore();
   }
  }
- if(patternType==="titan_desperation"&&titanSystem.desperation?.laser&&Date.now()-titanSystem.desperation.laserAt>450){const safe=soul.y<box.y+box.h*.25||soul.y>box.y+box.h*.75;if(!safe&&soul.invuln<=0){const survivors=living(),target=survivors.length?survivors[hitCursor++%survivors.length]:null;if(target)hitParty(target,9);soul.invuln=52;if(living().length===0){stopBulletPhase(disrupted);return;}}}
+ if(patternType==="titan_desperation"&&titanSystem.desperation?.laser&&Date.now()-titanSystem.desperation.laserAt>450){const d=titanSystem.desperation,safe=soul.y<box.y+box.h*.25||soul.y>box.y+box.h*.75;if(!safe&&soul.invuln<=0){const survivors=living(),target=survivors.length?survivors[hitCursor++%survivors.length]:null;if(target)hitParty(target,9);soul.invuln=52;if(living().length===0){stopBulletPhase(disrupted);return;}}if(!d.laserResolved&&Date.now()-d.laserAt>1200){d.laserResolved=true;}}
  if(soul.invuln<=0||Math.floor(soul.invuln/4)%2===0){
   ctx.save();ctx.shadowBlur=soul.invuln>0?18:8;ctx.shadowColor=soul.invuln>0?"#ff3f70":"#ff8aa8";
   ctx.fillStyle="#ff3f70";ctx.beginPath();ctx.moveTo(soul.x,soul.y-8);ctx.lineTo(soul.x+7,soul.y);ctx.lineTo(soul.x,soul.y+8);ctx.lineTo(soul.x-7,soul.y);ctx.closePath();ctx.fill();ctx.restore();
@@ -630,7 +630,7 @@ function spawnTitanBigShots(version){
 }
 function startTitanBigShots(){const version=titanSystem.phase>=6?3:titanSystem.phase>=4?2:1;titanSystem.bigShots={started:Date.now(),next:Date.now()+ (version===1?700:version===2?480:360),version};}
 function updateTitanBigShots(){const b=titanSystem.bigShots;if(!b)return;const interval=b.version===1?1600:b.version===2?1250:950;if(Date.now()>=b.next){b.next=Date.now()+interval;spawnTitanBigShots(b.version);}}
-function startTitanDesperation(){titanSystem.desperation={started:Date.now(),bursts:0,next:Date.now()+350,laser:false,laserAt:0};}
+function startTitanDesperation(){titanSystem.desperation={started:Date.now(),bursts:0,next:Date.now()+350,laser:false,laserAt:0,laserResolved:false};}
 function updateTitanDesperation(){const d=titanSystem.desperation;if(!d)return;const now=Date.now();if(d.bursts<12&&now>=d.next){const base=Math.atan2(soul.y-(box.y+box.h*.34),soul.x-(box.x+box.w/2)),count=d.bursts%2===0?2:3;for(let i=0;i<count;i++){const a=base+(i-(count-1)/2)*Math.PI/6;spawnBullet(box.x+box.w/2,box.y+box.h*.34,Math.cos(a)*4.4,Math.sin(a)*4.4,15,"#171720","titan_big_shot",a);}d.bursts++;d.next=now+280;}if(d.bursts>=12&&!d.laser){d.laser=true;d.laserAt=now;for(let i=bullets.length-1;i>=0;i--)if(bullets[i].kind==="titan_big_shot")bullets.splice(i,1);}}
 function startTitanHands(){titanSystem.hands={started:Date.now(),next:Date.now()+900};}
 function updateTitanHands(){
