@@ -197,7 +197,7 @@ function shadowMenu(p){
   if(tp<s.cost)return;
   tp-=s.cost;
   const result=ShadowSystem.use(s.id,{
-   damageBoss,party,living,boss,
+   damageBoss,getDamage:()=>lastBossDamage,party,living,boss,
    gainTP:n=>{tp=Math.min(100,tp+n)},
    expose:n=>{boss.exposed=Math.max(boss.exposed,n)},
    disrupt:()=>{knightDisrupted=1},
