@@ -278,6 +278,7 @@ const knightSystem={
   {id:"rotating_slash",name:"ROTATING SLASH",phases:[1,2,3],weight:2},
   {id:"crescent_slashes",name:"CRESCENT SLASHES",phases:[1,2,3],weight:1},
   {id:"sticking_stars",name:"STICKING STARS",phases:[1,2,3],weight:1},
+  {id:"revolver",name:"REVOLVER",phases:[1,2,3],weight:1},
   {id:"cross_attack",name:"CROSS ATTACK",phases:[1,2,3],weight:1},
   {id:"combination",name:"COMBINATION",phases:[2,3],weight:1},
   {id:"bottom_shadows",name:"BOTTOM SHADOWS",phases:[2,3],weight:1},
@@ -379,6 +380,17 @@ function spawnPattern(){
    for(let i=0;i<3;i++){const y=box.y+24+i*48;for(let j=0;j<4;j++)aimed(box.x+12+j*55,y,3.2,8,"#f1d9ff");}break;
   case "sticking_stars":
    for(let i=0;i<3;i++){const x=box.x+20+Math.random()*(box.w-40),y=box.y+20+Math.random()*(box.h-40);shard(x,y,(soul.x-x)*.018,(soul.y-y)*.018,"#ffe8a6");}break;
+  case "revolver":{
+   // Six fixed circles form the revolver pattern and fire dark shards inward.
+   const radius=Math.min(box.w*.37,box.h*.43),rotation=Date.now()/1700;
+   for(let i=0;i<6;i++){
+    const a=rotation+i*Math.PI/3;
+    const x=cx+Math.cos(a)*radius,y=cy+Math.sin(a)*radius;
+    ctx.save();ctx.strokeStyle="#a9a2bb";ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,9,0,Math.PI*2);ctx.stroke();ctx.restore();
+    const shardAngle=Math.atan2(soul.y-y,soul.x-x);
+    shard(x,y,Math.cos(shardAngle)*4.1,Math.sin(shardAngle)*4.1,"#17131f");
+   }
+   break;}
   case "cross_attack":
    for(let n=-2;n<=2;n++){shard(cx+n*18,box.y-8,0,3.8,"#ff8fa9");shard(box.x-8,cy+n*18,3.8,0,"#ff8fa9");}break;
   case "combination":
