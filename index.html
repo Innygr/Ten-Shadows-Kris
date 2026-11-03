@@ -156,7 +156,9 @@ function chooseActor(){
  setSub([{label:"ITEM: Dark Candy ×"+inventory.darkCandy+" (+18 HP)",disabled:inventory.darkCandy<=0,run:()=>itemMenu()},{label:"Back",run:()=>chooseActor()}]);
 }
 function afterAction(message){
- actions.push(message);active++;render();setTimeout(chooseActor,300);
+ actions.push(message);
+ if(boss.hp<=0){victory();return;}
+ active++;render();setTimeout(chooseActor,300);
 }
 function damageBoss(amount){
  let bonus=boss.exposed>0?1.4:1;let dealt=Math.round(amount*bonus);lastBossDamage=dealt;boss.hp=Math.max(0,boss.hp-dealt);
