@@ -36,6 +36,7 @@ button:disabled{opacity:.35;cursor:not-allowed}
 <footer id="footer"><span>DEFEND reduces damage and builds TP.</span><span id="turnlabel">PARTY TURN</span></footer>
 </main>
 <script src="sprite-sheet.js"></script>
+<script src="sprite-assets.js"></script>
 <script src="flavor-text.js"></script>
 <script src="weird-route-ice.js"></script>
 <script src="shadows.js"></script>
@@ -77,13 +78,13 @@ function scene(){
  ctx.fillStyle="#121323";ctx.fillRect(34,115,22,105);ctx.fillRect(580,90,24,130);
  // boss glow + knight
  ctx.fillStyle=boss.phase===3?"#65334f":"#292748";ctx.globalAlpha=.23;ctx.beginPath();ctx.ellipse(470,192,110,100,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
- drawSprite(sprite.knight,408,77,7,palettes);
+ if(!SpriteAssets.draw(ctx,"enemies.roaring_knight",408,77,140,126))drawSprite(sprite.knight,408,77,7,palettes);
  // party
- drawSprite(sprite.kris,80,175,4,palettes);
- drawSprite(sprite.susie,145,170,4,palettes);
- drawSprite(sprite.ralsei,210,177,4,palettes);
- drawSprite(sprite.noelle,275,177,4,palettes);
- drawSprite(sprite.berdly,340,177,4,palettes);
+ if(!SpriteAssets.draw(ctx,"characters.kris",80,175,48,48))drawSprite(sprite.kris,80,175,4,palettes);
+ if(!SpriteAssets.draw(ctx,"characters.susie",145,170,48,48))drawSprite(sprite.susie,145,170,4,palettes);
+ if(!SpriteAssets.draw(ctx,"characters.ralsei",210,177,48,48))drawSprite(sprite.ralsei,210,177,4,palettes);
+ if(!SpriteAssets.draw(ctx,"characters.noelle",275,177,48,48))drawSprite(sprite.noelle,275,177,4,palettes);
+ if(!SpriteAssets.draw(ctx,"characters.berdly",340,177,48,48))drawSprite(sprite.berdly,340,177,4,palettes);
  // shadow summon
  if(window.currentShadow){ctx.globalAlpha=.9;ctx.fillStyle="#a78bfa";ctx.font="bold 15px monospace";ctx.fillText(window.currentShadow,305,248);ctx.globalAlpha=1}
  // phase text
