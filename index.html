@@ -269,11 +269,12 @@ function expandChimeraDomain(){
 function endPlayerDomain(){playerDomain.active=false;playerDomain.turns=0;}
 function tickPlayerDomain(){if(playerDomain.active){playerDomain.turns--;if(playerDomain.turns<=0){endPlayerDomain();say("* Chimera Shadow Garden recedes. The battlefield returns to normal.");}}}
 const knightSystem={
- domain:false,domainTurns:0,lastAttack:"",barrageUses:0,barrageVariation:0,twinSlashes:null,knightCombo:null,
+ domain:false,domainTurns:0,lastAttack:"",barrageUses:0,barrageVariation:0,twinSlashes:null,knightCombo:null,sanguineSlash:null,
  attacks:[
   {id:"crystal_barrage",name:"CRYSTAL BARRAGE",phases:[1,2,3],weight:1},
   {id:"twin_slashes",name:"TWIN SLASHES",phases:[1,2,3],weight:1},
   {id:"knight_combo",name:"KNIGHT COMBO",phases:[1,2,3],weight:1},
+  {id:"sanguine_slash",name:"SANGUINE SLASH",phases:[1,2,3],weight:1},
   {id:"tracking_swords",name:"TRACKING SWORDS",phases:[1,2,3],weight:3},
   {id:"box_splitter",name:"BOX SPLITTER",phases:[1,2,3],weight:2},
   {id:"sword_tunnel",name:"SWORD TUNNEL",phases:[1,2,3],weight:2},
@@ -304,7 +305,7 @@ const knightSystem={
 function startKnightDomain(){knightSystem.domain=true;knightSystem.domainTurns=3;}
 function endKnightDomain(){knightSystem.domain=false;}
 function chooseKnightAttack(){
- const picked=knightSystem.attacks.find(a=>a.id==="knight_combo")||knightSystem.attacks[0];
+ const picked=knightSystem.attacks.find(a=>a.id==="sanguine_slash")||knightSystem.attacks[0];
  knightSystem.lastAttack=picked.id;return picked;
 }
 function hitParty(target,raw){
@@ -403,6 +404,18 @@ function drawBulletArena(){
    ctx.lineWidth=age<0?2:5;ctx.setLineDash(age<0?[8,6]:[]);
    ctx.shadowColor="#ff315f";ctx.shadowBlur=age<0?5:18;
    ctx.beginPath();ctx.moveTo(-270,0);ctx.lineTo(270,0);ctx.stroke();ctx.restore();
+  }
+ }
+ if(patternType==="sanguine_slash"&&knightSystem.sanguineSlash){
+  const slash=knightSystem.sanguineSlash,elapsed=Date.now()-slash.started;
+  for(const cut of slash.cuts){
+   const age=elapsed-cut.at;
+   if(age< -430||age>155)continue;
+   ctx.save();ctx.translate(cut.x,cut.y);ctx.rotate(cut.angle);
+   ctx.globalAlpha=age<0?.34:.98;ctx.strokeStyle=age<0?"#ff6688":"#fff0f3";
+   ctx.lineWidth=age<0?2:6;ctx.setLineDash(age<0?[9,6]:[]);
+   ctx.shadowColor="#ff174f";ctx.shadowBlur=age<0?7:22;
+   ctx.beginPath();ctx.moveTo(-275,0);ctx.lineTo(275,0);ctx.stroke();ctx.restore();
   }
  }
  if(patternType==="twin_slashes"&&knightSystem.twinSlashes){
@@ -565,7 +578,7 @@ function spawnPattern(){
  if(knightSystem.domain&&Math.random()<.35)sword(box.x+12+Math.random()*(box.w-24),box.y-12,4.1,Math.PI/2,"#b28cff");
 }
 function stopBulletPhase(disrupted){
- bulletMode=false;knightSystem.revolver=null;knightSystem.twinSlashes=null;knightSystem.knightCombo=null;clearInterval(bulletClock);clearInterval(patternClock);clearTimeout(attackClock);bulletClock=patternClock=attackClock=null;bullets=[];
+ bulletMode=false;knightSystem.revolver=null;knightSystem.twinSlashes=null;knightSystem.knightCombo=null;knightSystem.sanguineSlash=null;clearInterval(bulletClock);clearInterval(patternClock);clearTimeout(attackClock);bulletClock=patternClock=attackClock=null;bullets=[];
  party.forEach(p=>p.guard=false);boss.exposed=Math.max(0,boss.exposed-1);tp=Math.min(100,tp+5);
  if(knightSystem.domain){knightSystem.domainTurns--;if(knightSystem.domainTurns<=0)endKnightDomain();}
  tickPlayerDomain();
@@ -631,9 +644,36 @@ function updateKnightCombo(){
   cut.done=true;
  }
 }
+function makeSanguineSlash(){
+ const cuts=[];
+ for(let wave=0;wave<6;wave++){
+  const count=Math.floor(wave/2)+1,base=520+wave*930;
+  for(let n=0;n<count;n++){
+   const offset=(n-(count-1)/2)*.16;
+   cuts.push({at:base+n*125,x:soul.x,y:soul.y,angle:(wave%2?Math.PI/2:0)+offset,done:false});
+  }
+ }
+ return {started:Date.now(),cuts};
+}
+function updateSanguineSlash(){
+ const slash=knightSystem.sanguineSlash;if(!slash)return;
+ const elapsed=Date.now()-slash.started;
+ for(const cut of slash.cuts){
+  if(cut.done||elapsed<cut.at||elapsed>cut.at+160)continue;
+  const dx=Math.cos(cut.angle),dy=Math.sin(cut.angle),px=-dy,py=dx;
+  const along=(soul.x-cut.x)*dx+(soul.y-cut.y)*dy;
+  const across=Math.abs((soul.x-cut.x)*px+(soul.y-cut.y)*py);
+  if(Math.abs(along)<280&&across<9&&soul.invuln<=0){
+   const survivors=living(),target=survivors.length?survivors[hitCursor++%survivors.length]:null;
+   if(target){const raw=boss.phase===1?5:boss.phase===2?7:9,dmg=hitParty(target,raw);hitNotice=target.name+"  -"+dmg+" HP";hitNoticeTimer=55;say("* "+target.name+" was struck by Sanguine Slash! -"+dmg+" HP.");}
+   soul.invuln=52;render();
+  }
+  cut.done=true;
+ }
+}
 function startBulletPhase(attack,disrupted){
- bulletMode=true;bullets=[];knightSystem.revolver=null;knightSystem.twinSlashes=attack.id==="twin_slashes"?makeTwinSlashes():null;knightSystem.knightCombo=attack.id==="knight_combo"?makeKnightCombo():null;if(attack.id==="crystal_barrage"){knightSystem.barrageVariation=knightSystem.barrageUses%3;knightSystem.barrageUses++;}soul.x=box.x+box.w/2;soul.y=box.y+box.h-24;soul.targetX=soul.x;soul.targetY=soul.y;soul.invuln=0;patternType=attack.id;
- const duration=attack.id==="black_flash"?5200:6500;
+ bulletMode=true;bullets=[];knightSystem.revolver=null;knightSystem.twinSlashes=attack.id==="twin_slashes"?makeTwinSlashes():null;knightSystem.knightCombo=attack.id==="knight_combo"?makeKnightCombo():null;knightSystem.sanguineSlash=attack.id==="sanguine_slash"?makeSanguineSlash():null;if(attack.id==="crystal_barrage"){knightSystem.barrageVariation=knightSystem.barrageUses%3;knightSystem.barrageUses++;}soul.x=box.x+box.w/2;soul.y=box.y+box.h-24;soul.targetX=soul.x;soul.targetY=soul.y;soul.invuln=0;patternType=attack.id;
+ const duration=attack.id==="sanguine_slash"?6500:(attack.id==="black_flash"?5200:6500);
  say("* "+attack.name+"! Dodge the Knight's attacks.\\n* Move with WASD, or guide the SOUL with your pointer / touch.");
  render();
  patternClock=setInterval(spawnPattern,attack.id==="black_flash"?600:430);
@@ -642,6 +682,7 @@ function startBulletPhase(attack,disrupted){
   updateRevolver();
   if(patternType==="twin_slashes")updateTwinSlashes();
   if(patternType==="knight_combo")updateKnightCombo();
+  if(patternType==="sanguine_slash")updateSanguineSlash();
   const speed=3.6,dx=(keys.d||keys.D?1:0)-(keys.a||keys.A?1:0),dy=(keys.s||keys.S?1:0)-(keys.w||keys.W?1:0);
   if(dx||dy){const length=Math.hypot(dx,dy);soul.x+=dx/length*speed;soul.y+=dy/length*speed;soul.targetX=soul.x;soul.targetY=soul.y;}
   else{const follow=0.24;soul.x+=(soul.targetX-soul.x)*follow;soul.y+=(soul.targetY-soul.y)*follow;}
