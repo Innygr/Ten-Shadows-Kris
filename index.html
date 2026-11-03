@@ -269,7 +269,7 @@ function expandChimeraDomain(){
 function endPlayerDomain(){playerDomain.active=false;playerDomain.turns=0;}
 function tickPlayerDomain(){if(playerDomain.active){playerDomain.turns--;if(playerDomain.turns<=0){endPlayerDomain();say("* Chimera Shadow Garden recedes. The battlefield returns to normal.");}}}
 const knightSystem={
- domain:false,domainTurns:0,lastAttack:"",barrageUses:0,
+ domain:false,domainTurns:0,lastAttack:"",barrageUses:0,barrageVariation:0,
  attacks:[
   {id:"crystal_barrage",name:"CRYSTAL BARRAGE",phases:[1,2,3],weight:1},
   {id:"tracking_swords",name:"TRACKING SWORDS",phases:[1,2,3],weight:3},
@@ -405,7 +405,7 @@ function spawnPattern(){
  const shard=(x,y,vx,vy,color="#e8ddff")=>spawnBullet(x,y,vx,vy,5,color,"orb");
  switch(patternType){
   case "crystal_barrage":{
-   const variation=knightSystem.barrageUses%3;
+   const variation=knightSystem.barrageVariation;
    const count=variation===0?6:variation===1?6:6;
    for(let i=0;i<count;i++){
     const spread=(i-(count-1)/2)*0.19;
@@ -417,7 +417,6 @@ function spawnPattern(){
     p.reverseAt=variation===1?58:48;p.explodeAt=variation===1?82:70;
     p.splitAngle=spread;
    }
-   knightSystem.barrageUses++;
    break;
   }
   case "stars":case "star_swarm":
@@ -533,7 +532,7 @@ function stopBulletPhase(disrupted){
  $("turnlabel").textContent="PARTY TURN";setMenu([{label:"CONTINUE",run:begin}]);setSub([]);
 }
 function startBulletPhase(attack,disrupted){
- bulletMode=true;bullets=[];knightSystem.revolver=null;soul.x=box.x+box.w/2;soul.y=box.y+box.h-24;soul.targetX=soul.x;soul.targetY=soul.y;soul.invuln=0;patternType=attack.id;
+ bulletMode=true;bullets=[];knightSystem.revolver=null;if(attack.id==="crystal_barrage"){knightSystem.barrageVariation=knightSystem.barrageUses%3;knightSystem.barrageUses++;}soul.x=box.x+box.w/2;soul.y=box.y+box.h-24;soul.targetX=soul.x;soul.targetY=soul.y;soul.invuln=0;patternType=attack.id;
  const duration=attack.id==="black_flash"?5200:6500;
  say("* "+attack.name+"! Dodge the Knight's attacks.\\n* Move with WASD, or guide the SOUL with your pointer / touch.");
  render();
