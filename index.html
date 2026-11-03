@@ -643,22 +643,23 @@ function updateTitanHands(){
 }
 function spawnTitanCentipede(length,small=false){
  const angle=Math.random()*Math.PI*2,cx=box.x+box.w/2,cy=box.y+box.h/2,rx=box.w*(.38+Math.random()*.08),ry=box.h*(.34+Math.random()*.08),x=cx+Math.cos(angle)*rx,y=cy+Math.sin(angle)*ry;
- titanSystem.centipedes.push({id:++titanSystem.nextCentipede,head:{x,y},history:[{x,y}],length,small,orbit:{cx,cy,rx,ry},rushAt:Date.now()+1800+Math.random()*1200,rushing:false,angle,speed:small?1.35:.9,alive:true});
+ titanSystem.centipedes.push({id:++titanSystem.nextCentipede,head:{x,y},history:[{x,y}],length,small,orbit:{cx,cy,rx,ry},orbitAngle:angle,rushAt:Date.now()+1800+Math.random()*1200,rushing:false,returning:false,angle,speed:small?1.35:.9,alive:true});
 }
 function updateTitanSwarm(){
  const radius=titanSystem.lightRadius;
  for(let n=titanSystem.centipedes.length-1;n>=0;n--){
   const c=titanSystem.centipedes[n];if(!c.alive)continue;
-  if(c.small){const a=Math.atan2(soul.y-c.head.y,soul.x-c.head.x);c.angle=a;c.speed=titanSystem.phase>=3?2.1:1.65;c.head.x+=Math.cos(a)*c.speed;c.head.y+=Math.sin(a)*c.speed;}
-  else if(!c.rushing&&Date.now()>=c.rushAt){c.rushing=true;c.angle=Math.atan2(soul.y-c.head.y,soul.x-c.head.x);c.speed=titanSystem.phase>=3?3.35:titanSystem.phase>=2?2.9:2.5;}
-  if(c.rushing&&!c.small){c.head.x+=Math.cos(c.angle)*c.speed;c.head.y+=Math.sin(c.angle)*c.speed;if(c.head.x<box.x-35||c.head.x>box.x+box.w+35||c.head.y<box.y-35||c.head.y>box.y+box.h+35){c.rushing=false;c.rushAt=Date.now()+1050;c.speed=.9;}}
-  else if(!c.small){c.angle+=.018;c.head.x=c.orbit.cx+Math.cos(c.angle)*c.orbit.rx;c.head.y=c.orbit.cy+Math.sin(c.angle)*c.orbit.ry;}
+  if(c.small){const a=Math.atan2(soul.y-c.head.y,soul.x-c.head.x);c.angle=a;c.speed=titanSystem.phase>=3?2.1:1.65;c.head.x+=Math.cos(a)*c.speed;c.head.y+=Math.sin(a)*c.speed;if(c.head.x<box.x-28||c.head.x>box.x+box.w+28||c.head.y<box.y-28||c.head.y>box.y+box.h+28){c.alive=false;}}
+  else if(!c.rushing&&!c.returning&&Date.now()>=c.rushAt){c.rushing=true;c.angle=Math.atan2(soul.y-c.head.y,soul.x-c.head.x);c.speed=titanSystem.phase>=3?3.35:titanSystem.phase>=2?2.9:2.5;}
+  if(c.rushing&&!c.small){c.head.x+=Math.cos(c.angle)*c.speed;c.head.y+=Math.sin(c.angle)*c.speed;if(c.head.x<box.x-35||c.head.x>box.x+box.w+35||c.head.y<box.y-35||c.head.y>box.y+box.h+35){c.rushing=false;c.returning=true;c.speed=titanSystem.phase>=3?1.5:1.2;}}
+  else if(c.returning&&!c.small){const tx=c.orbit.cx+Math.cos(c.orbitAngle)*c.orbit.rx,ty=c.orbit.cy+Math.sin(c.orbitAngle)*c.orbit.ry,dx=tx-c.head.x,dy=ty-c.head.y,d=Math.hypot(dx,dy);if(d<c.speed+2){c.returning=false;c.rushAt=Date.now()+950;c.orbitAngle+=Math.PI*.72;c.head.x=tx;c.head.y=ty;}else{c.head.x+=dx/d*c.speed;c.head.y+=dy/d*c.speed;}}
+  else if(!c.small&&!c.rushing){c.orbitAngle+=titanSystem.phase>=3?.026:.018;c.head.x=c.orbit.cx+Math.cos(c.orbitAngle)*c.orbit.rx;c.head.y=c.orbit.cy+Math.sin(c.orbitAngle)*c.orbit.ry;}
   c.history.unshift({x:c.head.x,y:c.head.y});if(c.history.length>c.length*12+8)c.history.length=c.length*12+8;
   for(let s=c.length-1;s>=0;s--){const p=c.history[Math.min(c.history.length-1,s*12)]||c.head;if(Math.hypot(p.x-soul.x,p.y-soul.y)<radius-5){
     if(s===0){for(let k=0;k<c.length;k++){const part=c.history[Math.min(c.history.length-1,k*12)]||c.head;spawnBullet(part.x,part.y,0,0,4,"#ffd85e","courage");}c.alive=false;break;}
     c.length--;c.history.splice(Math.min(c.history.length-1,s*12),1);spawnBullet(p.x,p.y,0,0,3,"#ffd85e","courage");
    }}
-  if(Math.hypot(c.head.x-soul.x,c.head.y-soul.y)<soul.r+9&&soul.invuln<=0){const target=living()[hitCursor++%Math.max(1,living().length)];if(target){const dmg=hitParty(target,4);hitNotice=target.name+" -"+dmg+" HP";hitNoticeTimer=45;}soul.invuln=45;}
+  if(c.alive&&Math.hypot(c.head.x-soul.x,c.head.y-soul.y)<soul.r+9&&soul.invuln<=0){const target=living()[hitCursor++%Math.max(1,living().length)];if(target){const dmg=hitParty(target,4);hitNotice=target.name+" -"+dmg+" HP";hitNoticeTimer=45;}soul.invuln=45;}
  }
  titanSystem.centipedes=titanSystem.centipedes.filter(c=>c.alive&&c.length>0);
  for(let i=bullets.length-1;i>=0;i--){const q=bullets[i];
