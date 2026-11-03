@@ -666,7 +666,7 @@ function updateTitanSwarm(){
   if(q.kind==="titan_spawn"||q.kind==="evolving_spawn"||q.kind==="red_spawn"){
    const a=Math.atan2(soul.y-q.y,soul.x-q.x),speed=q.kind==="evolving_spawn"?1.05:.82;
    q.vx+=(Math.cos(a)*speed-q.vx)*.035;q.vy+=(Math.sin(a)*speed-q.vy)*.035;q.x+=q.vx;q.y+=q.vy;
-   if(q.kind!=="red_spawn"){const distance=Math.hypot(q.x-soul.x,q.y-soul.y);q.purify=Math.max(q.purify||0,Math.max(0,Math.min(1,(radius+8-distance)/radius)));if(distance<radius-5){bullets.splice(i,1);spawnBullet(q.x,q.y,0,0,4,"#ffd85e","courage");continue;}}
+   const distance=Math.hypot(q.x-soul.x,q.y-soul.y);if(q.kind!=="red_spawn"){q.purify=Math.max(q.purify||0,Math.max(0,Math.min(1,(radius+8-distance)/radius)));if(distance<radius-5){bullets.splice(i,1);spawnBullet(q.x,q.y,0,0,4,"#ffd85e","courage");continue;}}else if(distance<q.r+soul.r&&soul.invuln<=0){const survivors=living(),target=survivors.length?survivors[hitCursor++%survivors.length]:null;if(target){const dmg=hitParty(target,4);hitNotice=target.name+" -"+dmg+" HP";hitNoticeTimer=45;}soul.invuln=45;bullets.splice(i,1);if(living().length===0){stopBulletPhase(disrupted);return;}continue;}
   }else if(q.kind==="courage"){
    q.x+=q.vx;q.y+=q.vy;if(Math.hypot(q.x-soul.x,q.y-soul.y)<15){tp=Math.min(100,tp+1.6);bullets.splice(i,1);}
   }
