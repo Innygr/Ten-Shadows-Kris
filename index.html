@@ -271,11 +271,21 @@ function tickPlayerDomain(){if(playerDomain.active){playerDomain.turns--;if(play
 const knightSystem={
  domain:false,domainTurns:0,lastAttack:"",
  attacks:[
-  {id:"star_swarm",name:"STAR SWARM",phases:[1,2,3],weight:3},
-  {id:"bird_attack",name:"BIRD ATTACK",phases:[1,2,3],weight:2},
-  {id:"sword_rain",name:"SWORD RAIN",phases:[2,3],weight:2},
-  {id:"box_cutter",name:"BOX CUTTER",phases:[2,3],weight:2},
-  {id:"black_flash",name:"BLACK FLASH",phases:[3],weight:1}
+  {id:"stars",name:"STARS",phases:[1,2,3],weight:3},
+  {id:"tracking_swords",name:"TRACKING SWORDS",phases:[1,2,3],weight:3},
+  {id:"box_splitter",name:"BOX SPLITTER",phases:[1,2,3],weight:2},
+  {id:"sword_tunnel",name:"SWORD TUNNEL",phases:[1,2,3],weight:2},
+  {id:"rotating_slash",name:"ROTATING SLASH",phases:[1,2,3],weight:2},
+  {id:"crescent_slashes",name:"CRESCENT SLASHES",phases:[1,2,3],weight:1},
+  {id:"sticking_stars",name:"STICKING STARS",phases:[1,2,3],weight:1},
+  {id:"cross_attack",name:"CROSS ATTACK",phases:[1,2,3],weight:1},
+  {id:"combination",name:"COMBINATION",phases:[2,3],weight:1},
+  {id:"bottom_shadows",name:"BOTTOM SHADOWS",phases:[2,3],weight:1},
+  {id:"falling_swords",name:"FALLING SWORDS",phases:[2,3],weight:2},
+  {id:"sword_vortex",name:"SWORD VORTEX",phases:[2,3],weight:1},
+  {id:"quick_slashes",name:"QUICK SLASHES",phases:[2,3],weight:1},
+  {id:"roaring_fire",name:"ROARING FIRE",phases:[3],weight:1},
+  {id:"black_flash",name:"THE ROARING",phases:[3],weight:1}
  ]
 };
 function startKnightDomain(){knightSystem.domain=true;knightSystem.domainTurns=3;}
@@ -348,19 +358,50 @@ function drawBulletArena(){
 function spawnBullet(x,y,vx,vy,r=5,color="#f4e9ff",kind="orb",angle=0){bullets.push({x,y,vx,vy,r,color,kind,angle});}
 function spawnPattern(){
  if(!bulletMode)return;
- const cx=box.x+box.w/2,cy=box.y+box.h/2;
- if(patternType==="star_swarm"||knightSystem.domain){
-  for(let i=0;i<3;i++){let x=box.x+12+Math.random()*(box.w-24);spawnBullet(x,box.y-8,0,2.5+Math.random()*1.5,5,"#e5d6ff");}
-  if(knightSystem.domain&&Math.random()<.7){let x=box.x+12+Math.random()*(box.w-24);spawnBullet(x,box.y-8,0,3.8,4,"#b28cff","sword");}
- }else if(patternType==="bird_attack"){
-  const x=soul.x+(Math.random()-.5)*130;spawnBullet(Math.max(box.x+8,Math.min(box.x+box.w-8,x)),box.y-8,(soul.x-x)*.018,4.2,8,"#e8d5ff","swoop");
- }else if(patternType==="sword_rain"){
-  for(let i=0;i<2;i++){let x=box.x+18+Math.random()*(box.w-36);spawnBullet(x,box.y-15,0,4.2,12,"#e6d9ff","sword");}
- }else if(patternType==="box_cutter"){
-  const side=Math.random()<.5?box.x+4:box.x+box.w-4;spawnBullet(side,box.y+Math.random()*box.h,side<cx?3.6:-3.6,0,7,"#ff8ca5","orb");
- }else if(patternType==="black_flash"){
-  for(let i=0;i<5;i++){let angle=Math.atan2(soul.y-cy,soul.x-cx)+(i-2)*.22;spawnBullet(cx,cy,Math.cos(angle)*4.3,Math.sin(angle)*4.3,6,"#ff3f70");}
+ const cx=box.x+box.w/2,cy=box.y+box.h/2,phase=boss.phase;
+ const aimed=(x,y,speed,r=6,color="#e8ddff",kind="orb")=>{const a=Math.atan2(soul.y-y,soul.x-x);spawnBullet(x,y,Math.cos(a)*speed,Math.sin(a)*speed,r,color,kind,a);};
+ const sword=(x,y,speed,angle,color="#e9e1ff")=>spawnBullet(x,y,Math.cos(angle)*speed,Math.sin(angle)*speed,11,color,"sword",angle+Math.PI/2);
+ const shard=(x,y,vx,vy,color="#e8ddff")=>spawnBullet(x,y,vx,vy,5,color,"orb");
+ switch(patternType){
+  case "stars":case "star_swarm":
+   for(let i=0;i<(phase===1?3:2);i++){const x=box.x+15+Math.random()*(box.w-30);shard(x,box.y-8,(Math.random()-.5)*.8,2.8+Math.random()*1.4);}
+   if(phase>=2&&Math.random()<.55){const x=box.x+15+Math.random()*(box.w-30);for(let j=-1;j<=1;j++)shard(x,box.y-8,j*1.4,3.6,"#ff718e");}break;
+  case "tracking_swords":
+   for(let i=0;i<(phase===1?1:2);i++){const a=Math.random()*Math.PI*2,x=cx+Math.cos(a)*(box.w*.58),y=cy+Math.sin(a)*(box.h*.58);aimed(x,y,phase===3?4.5:3.5,11,"#eee7ff","sword");}
+   if(phase>=2)for(let i=0;i<8;i++){const a=i*Math.PI/4+Date.now()/900;sword(cx+Math.cos(a)*72,cy+Math.sin(a)*48,1.2,a+Math.PI/2,"#c7b8ff");}break;
+  case "box_splitter":{
+   const side=Math.floor(Math.random()*4),x=side===0?box.x:side===1?box.x+box.w:cx,y=side===2?box.y:side===3?box.y+box.h:cy;aimed(x,y,3.4,7,"#ff9bb3");for(let i=0;i<2;i++){const a=Math.random()*Math.PI*2;shard(cx,cy,Math.cos(a)*2.8,Math.sin(a)*2.8);}break;}
+  case "sword_tunnel":{
+   const gap=phase===1?64:phase===2?48:34,top=Math.random()<.5;for(let x=box.x+12;x<box.x+box.w-8;x+=22){if(Math.abs(x-soul.x)<gap)continue;sword(x,top?box.y-12:box.y+box.h+12,4.2,top?Math.PI/2:-Math.PI/2);}break;}
+  case "rotating_slash":{
+   const a=Date.now()/260;for(let i=0;i<6;i++){const ang=a+i*Math.PI/3;sword(cx+Math.cos(ang)*75,cy+Math.sin(ang)*50,2.8,ang+Math.PI/2,"#fff1f5");}break;}
+  case "crescent_slashes":
+   for(let i=0;i<3;i++){const y=box.y+24+i*48;for(let j=0;j<4;j++)aimed(box.x+12+j*55,y,3.2,8,"#f1d9ff");}break;
+  case "sticking_stars":
+   for(let i=0;i<3;i++){const x=box.x+20+Math.random()*(box.w-40),y=box.y+20+Math.random()*(box.h-40);shard(x,y,(soul.x-x)*.018,(soul.y-y)*.018,"#ffe8a6");}break;
+  case "cross_attack":
+   for(let n=-2;n<=2;n++){shard(cx+n*18,box.y-8,0,3.8,"#ff8fa9");shard(box.x-8,cy+n*18,3.8,0,"#ff8fa9");}break;
+  case "combination":
+   for(let i=0;i<2;i++)shard(box.x+Math.random()*box.w,box.y-8,0,3.5);
+   for(let i=0;i<2;i++){const a=i*Math.PI+Date.now()/500;sword(cx+Math.cos(a)*85,cy+Math.sin(a)*55,2.5,a+Math.PI/2);}break;
+  case "bottom_shadows":
+   for(let i=0;i<4;i++)aimed(box.x+20+i*(box.w-40)/3,box.y+box.h+8,3.8,8,"#a88cff");break;
+  case "falling_swords":case "sword_rain":
+   for(let i=0;i<(phase===3?3:2);i++)sword(box.x+15+Math.random()*(box.w-30),box.y-15,4.4,Math.PI/2);break;
+  case "sword_vortex":{
+   const a=Date.now()/180;for(let i=0;i<4;i++){const ang=a+i*Math.PI/2;sword(cx+Math.cos(ang)*80,cy+Math.sin(ang)*48,3.2,ang+Math.PI/2,"#cbbaff");}break;}
+  case "quick_slashes":
+   for(let i=0;i<4;i++)aimed(box.x+Math.random()*box.w,box.y+Math.random()*box.h,5.2,7,"#fff4f5","sword");break;
+  case "roaring_fire":
+   for(let i=0;i<5;i++)shard(box.x+Math.random()*box.w,box.y+box.h+8,(Math.random()-.5)*1.5,-4-Math.random()*2,"#ff805f");break;
+  case "black_flash":
+   for(let i=0;i<5;i++){const a=Math.atan2(soul.y-cy,soul.x-cx)+(i-2)*.22;shard(cx,cy,Math.cos(a)*4.3,Math.sin(a)*4.3,"#ff3f70");}break;
+  case "bird_attack":{
+   const x=soul.x+(Math.random()-.5)*130;aimed(Math.max(box.x+8,Math.min(box.x+box.w-8,x)),box.y-8,4.2,8,"#e8d5ff");break;}
+  case "box_cutter":{
+   const x=Math.random()<.5?box.x+4:box.x+box.w-4;aimed(x,box.y+Math.random()*box.h,3.6,7,"#ff8ca5");break;}
  }
+ if(knightSystem.domain&&Math.random()<.35)sword(box.x+12+Math.random()*(box.w-24),box.y-12,4.1,Math.PI/2,"#b28cff");
 }
 function stopBulletPhase(disrupted){
  bulletMode=false;clearInterval(bulletClock);clearInterval(patternClock);clearTimeout(attackClock);bulletClock=patternClock=attackClock=null;bullets=[];
