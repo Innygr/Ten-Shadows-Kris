@@ -410,7 +410,7 @@ function drawBulletArena(){
    ctx.beginPath();ctx.arc(q.x,q.y,9,0,Math.PI*2);ctx.stroke();ctx.restore();
   }
  }
- if(patternType==="titan_desperation"&&titanSystem.desperation?.laser&&Date.now()-titanSystem.desperation.laserAt>450){const d=titanSystem.desperation,safe=soul.y<box.y+box.h*.25||soul.y>box.y+box.h*.75;if(!safe&&soul.invuln<=0){const survivors=living(),target=survivors.length?survivors[hitCursor++%survivors.length]:null;if(target)hitParty(target,9);soul.invuln=52;if(living().length===0){stopBulletPhase(disrupted);return;}}if(!d.laserResolved&&Date.now()-d.laserAt>1200){d.laserResolved=true;}}
+ if(patternType==="titan_desperation"&&titanSystem.desperation?.laser){const d=titanSystem.desperation,age=Date.now()-d.laserAt,safe=soul.y<box.y+box.h*.25||soul.y>box.y+box.h*.75;if(age>450&&age<1200&&!d.laserHit&&!safe){d.laserHit=true;if(soul.invuln<=0){const survivors=living(),target=survivors.length?survivors[hitCursor++%survivors.length]:null;if(target){const dmg=hitParty(target,9);hitNotice=target.name+" -"+dmg+" HP";hitNoticeTimer=55;}soul.invuln=52;if(living().length===0){stopBulletPhase(disrupted);return;}}}if(age>=1200)d.laserResolved=true;}
  if(soul.invuln<=0||Math.floor(soul.invuln/4)%2===0){
   ctx.save();ctx.shadowBlur=soul.invuln>0?18:8;ctx.shadowColor=soul.invuln>0?"#ff3f70":"#ff8aa8";
   ctx.fillStyle="#ff3f70";ctx.beginPath();ctx.moveTo(soul.x,soul.y-8);ctx.lineTo(soul.x+7,soul.y);ctx.lineTo(soul.x,soul.y+8);ctx.lineTo(soul.x-7,soul.y);ctx.closePath();ctx.fill();ctx.restore();
@@ -615,7 +615,7 @@ function spawnPattern(){
  if(knightSystem.domain&&Math.random()<.35)sword(box.x+12+Math.random()*(box.w-24),box.y-12,4.1,Math.PI/2,"#b28cff");
 }
 function stopBulletPhase(disrupted){
- bulletMode=false;knightSystem.revolver=null;knightSystem.twinSlashes=null;knightSystem.knightCombo=null;knightSystem.sanguineSlash=null;clearInterval(bulletClock);clearInterval(patternClock);clearTimeout(attackClock);bulletClock=patternClock=attackClock=null;bullets=[];
+ bulletMode=false;titanSystem.hands=null;titanSystem.bigShots=null;titanSystem.desperation=null;titanSystem.centipedes=[];knightSystem.revolver=null;knightSystem.twinSlashes=null;knightSystem.knightCombo=null;knightSystem.sanguineSlash=null;clearInterval(bulletClock);clearInterval(patternClock);clearTimeout(attackClock);bulletClock=patternClock=attackClock=null;bullets=[];
  party.forEach(p=>p.guard=false);boss.exposed=Math.max(0,boss.exposed-1);tp=Math.min(100,tp+5);
  if(knightSystem.domain){knightSystem.domainTurns--;if(knightSystem.domainTurns<=0)endKnightDomain();}
  tickPlayerDomain();
@@ -631,7 +631,7 @@ function spawnTitanBigShots(version){
 }
 function startTitanBigShots(version=1){titanSystem.bigShots={started:Date.now(),next:Date.now()+(version===1?700:version===2?480:360),version};}
 function updateTitanBigShots(){const b=titanSystem.bigShots;if(!b)return;const interval=b.version===1?1600:b.version===2?1250:950;if(Date.now()>=b.next){b.next=Date.now()+interval;spawnTitanBigShots(b.version);}}
-function startTitanDesperation(){titanSystem.desperation={started:Date.now(),bursts:0,next:Date.now()+350,laser:false,laserAt:0,laserResolved:false};}
+function startTitanDesperation(){titanSystem.desperation={started:Date.now(),bursts:0,next:Date.now()+350,laser:false,laserAt:0,laserResolved:false,laserHit:false};}
 function updateTitanDesperation(){const d=titanSystem.desperation;if(!d)return;const now=Date.now();if(d.bursts<12&&now>=d.next){const base=Math.atan2(soul.y-(box.y+box.h*.34),soul.x-(box.x+box.w/2)),count=d.bursts%2===0?2:3;for(let i=0;i<count;i++){const a=base+(i-(count-1)/2)*Math.PI/6;spawnBullet(box.x+box.w/2,box.y+box.h*.34,Math.cos(a)*4.4,Math.sin(a)*4.4,15,"#171720","titan_big_shot",a);}d.bursts++;d.next=now+280;}if(d.bursts>=12&&!d.laser){d.laser=true;d.laserAt=now;for(let i=bullets.length-1;i>=0;i--)if(bullets[i].kind==="titan_big_shot")bullets.splice(i,1);}}
 function startTitanHands(){titanSystem.hands={started:Date.now(),next:Date.now()+900,cycleIndex:-1,purified:[[],[]]};}
 function updateTitanHands(){
