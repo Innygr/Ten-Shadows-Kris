@@ -310,10 +310,17 @@ function updateRevolver(){
   r.angle+=r.direction*r.speed*16;
   if(elapsed>=650){r.stage="pause";r.stageAt=now;r.pauseFor=260+Math.random()*180;}
  }else if(r.stage==="pause"&&elapsed>=r.pauseFor){
-  const radius=Math.min(box.w*.37,box.h*.43),a=r.angle+r.shots*Math.PI/3;
-  const x=box.x+box.w/2+Math.cos(a)*radius,y=box.y+box.h/2+Math.sin(a)*radius;
-  const aim=Math.atan2(soul.y-y,soul.x-x);
-  spawnBullet(x,y,Math.cos(aim)*4.1,Math.sin(aim)*4.1,5,"#17131f");
+  const cx=box.x+box.w/2,cy=box.y+box.h+27,orbit=27;
+  const a=r.angle+r.shots*Math.PI/3,x=cx+Math.cos(a)*orbit,y=cy+Math.sin(a)*orbit;
+  // Each circle fires three parallel rows at each of three inward angles.
+  const directions=[-Math.PI/2,-Math.PI*.75,-Math.PI*.25];
+  for(const direction of directions){
+   const px=-Math.sin(direction),py=Math.cos(direction);
+   for(let n=-1;n<=1;n++){
+    const offset=n*9;
+    spawnBullet(x+px*offset,y+py*offset,Math.cos(direction)*4.1,Math.sin(direction)*4.1,5,"#17131f");
+   }
+  }
   r.shots++;
   if(r.shots<6){r.stage="rotate";r.stageAt=now;r.direction=Math.random()<.5?-1:1;r.speed=.0025+Math.random()*.002;}
   else r.stage="done";
@@ -366,8 +373,12 @@ function drawBulletArena(){
  }
  if(knightSystem.domain){ctx.strokeStyle="#a78bfa";ctx.lineWidth=2;ctx.strokeRect(box.x+5,box.y+5,box.w-10,box.h-10);ctx.fillStyle="#c4a7ff";ctx.font="10px monospace";ctx.fillText("KINGDOM OF THE ROARING",box.x+25,box.y+16);}
  if(patternType==="revolver"&&knightSystem.revolver){
-  const r=knightSystem.revolver,radius=Math.min(box.w*.37,box.h*.43),cx=box.x+box.w/2,cy=box.y+box.h/2;
-  for(let i=0;i<6;i++){const a=r.angle+i*Math.PI/3,x=cx+Math.cos(a)*radius,y=cy+Math.sin(a)*radius;ctx.save();ctx.strokeStyle="#b9b4c8";ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,9,0,Math.PI*2);ctx.stroke();ctx.restore();}
+  const r=knightSystem.revolver,cx=box.x+box.w/2,cy=box.y+box.h+27,orbit=27;
+  const circles=Array.from({length:6},(_,i)=>{const a=r.angle+i*Math.PI/3;return{x:cx+Math.cos(a)*orbit,y:cy+Math.sin(a)*orbit,index:i};}).sort((a,b)=>a.y-b.y);
+  for(let i=0;i<circles.length;i++){
+   const q=circles[i];ctx.save();ctx.strokeStyle=i===circles.length-1?"#ffffff":"#85818e";ctx.lineWidth=2;
+   ctx.beginPath();ctx.arc(q.x,q.y,9,0,Math.PI*2);ctx.stroke();ctx.restore();
+  }
  }
  if(soul.invuln<=0||Math.floor(soul.invuln/4)%2===0){
   ctx.save();ctx.shadowBlur=soul.invuln>0?18:8;ctx.shadowColor=soul.invuln>0?"#ff3f70":"#ff8aa8";
