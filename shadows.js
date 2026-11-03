@@ -17,7 +17,7 @@
   const s=roster.find(x=>x.id===id);
   if(!s)throw new Error("Unknown shadow: "+id);
   let damage=0,text=s.desc;
-  if(s.damage){const phaseText=ctx.damageBoss(s.damage);damage=ctx.boss.hp>=0?0:0;damage=window.__shadowLastDamage||s.damage;text+=phaseText||"";}
+  if(s.damage){const phaseText=ctx.damageBoss(s.damage);damage=ctx.getDamage();text+=phaseText||"";}
   if(s.effect==="disrupt")ctx.disrupt();
   if(s.effect==="expose")ctx.expose(s.turns||1);
   if(s.effect==="tp")ctx.gainTP(s.gain);
