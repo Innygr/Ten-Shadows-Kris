@@ -313,7 +313,11 @@ const knightSystem={
 function startKnightDomain(){knightSystem.domain=true;knightSystem.domainTurns=3;}
 function endKnightDomain(){knightSystem.domain=false;}
 function chooseKnightAttack(){
- const picked=knightSystem.attacks.find(a=>a.id==="sanguine_slash")||knightSystem.attacks[0];
+ const eligible=knightSystem.attacks.filter(a=>a.phases.includes(boss.phase));
+ const pool=eligible.length?eligible:knightSystem.attacks;
+ const total=pool.reduce((sum,a)=>sum+(a.weight||1),0);let roll=Math.random()*total,picked=pool[0];
+ for(const attack of pool){roll-=attack.weight||1;if(roll<=0){picked=attack;break;}}
+ if(pool.length>1&&picked.id===knightSystem.lastAttack){const alternatives=pool.filter(a=>a.id!==knightSystem.lastAttack);picked=alternatives[Math.floor(Math.random()*alternatives.length)];}
  knightSystem.lastAttack=picked.id;return picked;
 }
 function hitParty(target,raw){
