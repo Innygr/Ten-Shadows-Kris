@@ -85,8 +85,39 @@ function scene(){
  if(!SpriteAssets.draw(ctx,"characters.ralsei",210,177,48,48))drawSprite(sprite.ralsei,210,177,4,palettes);
  if(!SpriteAssets.draw(ctx,"characters.noelle",275,177,48,48))drawSprite(sprite.noelle,275,177,4,palettes);
  if(!SpriteAssets.draw(ctx,"characters.berdly",340,177,48,48))drawSprite(sprite.berdly,340,177,4,palettes);
- // shadow summon
- if(window.currentShadow){ctx.globalAlpha=.9;ctx.fillStyle="#a78bfa";ctx.font="bold 15px monospace";ctx.fillText(window.currentShadow,305,248);ctx.globalAlpha=1}
+ // summon presentation: distinct silhouettes/effects, intentionally separate from final sprite art
+ if(window.currentShadow){
+  const name=window.currentShadow.toUpperCase(),cx=320,cy=142,pulse=anim>0?Math.max(.25,anim/14):.55;
+  const styles={
+   TOAD:{color:"#77d68b",shape:"bind"},NUE:{color:"#8edbff",shape:"wing"},
+   "DIVINE DOG":{color:"#f2e7c8",shape:"fang"},"GREAT SERPENT":{color:"#b4e27b",shape:"coil"},
+   "MAX ELEPHANT":{color:"#91b8ff",shape:"wave"},"RABBIT ESCAPE":{color:"#f2d9ff",shape:"burst"},
+   "ROUND DEER":{color:"#a9efc0",shape:"halo"},"PIERCING OX":{color:"#ffc477",shape:"charge"},
+   "TIGER FUNERAL":{color:"#ff9a72",shape:"claw"},MAHORAGA:{color:"#e4d0ff",shape:"wheel"}
+  };
+  const fx=styles[name]||{color:"#c4a7ff",shape:"burst"};
+  ctx.save();ctx.globalAlpha=pulse;ctx.strokeStyle=fx.color;ctx.fillStyle=fx.color;ctx.lineWidth=3;
+  ctx.shadowColor=fx.color;ctx.shadowBlur=14;
+  if(fx.shape==="bind"){
+   for(let i=0;i<3;i++){ctx.beginPath();ctx.arc(430,145,22+i*13,Math.PI*.15+i*.35,Math.PI*1.05+i*.35);ctx.stroke()}
+  }else if(fx.shape==="wing"){
+   for(let side of [-1,1]){ctx.beginPath();ctx.moveTo(cx,cy);ctx.quadraticCurveTo(cx+side*65,cy-75,cx+side*105,cy-18);ctx.quadraticCurveTo(cx+side*48,cy-8,cx,cy);ctx.stroke()}
+  }else if(fx.shape==="fang"||fx.shape==="claw"){
+   for(let i=-1;i<=1;i++){ctx.beginPath();ctx.moveTo(420+i*17,115);ctx.lineTo(455+i*17,145);ctx.lineTo(420+i*17,176);ctx.stroke()}
+  }else if(fx.shape==="coil"){
+   for(let i=0;i<3;i++){ctx.beginPath();ctx.ellipse(450,145,18+i*12,48,0,0,Math.PI*2);ctx.stroke()}
+  }else if(fx.shape==="wave"){
+   for(let i=0;i<3;i++){ctx.beginPath();ctx.ellipse(455,155,25+i*19,12+i*9,0,0,Math.PI*2);ctx.stroke()}
+  }else if(fx.shape==="halo"||fx.shape==="wheel"){
+   ctx.beginPath();ctx.arc(455,142,fx.shape==="wheel"?48:35,0,Math.PI*2);ctx.stroke();
+   for(let i=0;i<8;i++){const a=i*Math.PI/4;ctx.beginPath();ctx.moveTo(455+Math.cos(a)*30,142+Math.sin(a)*30);ctx.lineTo(455+Math.cos(a)*48,142+Math.sin(a)*48);ctx.stroke()}
+  }else if(fx.shape==="charge"){
+   for(let i=0;i<4;i++){ctx.beginPath();ctx.moveTo(410,105+i*22);ctx.lineTo(470,105+i*22);ctx.stroke()}
+  }else{
+   for(let i=0;i<8;i++){const a=i*Math.PI/4;ctx.beginPath();ctx.moveTo(455,145);ctx.lineTo(455+Math.cos(a)*55,145+Math.sin(a)*55);ctx.stroke()}
+  }
+  ctx.globalAlpha=.95;ctx.font="bold 13px monospace";ctx.fillText(name,305,248);ctx.restore();
+ }
  // phase text
  ctx.fillStyle="#d7d2e8";ctx.font="12px monospace";ctx.fillText("THE DARK FOUNTAIN HUMS...",16,20);
  if(anim>0){ctx.fillStyle="#ffe66d";ctx.font="bold 16px monospace";ctx.fillText(anim%2?"✦":"✧",330,125);anim--}
