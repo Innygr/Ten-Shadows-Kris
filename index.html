@@ -275,6 +275,7 @@ const knightSystem={
   {id:"twin_slashes",name:"TWIN SLASHES",phases:[1,2,3],weight:1},
   {id:"knight_combo",name:"KNIGHT COMBO",phases:[1,2,3],weight:1},
   {id:"sanguine_slash",name:"SANGUINE SLASH",phases:[1,2,3],weight:1},
+  {id:"sanguine_slash_d2",name:"SANGUINE SLASH II",phases:[2,3],weight:1},
   {id:"tracking_swords",name:"TRACKING SWORDS",phases:[1,2,3],weight:3},
   {id:"box_splitter",name:"BOX SPLITTER",phases:[1,2,3],weight:2},
   {id:"sword_tunnel",name:"SWORD TUNNEL",phases:[1,2,3],weight:2},
@@ -406,7 +407,7 @@ function drawBulletArena(){
    ctx.beginPath();ctx.moveTo(-270,0);ctx.lineTo(270,0);ctx.stroke();ctx.restore();
   }
  }
- if(patternType==="sanguine_slash"&&knightSystem.sanguineSlash){
+ if((patternType==="sanguine_slash"||patternType==="sanguine_slash_d2")&&knightSystem.sanguineSlash){
   const slash=knightSystem.sanguineSlash,elapsed=Date.now()-slash.started;
   for(const cut of slash.cuts){
    const age=elapsed-cut.at;
@@ -655,6 +656,17 @@ function makeSanguineSlash(){
  }
  return {started:Date.now(),cuts};
 }
+function makeSanguineSlashD2(){
+ const cuts=[];
+ for(let wave=0;wave<5;wave++){
+  const count=wave+4,base=360+wave*1120;
+  for(let n=0;n<count;n++){
+   const offset=(n-(count-1)/2)*.105;
+   cuts.push({at:base+n*72,x:soul.x,y:soul.y,angle:(wave%2?Math.PI/2:0)+offset,done:false});
+  }
+ }
+ return {started:Date.now(),cuts};
+}
 function updateSanguineSlash(){
  const slash=knightSystem.sanguineSlash;if(!slash)return;
  const elapsed=Date.now()-slash.started;
@@ -672,8 +684,8 @@ function updateSanguineSlash(){
  }
 }
 function startBulletPhase(attack,disrupted){
- bulletMode=true;bullets=[];knightSystem.revolver=null;knightSystem.twinSlashes=attack.id==="twin_slashes"?makeTwinSlashes():null;knightSystem.knightCombo=attack.id==="knight_combo"?makeKnightCombo():null;knightSystem.sanguineSlash=attack.id==="sanguine_slash"?makeSanguineSlash():null;if(attack.id==="crystal_barrage"){knightSystem.barrageVariation=knightSystem.barrageUses%3;knightSystem.barrageUses++;}soul.x=box.x+box.w/2;soul.y=box.y+box.h-24;soul.targetX=soul.x;soul.targetY=soul.y;soul.invuln=0;patternType=attack.id;
- const duration=attack.id==="sanguine_slash"?6500:(attack.id==="black_flash"?5200:6500);
+ bulletMode=true;bullets=[];knightSystem.revolver=null;knightSystem.twinSlashes=attack.id==="twin_slashes"?makeTwinSlashes():null;knightSystem.knightCombo=attack.id==="knight_combo"?makeKnightCombo():null;knightSystem.sanguineSlash=attack.id==="sanguine_slash"?makeSanguineSlash():(attack.id==="sanguine_slash_d2"?makeSanguineSlashD2():null);if(attack.id==="crystal_barrage"){knightSystem.barrageVariation=knightSystem.barrageUses%3;knightSystem.barrageUses++;}soul.x=box.x+box.w/2;soul.y=box.y+box.h-24;soul.targetX=soul.x;soul.targetY=soul.y;soul.invuln=0;patternType=attack.id;
+ const duration=(attack.id==="sanguine_slash"||attack.id==="sanguine_slash_d2")?6500:(attack.id==="black_flash"?5200:6500);
  say("* "+attack.name+"! Dodge the Knight's attacks.\\n* Move with WASD, or guide the SOUL with your pointer / touch.");
  render();
  patternClock=setInterval(spawnPattern,attack.id==="black_flash"?600:430);
@@ -682,7 +694,7 @@ function startBulletPhase(attack,disrupted){
   updateRevolver();
   if(patternType==="twin_slashes")updateTwinSlashes();
   if(patternType==="knight_combo")updateKnightCombo();
-  if(patternType==="sanguine_slash")updateSanguineSlash();
+  if(patternType==="sanguine_slash"||patternType==="sanguine_slash_d2")updateSanguineSlash();
   const speed=3.6,dx=(keys.d||keys.D?1:0)-(keys.a||keys.A?1:0),dy=(keys.s||keys.S?1:0)-(keys.w||keys.W?1:0);
   if(dx||dy){const length=Math.hypot(dx,dy);soul.x+=dx/length*speed;soul.y+=dy/length*speed;soul.targetX=soul.x;soul.targetY=soul.y;}
   else{const follow=0.24;soul.x+=(soul.targetX-soul.x)*follow;soul.y+=(soul.targetY-soul.y)*follow;}
