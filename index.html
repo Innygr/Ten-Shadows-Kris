@@ -302,6 +302,23 @@ function hitParty(target,raw){
  const dmg=target.guard?Math.max(1,Math.floor(raw*.35)):raw;
  target.hp=Math.max(0,target.hp-dmg);return dmg;
 }
+function updateRevolver(){
+ const r=knightSystem.revolver;
+ if(!bulletMode||patternType!=="revolver"||!r||r.shots>=6)return;
+ const now=Date.now(),elapsed=now-r.stageAt;
+ if(r.stage==="rotate"){
+  r.angle+=r.direction*r.speed*16;
+  if(elapsed>=650){r.stage="pause";r.stageAt=now;r.pauseFor=260+Math.random()*180;}
+ }else if(r.stage==="pause"&&elapsed>=r.pauseFor){
+  const radius=Math.min(box.w*.37,box.h*.43),a=r.angle+r.shots*Math.PI/3;
+  const x=box.x+box.w/2+Math.cos(a)*radius,y=box.y+box.h/2+Math.sin(a)*radius;
+  const aim=Math.atan2(soul.y-y,soul.x-x);
+  spawnBullet(x,y,Math.cos(aim)*4.1,Math.sin(aim)*4.1,5,"#17131f");
+  r.shots++;
+  if(r.shots<6){r.stage="rotate";r.stageAt=now;r.direction=Math.random()<.5?-1:1;r.speed=.0025+Math.random()*.002;}
+  else r.stage="done";
+ }
+}
 function drawBulletArena(){
  ctx.fillStyle="#05050a";ctx.fillRect(box.x,box.y,box.w,box.h);
  ctx.strokeStyle="#f4f0ff";ctx.lineWidth=3;ctx.strokeRect(box.x,box.y,box.w,box.h);
@@ -348,6 +365,10 @@ function drawBulletArena(){
   ctx.restore();
  }
  if(knightSystem.domain){ctx.strokeStyle="#a78bfa";ctx.lineWidth=2;ctx.strokeRect(box.x+5,box.y+5,box.w-10,box.h-10);ctx.fillStyle="#c4a7ff";ctx.font="10px monospace";ctx.fillText("KINGDOM OF THE ROARING",box.x+25,box.y+16);}
+ if(patternType==="revolver"&&knightSystem.revolver){
+  const r=knightSystem.revolver,radius=Math.min(box.w*.37,box.h*.43),cx=box.x+box.w/2,cy=box.y+box.h/2;
+  for(let i=0;i<6;i++){const a=r.angle+i*Math.PI/3,x=cx+Math.cos(a)*radius,y=cy+Math.sin(a)*radius;ctx.save();ctx.strokeStyle="#b9b4c8";ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,9,0,Math.PI*2);ctx.stroke();ctx.restore();}
+ }
  if(soul.invuln<=0||Math.floor(soul.invuln/4)%2===0){
   ctx.save();ctx.shadowBlur=soul.invuln>0?18:8;ctx.shadowColor=soul.invuln>0?"#ff3f70":"#ff8aa8";
   ctx.fillStyle="#ff3f70";ctx.beginPath();ctx.moveTo(soul.x,soul.y-8);ctx.lineTo(soul.x+7,soul.y);ctx.lineTo(soul.x,soul.y+8);ctx.lineTo(soul.x-7,soul.y);ctx.closePath();ctx.fill();ctx.restore();
@@ -381,15 +402,8 @@ function spawnPattern(){
   case "sticking_stars":
    for(let i=0;i<3;i++){const x=box.x+20+Math.random()*(box.w-40),y=box.y+20+Math.random()*(box.h-40);shard(x,y,(soul.x-x)*.018,(soul.y-y)*.018,"#ffe8a6");}break;
   case "revolver":{
-   // Six fixed circles form the revolver pattern and fire dark shards inward.
-   const radius=Math.min(box.w*.37,box.h*.43),rotation=Date.now()/1700;
-   for(let i=0;i<6;i++){
-    const a=rotation+i*Math.PI/3;
-    const x=cx+Math.cos(a)*radius,y=cy+Math.sin(a)*radius;
-    ctx.save();ctx.strokeStyle="#a9a2bb";ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,9,0,Math.PI*2);ctx.stroke();ctx.restore();
-    const shardAngle=Math.atan2(soul.y-y,soul.x-x);
-    shard(x,y,Math.cos(shardAngle)*4.1,Math.sin(shardAngle)*4.1,"#17131f");
-   }
+   // The six circles are animated and fired one at a time by updateRevolver().
+   if(!knightSystem.revolver)knightSystem.revolver={angle:Math.random()*Math.PI*2,stage:"rotate",stageAt:Date.now(),shots:0,direction:Math.random()<.5?-1:1,speed:.0025+Math.random()*.002};
    break;}
   case "cross_attack":
    for(let n=-2;n<=2;n++){shard(cx+n*18,box.y-8,0,3.8,"#ff8fa9");shard(box.x-8,cy+n*18,3.8,0,"#ff8fa9");}break;
@@ -416,7 +430,7 @@ function spawnPattern(){
  if(knightSystem.domain&&Math.random()<.35)sword(box.x+12+Math.random()*(box.w-24),box.y-12,4.1,Math.PI/2,"#b28cff");
 }
 function stopBulletPhase(disrupted){
- bulletMode=false;clearInterval(bulletClock);clearInterval(patternClock);clearTimeout(attackClock);bulletClock=patternClock=attackClock=null;bullets=[];
+ bulletMode=false;knightSystem.revolver=null;clearInterval(bulletClock);clearInterval(patternClock);clearTimeout(attackClock);bulletClock=patternClock=attackClock=null;bullets=[];
  party.forEach(p=>p.guard=false);boss.exposed=Math.max(0,boss.exposed-1);tp=Math.min(100,tp+5);
  if(knightSystem.domain){knightSystem.domainTurns--;if(knightSystem.domainTurns<=0)endKnightDomain();}
  tickPlayerDomain();
@@ -426,13 +440,14 @@ function stopBulletPhase(disrupted){
  $("turnlabel").textContent="PARTY TURN";setMenu([{label:"CONTINUE",run:begin}]);setSub([]);
 }
 function startBulletPhase(attack,disrupted){
- bulletMode=true;bullets=[];soul.x=box.x+box.w/2;soul.y=box.y+box.h-24;soul.targetX=soul.x;soul.targetY=soul.y;soul.invuln=0;patternType=attack.id;
+ bulletMode=true;bullets=[];knightSystem.revolver=null;soul.x=box.x+box.w/2;soul.y=box.y+box.h-24;soul.targetX=soul.x;soul.targetY=soul.y;soul.invuln=0;patternType=attack.id;
  const duration=attack.id==="black_flash"?5200:6500;
  say("* "+attack.name+"! Dodge the Knight's attacks.\\n* Move with WASD, or guide the SOUL with your pointer / touch.");
  render();
  patternClock=setInterval(spawnPattern,attack.id==="black_flash"?600:430);
  bulletClock=setInterval(()=>{
   if(!bulletMode)return;
+  updateRevolver();
   const speed=3.6,dx=(keys.d||keys.D?1:0)-(keys.a||keys.A?1:0),dy=(keys.s||keys.S?1:0)-(keys.w||keys.W?1:0);
   if(dx||dy){const length=Math.hypot(dx,dy);soul.x+=dx/length*speed;soul.y+=dy/length*speed;soul.targetX=soul.x;soul.targetY=soul.y;}
   else{const follow=0.24;soul.x+=(soul.targetX-soul.x)*follow;soul.y+=(soul.targetY-soul.y)*follow;}
