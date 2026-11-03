@@ -269,9 +269,9 @@ function expandChimeraDomain(){
 function endPlayerDomain(){playerDomain.active=false;playerDomain.turns=0;}
 function tickPlayerDomain(){if(playerDomain.active){playerDomain.turns--;if(playerDomain.turns<=0){endPlayerDomain();say("* Chimera Shadow Garden recedes. The battlefield returns to normal.");}}}
 const knightSystem={
- domain:false,domainTurns:0,lastAttack:"",
+ domain:false,domainTurns:0,lastAttack:"",barrageUses:0,
  attacks:[
-  {id:"stars",name:"STARS",phases:[1,2,3],weight:3},
+  {id:"crystal_barrage",name:"CRYSTAL BARRAGE",phases:[1,2,3],weight:1},
   {id:"tracking_swords",name:"TRACKING SWORDS",phases:[1,2,3],weight:3},
   {id:"box_splitter",name:"BOX SPLITTER",phases:[1,2,3],weight:2},
   {id:"sword_tunnel",name:"SWORD TUNNEL",phases:[1,2,3],weight:2},
@@ -302,9 +302,7 @@ const knightSystem={
 function startKnightDomain(){knightSystem.domain=true;knightSystem.domainTurns=3;}
 function endKnightDomain(){knightSystem.domain=false;}
 function chooseKnightAttack(){
- const pool=knightSystem.attacks.filter(a=>a.phases.includes(boss.phase)&&a.id!==knightSystem.lastAttack);
- const weighted=pool.flatMap(a=>Array(a.weight).fill(a));
- const picked=weighted[Math.floor(Math.random()*weighted.length)]||knightSystem.attacks[0];
+ const picked=knightSystem.attacks.find(a=>a.id==="crystal_barrage");
  knightSystem.lastAttack=picked.id;return picked;
 }
 function hitParty(target,raw){
@@ -394,7 +392,7 @@ function drawBulletArena(){
   ctx.save();ctx.shadowBlur=soul.invuln>0?18:8;ctx.shadowColor=soul.invuln>0?"#ff3f70":"#ff8aa8";
   ctx.fillStyle="#ff3f70";ctx.beginPath();ctx.moveTo(soul.x,soul.y-8);ctx.lineTo(soul.x+7,soul.y);ctx.lineTo(soul.x,soul.y+8);ctx.lineTo(soul.x-7,soul.y);ctx.closePath();ctx.fill();ctx.restore();
  }
- for(const b of bullets){ctx.save();ctx.shadowBlur=8;ctx.shadowColor=b.color||"#f7e9ff";ctx.fillStyle=b.color||"#f7e9ff";if(b.kind==="sword"){ctx.translate(b.x,b.y);ctx.rotate(b.angle||0);ctx.fillRect(-3,-b.r,6,b.r*2);}else{ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill();}ctx.restore();}
+ for(const b of bullets){ctx.save();ctx.shadowBlur=8;ctx.shadowColor=b.color||"#f7e9ff";ctx.fillStyle=b.color||"#f7e9ff";if(b.kind==="sword"){ctx.translate(b.x,b.y);ctx.rotate(b.angle||0);ctx.fillRect(-3,-b.r,6,b.r*2);}else if(b.kind==="crystal"){ctx.translate(b.x,b.y);ctx.rotate(b.angle||0);ctx.beginPath();ctx.moveTo(0,-b.r*1.5);ctx.lineTo(b.r*.75,0);ctx.lineTo(0,b.r*1.5);ctx.lineTo(-b.r*.75,0);ctx.closePath();ctx.fill();}else{ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill();}ctx.restore();}
  ctx.fillStyle="#d9d4e8";ctx.font="10px monospace";ctx.fillText("DODGE!  WASD / POINTER",box.x,box.y-8);
  if(hitNoticeTimer>0){ctx.fillStyle="#ff7894";ctx.font="bold 13px monospace";ctx.fillText(hitNotice,box.x+8,box.y+box.h+17);hitNoticeTimer--;}
 }
@@ -406,6 +404,22 @@ function spawnPattern(){
  const sword=(x,y,speed,angle,color="#e9e1ff")=>spawnBullet(x,y,Math.cos(angle)*speed,Math.sin(angle)*speed,11,color,"sword",angle+Math.PI/2);
  const shard=(x,y,vx,vy,color="#e8ddff")=>spawnBullet(x,y,vx,vy,5,color,"orb");
  switch(patternType){
+  case "crystal_barrage":{
+   const variation=knightSystem.barrageUses%3;
+   const count=variation===0?6:variation===1?6:6;
+   for(let i=0;i<count;i++){
+    const spread=(i-(count-1)/2)*0.19;
+    const angle=Math.PI/2+spread;
+    const x=cx+(Math.random()-.5)*34,y=box.y-12;
+    spawnBullet(x,y,Math.cos(angle)*2.4,Math.sin(angle)*2.4,variation===1?10:8,variation===2?"#e84b58":"#bdefff","crystal",angle);
+    const p=bullets[bullets.length-1];
+    p.crystalStage="outbound";p.crystalAge=0;p.crystalVariation=variation;
+    p.reverseAt=variation===1?58:48;p.explodeAt=variation===1?82:70;
+    p.splitAngle=spread;
+   }
+   knightSystem.barrageUses++;
+   break;
+  }
   case "stars":case "star_swarm":
    for(let i=0;i<(phase===1?3:2);i++){const x=box.x+15+Math.random()*(box.w-30);shard(x,box.y-8,(Math.random()-.5)*.8,2.8+Math.random()*1.4);}
    if(phase>=2&&Math.random()<.55){const x=box.x+15+Math.random()*(box.w-30);for(let j=-1;j<=1;j++)shard(x,box.y-8,j*1.4,3.6,"#ff718e");}break;
@@ -532,7 +546,35 @@ function startBulletPhase(attack,disrupted){
   else{const follow=0.24;soul.x+=(soul.targetX-soul.x)*follow;soul.y+=(soul.targetY-soul.y)*follow;}
   soul.x=Math.max(box.x+soul.r,Math.min(box.x+box.w-soul.r,soul.x));soul.y=Math.max(box.y+soul.r,Math.min(box.y+box.h-soul.r,soul.y));
   for(let i=bullets.length-1;i>=0;i--){
-   const q=bullets[i];q.x+=q.vx;q.y+=q.vy;
+   const q=bullets[i];
+   if(q.kind==="crystal"){
+    q.crystalAge++;
+    if(q.crystalStage==="outbound"&&q.crystalAge>=q.reverseAt){
+     q.crystalStage="returning";q.vx*=-1;q.vy=Math.abs(q.vy)*0.85;
+    }
+    if(q.crystalStage==="returning"&&q.crystalAge>=q.explodeAt){
+     const v=q.crystalVariation;
+     if(v===2){
+      for(const sign of [-1,1]){
+       const a=Math.atan2(soul.y-q.y,soul.x-q.x)+sign*(0.55+Math.random()*0.35);
+       spawnBullet(q.x,q.y,Math.cos(a)*4.1,Math.sin(a)*4.1,5,"#ff455b","homing_shard");
+       bullets[bullets.length-1].home=true;
+      }
+     }else{
+      const longFirst=v===0&&i%2===0;
+      const speed=longFirst?4.8:3.2;
+      for(let n=0;n<6;n++){
+       const a=n*Math.PI/3+q.splitAngle;
+       spawnBullet(q.x,q.y,Math.cos(a)*speed,Math.sin(a)*speed,5,"#e8f8ff");
+      }
+     }
+     bullets.splice(i,1);continue;
+    }
+   }else if(q.kind==="homing_shard"){
+    const a=Math.atan2(soul.y-q.y,soul.x-q.x),speed=4.1;
+    q.vx+=(Math.cos(a)*speed-q.vx)*0.045;q.vy+=(Math.sin(a)*speed-q.vy)*0.045;
+   }
+   q.x+=q.vx;q.y+=q.vy;
    if(q.x<box.x-25||q.x>box.x+box.w+25||q.y<box.y-30||q.y>box.y+box.h+30){bullets.splice(i,1);continue;}
    if(soul.invuln<=0&&Math.hypot(q.x-soul.x,q.y-soul.y)<q.r+5){
     const survivors=living();const target=survivors.length?survivors[hitCursor++%survivors.length]:null;if(target){const raw=disrupted?3:(boss.phase===1?5:boss.phase===2?7:9);const guarded=target.guard;const dmg=hitParty(target,raw);hitNotice=target.name+"  -"+dmg+" HP"+(guarded?"  GUARD":"");hitNoticeTimer=55;say("* "+target.name+" was hit! -"+dmg+" HP"+(guarded?" (GUARDED)":""));}
