@@ -268,12 +268,13 @@ function expandChimeraDomain(){
 }
 function endPlayerDomain(){playerDomain.active=false;playerDomain.turns=0;}
 function tickPlayerDomain(){if(playerDomain.active){playerDomain.turns--;if(playerDomain.turns<=0){endPlayerDomain();say("* Chimera Shadow Garden recedes. The battlefield returns to normal.");}}}
-const titanSystem={lightRadius:38,courage:[],phase:1,centipedes:[],nextCentipede:0,hands:null};
+const titanSystem={lightRadius:38,courage:[],phase:1,centipedes:[],nextCentipede:0,hands:null,bigShots:null};
 const knightSystem={
  domain:false,domainTurns:0,lastAttack:"",barrageUses:0,barrageVariation:0,twinSlashes:null,knightCombo:null,sanguineSlash:null,
  attacks:[
   {id:"titan_swarm",name:"TITAN · SWARM",phases:[1,3,5],weight:1},
   {id:"titan_hands",name:"TITAN · THE HANDS",phases:[1,3,5],weight:1},
+  {id:"titan_big_shots",name:"TITAN · BIG SHOTS",phases:[2],weight:1},
   {id:"crystal_barrage",name:"CRYSTAL BARRAGE",phases:[1,2,3],weight:1},
   {id:"twin_slashes",name:"TWIN SLASHES",phases:[1,2,3],weight:1},
   {id:"knight_combo",name:"KNIGHT COMBO",phases:[1,2,3],weight:1},
@@ -387,6 +388,7 @@ function drawBulletArena(){
   ctx.restore();
  }
  if(knightSystem.domain){ctx.strokeStyle="#a78bfa";ctx.lineWidth=2;ctx.strokeRect(box.x+5,box.y+5,box.w-10,box.h-10);ctx.fillStyle="#c4a7ff";ctx.font="10px monospace";ctx.fillText("KINGDOM OF THE ROARING",box.x+25,box.y+16);}
+ if(patternType==="titan_big_shots"){ctx.fillStyle="#ffe7a1";ctx.font="10px monospace";ctx.fillText("TITAN · BIG SHOTS",box.x+8,box.y+13);}
  if(patternType==="titan_hands"&&titanSystem.hands){const h=titanSystem.hands,g=h.gap||0,cy=box.y+box.h/2;for(const side of [-1,1]){const x=side<0?box.x+8+g*46:box.x+box.w-8-g*46,y=cy+Math.sin(Date.now()/520+(side<0?0:Math.PI))*box.h*.22;ctx.save();ctx.translate(x,y);ctx.fillStyle="#030307";ctx.strokeStyle="#f4f1ff";ctx.lineWidth=2;ctx.shadowColor="#fff";ctx.shadowBlur=8;ctx.beginPath();ctx.ellipse(0,0,27,34,0,0,Math.PI*2);ctx.fill();ctx.stroke();for(let f=0;f<4;f++){const fx=(f-1.5)*12;ctx.beginPath();ctx.roundRect(fx-4,side<0?18:-42,8,42+g*16,4);ctx.fill();ctx.stroke();}ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(0,-4,7,0,Math.PI*2);ctx.fill();ctx.restore();}}
  if(patternType==="titan_swarm"){
   for(const c of titanSystem.centipedes){for(let s=c.length-1;s>=0;s--){const p=c.history[Math.min(c.history.length-1,s*12)]||c.head;ctx.save();ctx.fillStyle="#030307";ctx.strokeStyle="#f4f1ff";ctx.lineWidth=1.5;ctx.shadowColor="#fff";ctx.shadowBlur=5;ctx.beginPath();ctx.arc(p.x,p.y,s===0?8:6.5,0,Math.PI*2);ctx.fill();ctx.stroke();if(s===0){ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(p.x+2,p.y-2,2,0,Math.PI*2);ctx.fill();}ctx.restore();}}
@@ -442,7 +444,7 @@ function drawBulletArena(){
    }
   }
  }
- for(const b of bullets){if(patternType==="titan_swarm"&&(b.kind==="titan_spawn"||b.kind==="evolving_spawn"||b.kind==="red_spawn"||b.kind==="courage")){ctx.save();const courage=b.kind==="courage",red=b.kind==="red_spawn",evolving=b.kind==="evolving_spawn";ctx.shadowBlur=courage?10:8;ctx.shadowColor=courage?"#ffd84d":red?"#ff344f":"#f4f1ff";ctx.fillStyle=courage?"#ffd84d":"#030307";ctx.strokeStyle=red?"#ff344f":"#f5f2ff";ctx.lineWidth=1.7;ctx.beginPath();if(courage){ctx.arc(b.x,b.y,3.5,0,Math.PI*2);}else{ctx.ellipse(b.x,b.y,evolving?b.r*.68:b.r*.9,evolving?b.r*1.55:b.r,0,0,Math.PI*2);}ctx.fill();if(!courage)ctx.stroke();if(!courage){ctx.shadowBlur=3;ctx.fillStyle=red?"#ff344f":"#fff";ctx.beginPath();ctx.arc(b.x+b.r*.22,b.y-b.r*.12,Math.max(1.5,b.r*.2),0,Math.PI*2);ctx.fill();}ctx.restore();continue;}ctx.save();ctx.shadowBlur=8;ctx.shadowColor=b.color||"#f7e9ff";ctx.fillStyle=b.color||"#f7e9ff";if(b.kind==="sword"){ctx.translate(b.x,b.y);ctx.rotate(b.angle||0);ctx.fillRect(-3,-b.r,6,b.r*2);}else if(b.kind==="crystal"){ctx.translate(b.x,b.y);ctx.rotate(b.angle||0);ctx.beginPath();ctx.moveTo(0,-b.r*1.5);ctx.lineTo(b.r*.75,0);ctx.lineTo(0,b.r*1.5);ctx.lineTo(-b.r*.75,0);ctx.closePath();ctx.fill();}else{ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill();}ctx.restore();}
+ for(const b of bullets){if(patternType==="titan_big_shots"&&b.kind==="titan_big_shot"){ctx.save();ctx.translate(b.x,b.y);ctx.rotate(b.angle||0);ctx.shadowColor="#777";ctx.shadowBlur=15;ctx.fillStyle="#171720";ctx.strokeStyle="#d8d6e2";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,0,b.r*1.5,b.r,0,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle="#514f5d";ctx.beginPath();ctx.ellipse(-b.r*.25,-b.r*.2,b.r*.45,b.r*.22,0,0,Math.PI*2);ctx.fill();ctx.restore();continue;}if(patternType==="titan_swarm"&&(b.kind==="titan_spawn"||b.kind==="evolving_spawn"||b.kind==="red_spawn"||b.kind==="courage")){ctx.save();const courage=b.kind==="courage",red=b.kind==="red_spawn",evolving=b.kind==="evolving_spawn";ctx.shadowBlur=courage?10:8;ctx.shadowColor=courage?"#ffd84d":red?"#ff344f":"#f4f1ff";ctx.fillStyle=courage?"#ffd84d":"#030307";ctx.strokeStyle=red?"#ff344f":"#f5f2ff";ctx.lineWidth=1.7;ctx.beginPath();if(courage){ctx.arc(b.x,b.y,3.5,0,Math.PI*2);}else{ctx.ellipse(b.x,b.y,evolving?b.r*.68:b.r*.9,evolving?b.r*1.55:b.r,0,0,Math.PI*2);}ctx.fill();if(!courage)ctx.stroke();if(!courage){ctx.shadowBlur=3;ctx.fillStyle=red?"#ff344f":"#fff";ctx.beginPath();ctx.arc(b.x+b.r*.22,b.y-b.r*.12,Math.max(1.5,b.r*.2),0,Math.PI*2);ctx.fill();}ctx.restore();continue;}ctx.save();ctx.shadowBlur=8;ctx.shadowColor=b.color||"#f7e9ff";ctx.fillStyle=b.color||"#f7e9ff";if(b.kind==="sword"){ctx.translate(b.x,b.y);ctx.rotate(b.angle||0);ctx.fillRect(-3,-b.r,6,b.r*2);}else if(b.kind==="crystal"){ctx.translate(b.x,b.y);ctx.rotate(b.angle||0);ctx.beginPath();ctx.moveTo(0,-b.r*1.5);ctx.lineTo(b.r*.75,0);ctx.lineTo(0,b.r*1.5);ctx.lineTo(-b.r*.75,0);ctx.closePath();ctx.fill();}else{ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill();}ctx.restore();}
  ctx.fillStyle="#d9d4e8";ctx.font="10px monospace";ctx.fillText("DODGE!  WASD / POINTER",box.x,box.y-8);
  if(hitNoticeTimer>0){ctx.fillStyle="#ff7894";ctx.font="bold 13px monospace";ctx.fillText(hitNotice,box.x+8,box.y+box.h+17);hitNoticeTimer--;}
 }
@@ -468,6 +470,7 @@ function spawnPattern(){
    }
    break;
   }
+  case "titan_big_shots":{spawnTitanBigShots(1);break;}
   case "titan_hands":break;
   case "titan_swarm":{
    const harder=titanSystem.phase>=3;
@@ -610,6 +613,13 @@ function stopBulletPhase(disrupted){
  say("* The Knight withdraws for a moment."+(disrupted?" Its attack was weakened by Tornado.":"")+"\\n* The party regains 5 TP.");
  $("turnlabel").textContent="PARTY TURN";setMenu([{label:"CONTINUE",run:begin}]);setSub([]);
 }
+function spawnTitanBigShots(version){
+ const count=version===1?2:version===2?2:3,speed=version===1?2.5:version===2?3.1:3.5;
+ const a=Math.atan2(soul.y-(box.y+box.h*.34),soul.x-(box.x+box.w/2));
+ for(let i=0;i<count;i++){const offset=(i-(count-1)/2)*(version===1?0:0.13);const angle=a+offset;spawnBullet(box.x+box.w/2,box.y+box.h*.34,Math.cos(angle)*speed,Math.sin(angle)*speed,version===1?17:version===2?19:21,"#191923","titan_big_shot",angle);}
+}
+function startTitanBigShots(){titanSystem.bigShots={started:Date.now(),next:Date.now()+700,version:1};}
+function updateTitanBigShots(){const b=titanSystem.bigShots;if(!b)return;const interval=titanSystem.phase>=6?1150:1600;if(Date.now()>=b.next){b.next=Date.now()+interval;spawnTitanBigShots(b.version);}}
 function startTitanHands(){titanSystem.hands={started:Date.now(),next:Date.now()+900};}
 function updateTitanHands(){
  const h=titanSystem.hands;if(!h)return;const elapsed=Date.now()-h.started,cycle=titanSystem.phase>=5?2450:3000,t=(elapsed%cycle)/cycle;
@@ -741,8 +751,8 @@ function updateSanguineSlash(){
  }
 }
 function startBulletPhase(attack,disrupted){
- bulletMode=true;bullets=[];knightSystem.revolver=null;knightSystem.twinSlashes=attack.id==="twin_slashes"?makeTwinSlashes():null;knightSystem.knightCombo=attack.id==="knight_combo"?makeKnightCombo():null;knightSystem.sanguineSlash=attack.id==="sanguine_slash"?makeSanguineSlash():(attack.id==="sanguine_slash_d2"?makeSanguineSlashD2():null);if(attack.id==="titan_swarm"){titanSystem.phase=boss.phase;titanSystem.centipedes=[];titanSystem.nextCentipede=Date.now()+900;}if(attack.id==="titan_hands"){titanSystem.phase=boss.phase;startTitanHands();}if(attack.id==="crystal_barrage"){knightSystem.barrageVariation=knightSystem.barrageUses%3;knightSystem.barrageUses++;}soul.x=box.x+box.w/2;soul.y=box.y+box.h-24;soul.targetX=soul.x;soul.targetY=soul.y;soul.invuln=0;patternType=attack.id;
- const duration=(attack.id==="sanguine_slash"||attack.id==="sanguine_slash_d2"||attack.id==="titan_swarm"||attack.id==="titan_hands")?6500:(attack.id==="black_flash"?5200:6500);
+ bulletMode=true;bullets=[];knightSystem.revolver=null;knightSystem.twinSlashes=attack.id==="twin_slashes"?makeTwinSlashes():null;knightSystem.knightCombo=attack.id==="knight_combo"?makeKnightCombo():null;knightSystem.sanguineSlash=attack.id==="sanguine_slash"?makeSanguineSlash():(attack.id==="sanguine_slash_d2"?makeSanguineSlashD2():null);if(attack.id==="titan_swarm"){titanSystem.phase=boss.phase;titanSystem.centipedes=[];titanSystem.nextCentipede=Date.now()+900;}if(attack.id==="titan_hands"){titanSystem.phase=boss.phase;startTitanHands();}if(attack.id==="titan_big_shots"){titanSystem.phase=boss.phase;startTitanBigShots();}if(attack.id==="crystal_barrage"){knightSystem.barrageVariation=knightSystem.barrageUses%3;knightSystem.barrageUses++;}soul.x=box.x+box.w/2;soul.y=box.y+box.h-24;soul.targetX=soul.x;soul.targetY=soul.y;soul.invuln=0;patternType=attack.id;
+ const duration=(attack.id==="sanguine_slash"||attack.id==="sanguine_slash_d2"||attack.id==="titan_swarm"||attack.id==="titan_hands"||attack.id==="titan_big_shots")?6500:(attack.id==="black_flash"?5200:6500);
  say("* "+attack.name+"! Dodge the Knight's attacks.\\n* Move with WASD, or guide the SOUL with your pointer / touch.");
  render();
  patternClock=setInterval(spawnPattern,attack.id==="black_flash"?600:430);
@@ -751,6 +761,7 @@ function startBulletPhase(attack,disrupted){
   updateRevolver();
   if(patternType==="titan_swarm")updateTitanSwarm();
   if(patternType==="titan_hands")updateTitanHands();
+  if(patternType==="titan_big_shots")updateTitanBigShots();
   if(patternType==="twin_slashes")updateTwinSlashes();
   if(patternType==="knight_combo")updateKnightCombo();
   if(patternType==="sanguine_slash"||patternType==="sanguine_slash_d2")updateSanguineSlash();
