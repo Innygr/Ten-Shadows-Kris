@@ -294,7 +294,48 @@ function hitParty(target,raw){
 function drawBulletArena(){
  ctx.fillStyle="#05050a";ctx.fillRect(box.x,box.y,box.w,box.h);
  ctx.strokeStyle="#f4f0ff";ctx.lineWidth=3;ctx.strokeRect(box.x,box.y,box.w,box.h);
- if(playerDomain.active){ctx.save();ctx.strokeStyle="#67d7bd";ctx.lineWidth=3;ctx.globalAlpha=.85;ctx.beginPath();ctx.ellipse(320,155,285,135,0,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=.18;ctx.fillStyle="#39c6a5";ctx.fillRect(0,0,640,300);ctx.globalAlpha=1;ctx.fillStyle="#8fffe2";ctx.font="bold 11px monospace";ctx.fillText("CHIMERA SHADOW GARDEN · "+playerDomain.turns,16,38);ctx.restore();}
+ if(playerDomain.active){
+  ctx.save();
+  // Chimera Shadow Garden: a lightless field with a pale spinal core
+  // and branching, blue root-like tendrils.
+  ctx.fillStyle="#020308";
+  ctx.fillRect(box.x,box.y,box.w,box.h);
+  ctx.lineCap="round";
+  ctx.lineJoin="round";
+  for(let side of [-1,1]){
+   for(let n=0;n<7;n++){
+    const sy=box.y+18+n*24;
+    const sx=320+side*(10+(n%3)*3);
+    const ex=320+side*(65+(n%3)*38);
+    const ey=box.y+12+((n*41+side*17+box.h*3)%Math.max(1,box.h-24));
+    ctx.beginPath();ctx.moveTo(sx,sy);
+    ctx.bezierCurveTo(320+side*34,sy-12,ex-side*24,ey+18,ex,ey);
+    ctx.strokeStyle="#83dfff";ctx.globalAlpha=.72;ctx.lineWidth=1.5;ctx.stroke();
+    ctx.beginPath();ctx.moveTo(ex,ey);
+    ctx.bezierCurveTo(ex+side*13,ey-15,ex+side*25,ey+13,ex+side*34,ey-7);
+    ctx.globalAlpha=.52;ctx.lineWidth=1;ctx.stroke();
+   }
+  }
+  // Vertebra-like white centre, suspended vertically in the shadow.
+  ctx.globalAlpha=1;
+  ctx.shadowColor="#eaf7ff";ctx.shadowBlur=13;
+  ctx.strokeStyle="#f5f7fb";ctx.fillStyle="#f5f7fb";
+  ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(320,box.y+24);ctx.lineTo(320,box.y+box.h-24);ctx.stroke();
+  for(let n=0;n<6;n++){
+   const y=box.y+29+n*22;
+   ctx.beginPath();
+   ctx.ellipse(320,y,12,6,0,0,Math.PI*2);ctx.fill();
+   ctx.fillStyle="#cbd5e1";ctx.fillRect(316,y-2,8,4);
+   ctx.fillStyle="#f5f7fb";
+   ctx.beginPath();ctx.moveTo(310,y);ctx.lineTo(300,y-7);ctx.lineTo(304,y+3);ctx.closePath();ctx.fill();
+   ctx.beginPath();ctx.moveTo(330,y);ctx.lineTo(340,y-7);ctx.lineTo(336,y+3);ctx.closePath();ctx.fill();
+  }
+  ctx.shadowBlur=0;ctx.globalAlpha=1;
+  ctx.fillStyle="#bceeff";ctx.font="bold 10px monospace";
+  ctx.fillText("CHIMERA SHADOW GARDEN · "+playerDomain.turns,box.x+8,box.y+13);
+  ctx.restore();
+ }
  if(knightSystem.domain){ctx.strokeStyle="#a78bfa";ctx.lineWidth=2;ctx.strokeRect(box.x+5,box.y+5,box.w-10,box.h-10);ctx.fillStyle="#c4a7ff";ctx.font="10px monospace";ctx.fillText("KINGDOM OF THE ROARING",box.x+25,box.y+16);}
  if(soul.invuln<=0||Math.floor(soul.invuln/4)%2===0){
   ctx.save();ctx.shadowBlur=soul.invuln>0?18:8;ctx.shadowColor=soul.invuln>0?"#ff3f70":"#ff8aa8";
