@@ -268,9 +268,11 @@ function expandChimeraDomain(){
 }
 function endPlayerDomain(){playerDomain.active=false;playerDomain.turns=0;}
 function tickPlayerDomain(){if(playerDomain.active){playerDomain.turns--;if(playerDomain.turns<=0){endPlayerDomain();say("* Chimera Shadow Garden recedes. The battlefield returns to normal.");}}}
+const titanSystem={lightRadius:38,courage:[],phase:1};
 const knightSystem={
  domain:false,domainTurns:0,lastAttack:"",barrageUses:0,barrageVariation:0,twinSlashes:null,knightCombo:null,sanguineSlash:null,
  attacks:[
+  {id:"titan_swarm",name:"TITAN · SWARM",phases:[1,3,5],weight:1},
   {id:"crystal_barrage",name:"CRYSTAL BARRAGE",phases:[1,2,3],weight:1},
   {id:"twin_slashes",name:"TWIN SLASHES",phases:[1,2,3],weight:1},
   {id:"knight_combo",name:"KNIGHT COMBO",phases:[1,2,3],weight:1},
@@ -384,6 +386,9 @@ function drawBulletArena(){
   ctx.restore();
  }
  if(knightSystem.domain){ctx.strokeStyle="#a78bfa";ctx.lineWidth=2;ctx.strokeRect(box.x+5,box.y+5,box.w-10,box.h-10);ctx.fillStyle="#c4a7ff";ctx.font="10px monospace";ctx.fillText("KINGDOM OF THE ROARING",box.x+25,box.y+16);}
+ if(patternType==="titan_swarm"){
+  ctx.save();const glow=ctx.createRadialGradient(soul.x,soul.y,4,soul.x,soul.y,titanSystem.lightRadius);glow.addColorStop(0,"rgba(255,255,225,.28)");glow.addColorStop(1,"rgba(255,245,170,.02)");ctx.fillStyle=glow;ctx.beginPath();ctx.arc(soul.x,soul.y,titanSystem.lightRadius,0,Math.PI*2);ctx.fill();ctx.strokeStyle="rgba(255,245,190,.7)";ctx.stroke();ctx.restore();
+ }
  if(patternType==="revolver"&&knightSystem.revolver){
   const r=knightSystem.revolver,cx=box.x+box.w/2,cy=box.y+box.h+27,orbit=27;
   const circles=Array.from({length:6},(_,i)=>{const a=r.angle+i*Math.PI/3;return{x:cx+Math.cos(a)*orbit,y:cy+Math.sin(a)*orbit,index:i};}).sort((a,b)=>a.y-b.y);
@@ -457,6 +462,17 @@ function spawnPattern(){
      const a=Math.atan2(soul.y-y,soul.x-side)+(n===0?-.10:.10);
      spawnBullet(side,y,Math.cos(a)*4.4,Math.sin(a)*4.4,12,"#f0e8ff","sword",a+Math.PI/2);
     }
+   }
+   break;
+  }
+  case "titan_swarm":{
+   const harder=titanSystem.phase>=3;
+   for(let i=0;i<(harder?4:3);i++){
+    const side=Math.floor(Math.random()*4);
+    const x=side===0?box.x-10:side===1?box.x+box.w+10:box.x+Math.random()*box.w;
+    const y=side===2?box.y-10:side===3?box.y+box.h+10:box.y+Math.random()*box.h;
+    const red=harder&&Math.random()<.24,evolving=harder&&!red&&Math.random()<.28;
+    spawnBullet(x,y,0,0,evolving?10:7,red?"#ff4965":"#f4f4ff",red?"red_spawn":evolving?"evolving_spawn":"titan_spawn");
    }
    break;
   }
@@ -588,6 +604,18 @@ function stopBulletPhase(disrupted){
  say("* The Knight withdraws for a moment."+(disrupted?" Its attack was weakened by Tornado.":"")+"\\n* The party regains 5 TP.");
  $("turnlabel").textContent="PARTY TURN";setMenu([{label:"CONTINUE",run:begin}]);setSub([]);
 }
+function updateTitanSwarm(){
+ const radius=titanSystem.lightRadius;
+ for(let i=bullets.length-1;i>=0;i--){const q=bullets[i];
+  if(q.kind==="titan_spawn"||q.kind==="evolving_spawn"||q.kind==="red_spawn"){
+   const a=Math.atan2(soul.y-q.y,soul.x-q.x),speed=q.kind==="evolving_spawn"?1.05:.82;
+   q.vx+=(Math.cos(a)*speed-q.vx)*.035;q.vy+=(Math.sin(a)*speed-q.vy)*.035;q.x+=q.vx;q.y+=q.vy;
+   if(q.kind!=="red_spawn"&&Math.hypot(q.x-soul.x,q.y-soul.y)<radius){bullets.splice(i,1);spawnBullet(q.x,q.y,0,0,4,"#ffd85e","courage");continue;}
+  }else if(q.kind==="courage"){
+   q.x+=q.vx;q.y+=q.vy;if(Math.hypot(q.x-soul.x,q.y-soul.y)<15){tp=Math.min(100,tp+1.6);bullets.splice(i,1);}
+  }
+ }
+}
 function updateTwinSlashes(){
  const t=knightSystem.twinSlashes;if(!t)return;
  const elapsed=Date.now()-t.started;
@@ -684,14 +712,15 @@ function updateSanguineSlash(){
  }
 }
 function startBulletPhase(attack,disrupted){
- bulletMode=true;bullets=[];knightSystem.revolver=null;knightSystem.twinSlashes=attack.id==="twin_slashes"?makeTwinSlashes():null;knightSystem.knightCombo=attack.id==="knight_combo"?makeKnightCombo():null;knightSystem.sanguineSlash=attack.id==="sanguine_slash"?makeSanguineSlash():(attack.id==="sanguine_slash_d2"?makeSanguineSlashD2():null);if(attack.id==="crystal_barrage"){knightSystem.barrageVariation=knightSystem.barrageUses%3;knightSystem.barrageUses++;}soul.x=box.x+box.w/2;soul.y=box.y+box.h-24;soul.targetX=soul.x;soul.targetY=soul.y;soul.invuln=0;patternType=attack.id;
- const duration=(attack.id==="sanguine_slash"||attack.id==="sanguine_slash_d2")?6500:(attack.id==="black_flash"?5200:6500);
+ bulletMode=true;bullets=[];knightSystem.revolver=null;knightSystem.twinSlashes=attack.id==="twin_slashes"?makeTwinSlashes():null;knightSystem.knightCombo=attack.id==="knight_combo"?makeKnightCombo():null;knightSystem.sanguineSlash=attack.id==="sanguine_slash"?makeSanguineSlash():(attack.id==="sanguine_slash_d2"?makeSanguineSlashD2():null);if(attack.id==="titan_swarm"){titanSystem.phase=boss.phase;}if(attack.id==="crystal_barrage"){knightSystem.barrageVariation=knightSystem.barrageUses%3;knightSystem.barrageUses++;}soul.x=box.x+box.w/2;soul.y=box.y+box.h-24;soul.targetX=soul.x;soul.targetY=soul.y;soul.invuln=0;patternType=attack.id;
+ const duration=(attack.id==="sanguine_slash"||attack.id==="sanguine_slash_d2"||attack.id==="titan_swarm")?6500:(attack.id==="black_flash"?5200:6500);
  say("* "+attack.name+"! Dodge the Knight's attacks.\\n* Move with WASD, or guide the SOUL with your pointer / touch.");
  render();
  patternClock=setInterval(spawnPattern,attack.id==="black_flash"?600:430);
  bulletClock=setInterval(()=>{
   if(!bulletMode)return;
   updateRevolver();
+  if(patternType==="titan_swarm")updateTitanSwarm();
   if(patternType==="twin_slashes")updateTwinSlashes();
   if(patternType==="knight_combo")updateKnightCombo();
   if(patternType==="sanguine_slash"||patternType==="sanguine_slash_d2")updateSanguineSlash();
@@ -701,7 +730,10 @@ function startBulletPhase(attack,disrupted){
   soul.x=Math.max(box.x+soul.r,Math.min(box.x+box.w-soul.r,soul.x));soul.y=Math.max(box.y+soul.r,Math.min(box.y+box.h-soul.r,soul.y));
   for(let i=bullets.length-1;i>=0;i--){
    const q=bullets[i];
-   if(q.kind==="crystal"){
+   if(patternType==="titan_swarm"&&(q.kind==="titan_spawn"||q.kind==="evolving_spawn"||q.kind==="red_spawn"||q.kind==="courage")){
+   ctx.save();ctx.fillStyle=q.kind==="courage"?"#ffd85e":q.kind==="red_spawn"?"#ff4965":"#f4f4ff";ctx.shadowColor=ctx.fillStyle;ctx.shadowBlur=7;ctx.beginPath();ctx.ellipse(q.x,q.y,q.kind==="evolving_spawn"?q.r*.7:q.r,q.kind==="evolving_spawn"?q.r*1.35:q.r,0,0,Math.PI*2);ctx.fill();ctx.restore();continue;
+  }
+  if(q.kind==="crystal"){
     q.crystalAge++;
     if(q.crystalStage==="outbound"&&q.crystalAge>=q.reverseAt){
      q.crystalStage="returning";q.vx*=-1;q.vy=Math.abs(q.vy)*0.85;
