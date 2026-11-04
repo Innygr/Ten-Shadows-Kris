@@ -303,7 +303,7 @@ function expandChimeraDomain(){
 }
 function endPlayerDomain(){playerDomain.active=false;playerDomain.turns=0;}
 function tickPlayerDomain(){if(playerDomain.active){playerDomain.turns--;if(playerDomain.turns<=0){endPlayerDomain();say("* Chimera Shadow Garden recedes. The battlefield returns to normal.");}}}
-const titanSystem={lightRadius:38,baseLightRadius:38,brightenTurns:0,courage:[],phase:1,centipedes:[],nextCentipede:0,hands:null,bigShots:null,encounter:{phase:1,lastClass:"",phaseCounts:{1:0,2:0,3:0},lastAttack:""}};
+const titanSystem={lightRadius:38,baseLightRadius:38,brightenTurns:0,courage:[],phase:1,centipedes:[],nextCentipede:0,hands:null,bigShots:null,encounter:{phase:1,lastClass:"",lastSource:"",phaseCounts:{1:0,2:0,3:0},lastAttack:"",turns:0}};
 const knightSystem={
  domain:false,domainTurns:0,lastAttack:"",barrageUses:0,barrageVariation:0,twinSlashes:null,knightCombo:null,sanguineSlash:null,
  attacks:[
@@ -313,6 +313,7 @@ const knightSystem={
   {id:"titan_big_shots_2",name:"TITAN · BIG SHOTS 2",phases:[2,3],weight:1},
   {id:"titan_big_shots_3",name:"TITAN · BIG SHOTS 3",phases:[3],weight:1},
   {id:"titan_desperation",name:"TITAN · DESPERATION SHOTS",phases:[3],weight:2},
+  {id:"titan_knight_combo",name:"TITAN + KNIGHT · COLLISION",phases:[1,2,3],weight:1},
   {id:"crystal_barrage",name:"CRYSTAL BARRAGE",phases:[1,2,3],weight:1},
   {id:"twin_slashes",name:"TWIN SLASHES",phases:[1,2,3],weight:1},
   {id:"knight_combo",name:"KNIGHT COMBO",phases:[1,2,3],weight:1},
@@ -348,34 +349,33 @@ const knightSystem={
 function startKnightDomain(){knightSystem.domain=true;knightSystem.domainTurns=3;}
 function endKnightDomain(){knightSystem.domain=false;}
 function chooseKnightAttack(){
- const eligible=knightSystem.attacks.filter(a=>a.phases.includes(boss.phase));
- const pool=eligible.length?eligible:knightSystem.attacks;
- const titan=pool.filter(a=>a.id.startsWith("titan_"));
- const nonTitan=pool.filter(a=>!a.id.startsWith("titan_"));
- let candidates=pool;
- // Keep Titan's shield-up and shield-down patterns alternating when possible.
- // Knight attacks remain in the same shared rotation rather than being removed.
- const enc=titanSystem.encounter,phase=boss.phase;
- if(enc.phase!==phase){enc.phase=phase;enc.lastClass="";enc.phaseCounts[phase]=(enc.phaseCounts[phase]||0);}
- if(titan.length&&nonTitan.length){
-  const titanClass=a=>a.id==="titan_swarm"||a.id==="titan_hands"?"shield-up":"shield-down";
-  const otherTitan=titan.filter(a=>titanClass(a)!==enc.lastClass);
-  const freshTitan=titan.filter(a=>a.id!==enc.lastAttack);
-  // When a Titan pattern is selected again after a Knight move, rotate to
-  // another pattern instead of letting the shared lastAttack check miss it.
-  let preferredTitan=otherTitan.length?otherTitan:freshTitan;
-  if(enc.lastClass&&otherTitan.length)preferredTitan=otherTitan.filter(a=>a.id!==enc.lastAttack).length?otherTitan.filter(a=>a.id!==enc.lastAttack):otherTitan;
-  else if(freshTitan.length)preferredTitan=freshTitan;
-  if(preferredTitan.length)candidates=pool.filter(a=>!a.id.startsWith("titan_")||preferredTitan.includes(a));
+ const phase=boss.phase,enc=titanSystem.encounter;
+ const eligible=knightSystem.attacks.filter(a=>a.phases.includes(phase));
+ const titan=eligible.filter(a=>a.id.startsWith("titan_")&&a.id!=="titan_knight_combo");
+ const knight=eligible.filter(a=>!a.id.startsWith("titan_"));
+ const combo=eligible.find(a=>a.id==="titan_knight_combo");
+ if(enc.phase!==phase){enc.phase=phase;enc.lastClass="";enc.lastSource="";enc.phaseCounts[phase]=0;enc.turns=0;}
+ enc.turns++;
+ // Coordinate a combined strike every fourth enemy turn; otherwise alternate
+ // which boss leads the attack, while retaining Titan shield-pattern rotation.
+ let source=combo&&enc.turns%4===0?"combo":(titan.length&&knight.length?(enc.lastSource==="titan"?"knight":"titan"):(titan.length?"titan":"knight"));
+ let candidates=source==="combo"?[combo]:source==="titan"?titan:knight;
+ if(!candidates.length)candidates=eligible;
+ if(source==="titan"&&candidates.length>1){
+  const shieldClass=a=>a.id==="titan_swarm"||a.id==="titan_hands"?"shield-up":"shield-down";
+  const alternate=candidates.filter(a=>shieldClass(a)!==enc.lastClass);
+  if(alternate.length)candidates=alternate;
  }
- const total=candidates.reduce((sum,a)=>sum+(a.weight||1),0);let roll=Math.random()*total,picked=candidates[0];
+ const fresh=candidates.filter(a=>a.id!==enc.lastAttack);
+ if(fresh.length)candidates=fresh;
+ const total=candidates.reduce((sum,a)=>sum+(a.weight||1),0);
+ let roll=Math.random()*total,picked=candidates[0];
  for(const attack of candidates){roll-=attack.weight||1;if(roll<=0){picked=attack;break;}}
- if(candidates.length>1&&picked.id===knightSystem.lastAttack){const alternatives=candidates.filter(a=>a.id!==knightSystem.lastAttack);picked=alternatives[Math.floor(Math.random()*alternatives.length)];}
- if(picked.id.startsWith("titan_")){
-  enc.lastClass=picked.id==="titan_swarm"||picked.id==="titan_hands"?"shield-up":"shield-down";
-  enc.lastAttack=picked.id;enc.phaseCounts[phase]=(enc.phaseCounts[phase]||0)+1;
- }
- knightSystem.lastAttack=picked.id;return picked;
+ if(picked.id==="titan_knight_combo")enc.lastSource="combo";
+ else if(picked.id.startsWith("titan_")){enc.lastSource="titan";enc.lastClass=picked.id==="titan_swarm"||picked.id==="titan_hands"?"shield-up":"shield-down";enc.phaseCounts[phase]++;}
+ else enc.lastSource="knight";
+ enc.lastAttack=picked.id;knightSystem.lastAttack=picked.id;
+ return picked;
 }
 function hitParty(target,raw){
  if(!target||target.hp<=0)return 0;
@@ -644,6 +644,17 @@ function spawnPattern(){
    break;}
   case "cross_attack":
    for(let n=-2;n<=2;n++){shard(cx+n*18,box.y-8,0,3.8,"#ff8fa9");shard(box.x-8,cy+n*18,3.8,0,"#ff8fa9");}break;
+  case "titan_knight_combo":{
+   // Titan's dark shots cross the arena while the Knight cuts diagonally.
+   const beat=Math.floor(Date.now()/900)%2;
+   for(let i=0;i<3;i++){
+    const y=box.y+24+i*(box.h-48)/2,x=beat?box.x-12:box.x+box.w+12;
+    aimed(x,y,3.4,9,"#b9b5c9","orb");
+   }
+   const angle=Date.now()/1150+(beat?Math.PI/4:-Math.PI/4);
+   for(let i=0;i<2;i++){const a=angle+i*Math.PI;sword(cx+Math.cos(a)*92,cy+Math.sin(a)*58,3.1,a+Math.PI/2,"#ff9bad");}
+   break;
+  }
   case "combination":{
    // Three compact phases: falling swords, rotating slash, then the finished Sword Tunnel.
    const phaseStep=Math.floor(Date.now()/1900)%3;
