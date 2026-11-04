@@ -208,12 +208,14 @@ function wakeUpKris(p){
  const kris=party.find(member=>member.id==="kris");
  if(!kris||kris.hp>0)return;
  kris.hp=1;
- say("* "+p.name+" calls out to Kris. WAKE UP, KRIS! Kris gets back up with 1 HP.");
- render();afterAction(p.name+" used Wake Up Kris");
+ say("* "+p.name+" calls out to Kris. WAKE KRIS! Kris gets back up with 1 HP.");
+ render();afterAction(p.name+" used Wake Kris");
 }
 function actMenu(p){
+ // The Roaring Knight and Titan share this encounter; Wake Kris takes the
+ // character-specific ACT slot for every non-Kris party member here.
  const options=[
-  {label:"WAKE UP KRIS",disabled:party.find(member=>member.id==="kris").hp>0,run:()=>wakeUpKris(p)},
+  {label:"WAKE KRIS",disabled:party.find(member=>member.id==="kris").hp>0,run:()=>wakeUpKris(p)},
   {label:"CHECK",run:()=>{say("* THE ROARING KNIGHT — a towering machine wrapped in a dark mantle.\\n* Its armor is sturdy. Its movements are strangely deliberate. (ATK ?? DEF ??)");if(boss.exposed===0)tp=Math.min(100,tp+8);render();afterAction("checked the Knight")}},
   {label:"DISTRACT",run:()=>{boss.exposed=2;tp=Math.min(100,tp+12);say("* "+p.name+" draws the Knight's attention. Its guard is exposed! (+12 TP)");render();afterAction("distracted the Knight")}}
  ];
