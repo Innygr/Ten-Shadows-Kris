@@ -845,7 +845,7 @@ function updateSanguineSlash(){
 function startBulletPhase(attack,disrupted){
  bulletMode=true;bullets=[];knightSystem.revolver=null;knightSystem.twinSlashes=attack.id==="twin_slashes"?makeTwinSlashes():null;knightSystem.knightCombo=attack.id==="knight_combo"?makeKnightCombo():null;knightSystem.sanguineSlash=attack.id==="sanguine_slash"?makeSanguineSlash():(attack.id==="sanguine_slash_d2"?makeSanguineSlashD2():null);if(attack.id==="titan_swarm"){titanSystem.phase=boss.phase;titanSystem.centipedes=[];titanSystem.nextCentipede=Date.now()+350;titanSystem.nextSmallCentipede=Date.now()+900;titanSystem.centipedesStarted=false;}if(attack.id==="titan_hands"){titanSystem.phase=boss.phase;startTitanHands();}if(attack.id==="titan_big_shots"||attack.id==="titan_big_shots_2"||attack.id==="titan_big_shots_3"){titanSystem.phase=boss.phase;startTitanBigShots(attack.id==="titan_big_shots"?1:attack.id==="titan_big_shots_2"?2:3);}if(attack.id==="titan_desperation"){titanSystem.phase=boss.phase;startTitanDesperation();}if(attack.id==="crystal_barrage"){knightSystem.barrageVariation=knightSystem.barrageUses%3;knightSystem.barrageUses++;}soul.x=box.x+box.w/2;soul.y=box.y+box.h-24;soul.targetX=soul.x;soul.targetY=soul.y;soul.invuln=0;patternType=attack.id;
  const duration=(attack.id==="sanguine_slash"||attack.id==="sanguine_slash_d2"||attack.id==="titan_swarm"||attack.id==="titan_hands"||attack.id==="titan_big_shots"||attack.id==="titan_big_shots_2"||attack.id==="titan_big_shots_3"||attack.id==="titan_desperation")?8500:(attack.id==="black_flash"?5200:6500);
- say("* "+attack.name+"! Dodge the Knight's attacks.\\n* Move with WASD, or guide the SOUL with your pointer / touch.");
+ say("* "+attack.name+"! Dodge their attacks.\\n* Move with WASD, or guide the SOUL with your pointer / touch.");
  render();
  patternClock=setInterval(spawnPattern,attack.id==="black_flash"?600:430);
  bulletClock=setInterval(()=>{
@@ -910,16 +910,25 @@ function startBulletPhase(attack,disrupted){
 }
 function enemyTurn(){
  if(won||lost||busy)return;
- if(boss.frozenTurns>0){
-  boss.frozenTurns--;boss.exposed=Math.max(boss.exposed,1);tp=Math.min(100,tp+8);tickPlayerDomain();tickTitanBrighten();
-  say("* The Knight is frozen solid. Its attack cannot begin! (+8 TP)");
-  render();busy=false;turn++;$("turnlabel").textContent="PARTY TURN";setMenu([{label:"CONTINUE",run:begin}]);setSub([]);return;
- }
- busy=true;$("turnlabel").textContent="DODGE THE KNIGHT";setMenu([]);setSub([]);
- const attack=chooseKnightAttack(),disrupted=knightDisrupted>0;
+ const knightFrozen=boss.frozenTurns>0;
+ if(knightFrozen){boss.frozenTurns--;boss.exposed=Math.max(boss.exposed,1);}
+ busy=true;$("turnlabel").textContent="DODGE THE KNIGHT & TITAN";setMenu([]);setSub([]);
+ let attack;
+ if(knightFrozen){
+  // Freezing the Knight does not silence the Titan in this shared encounter.
+  const candidates=knightSystem.attacks.filter(a=>a.id.startsWith("titan_")&&a.id!=="titan_knight_combo"&&a.phases.includes(boss.phase));
+  const enc=titanSystem.encounter,shieldClass=a=>a.id==="titan_swarm"||a.id==="titan_hands"?"shield-up":"shield-down";
+  let pool=candidates.filter(a=>shieldClass(a)!==enc.lastClass);
+  if(!pool.length)pool=candidates;
+  const fresh=pool.filter(a=>a.id!==enc.lastAttack);if(fresh.length)pool=fresh;
+  attack=pool[Math.floor(Math.random()*pool.length)]||candidates[0];
+  if(attack){enc.lastClass=shieldClass(attack);enc.lastSource="titan";enc.lastAttack=attack.id;}
+  say("* The Knight is frozen! The Titan attacks alone.");
+ }else attack=chooseKnightAttack();
+ const disrupted=knightDisrupted>0;
  if(disrupted)knightDisrupted--;
- if(boss.phase===3&&!knightSystem.domain&&Math.random()<.45){
-  startKnightDomain();say("* THE ROARING KNIGHT: DOMAIN EXPANSION — KINGDOM OF THE ROARING.\\n* Stars and swords now fall inside the battle box.");
+ if(!knightFrozen&&boss.phase===3&&!knightSystem.domain&&Math.random()<.45){
+  startKnightDomain();say("* THE ROARING KNIGHT: DOMAIN EXPANSION — KINGDOM OF THE ROARING.\n* Stars and swords now fall inside the battle box.");
   patternType="star_swarm";
  }else say("* "+attack.name+"!");
  startBulletPhase(attack,disrupted);
