@@ -51,7 +51,7 @@ const party=[
  {id:"berdly",name:"BERDLY",hp:54,max:54,role:"TECH SUPPORT",guard:false,color:"#e2c75c"}
 ];
 const boss={hp:260,max:260,phase:1,exposed:0,chill:0,frozenTurns:0};
-let tp=35,active=0,actions=[],busy=false,won=false,lost=false,turn=1,anim=0;
+let tp=35,active=0,actions=[],busy=false,won=false,lost=false,turn=1,anim=0,reservedTurns=new Set();
 const inventory={darkCandy:3};
 let hitCursor=0,lastBossDamage=0;
 let knightDisrupted=0,domainHazardTimer=null;
@@ -136,14 +136,14 @@ function setSub(items){$("sub").innerHTML="";items.forEach(it=>{let b=document.c
 function living(){return party.filter(p=>p.hp>0)}
 function begin(){
  if(won||lost||busy)return;
- active=0;actions=[];party.forEach(p=>p.guard=false);
+ active=0;actions=[];reservedTurns.clear();party.forEach(p=>p.guard=false);
  say("* Kris, Susie, Ralsei, Noelle, and Berdly face the Roaring Knight.\\n* " + FlavorText.get("roaring_knight.opening"));
  render();chooseActor();
 }
 function chooseActor(){
  if(won||lost)return;
  if(boss.hp<=0){victory();return;}
- while(active<party.length&&party[active].hp<=0)active++;
+ while(active<party.length&&(party[active].hp<=0||reservedTurns.has(party[active].id))){reservedTurns.delete(party[active].id);active++;}
  if(active>=party.length){enemyTurn();return}
  const p=party[active];
  const attacks={kris:{damage:17,message:"Kris strikes with their blade."},susie:{damage:24,message:"Susie swings with all her strength."},ralsei:{damage:10,message:"Ralsei sends a gentle burst of magic."},noelle:{damage:15,message:"Noelle sends a sharp strike of ice."},berdly:{damage:18,message:"Berdly fires a precise energy shot."}};
@@ -204,6 +204,22 @@ function spare(p){
  say("* "+p.name+" tried to SPARE the Roaring Knight.\\n* The Knight is not ready to stand down.");
  render();afterAction(p.name+" tried to spare the Knight");
 }
+function tickTitanBrighten(){
+ if(titanSystem.brightenTurns>0){
+  titanSystem.brightenTurns--;
+  if(titanSystem.brightenTurns===0)titanSystem.lightRadius=titanSystem.baseLightRadius;
+ }
+}
+function brighten(){
+ const ralsei=party.find(member=>member.id==="ralsei");
+ if(busy||tp<4||active!==1||!ralsei||ralsei.hp<=0||titanSystem.brightenTurns>0)return;
+ tp-=4;
+ titanSystem.lightRadius=58;
+ titanSystem.brightenTurns=1;
+ reservedTurns.add("ralsei");
+ say("* Susie and Ralsei combine their strength. BRIGHTEN! The SOUL's glow expands, increasing its purification radius for the next enemy turn. (-4 TP)");
+ render();afterAction("Susie and Ralsei used Brighten");
+}
 function wakeUpKris(p){
  const kris=party.find(member=>member.id==="kris");
  if(!kris||kris.hp>0)return;
@@ -220,7 +236,10 @@ function actMenu(p){
   {label:"DISTRACT",run:()=>{boss.exposed=2;tp=Math.min(100,tp+12);say("* "+p.name+" draws the Knight's attention. Its guard is exposed! (+12 TP)");render();afterAction("distracted the Knight")}}
  ];
  if(p.id==="kris"){options.push({label:"SHADOWS",run:()=>shadowMenu(p)});options.push({label:"DOMAIN EXPANSION · 60 TP",disabled:tp<60||playerDomain.used,run:expandChimeraDomain});}
- if(p.id==="susie")options.push({label:"RUSH",run:()=>attack(p,34,"Susie charges. The Knight's armor shudders.")});
+ if(p.id==="susie"){
+  options.push({label:"BRIGHTEN · 4 TP",disabled:tp<4||party.find(member=>member.id==="ralsei").hp<=0||active!==1,run:brighten});
+  options.push({label:"RUSH",run:()=>attack(p,34,"Susie charges. The Knight's armor shudders.")});
+ }
  if(p.id==="ralsei"){options.push({label:"HEAL · 16 TP",disabled:tp<16,run:()=>healMenu(p)});options.push({label:"REVIVESONG · 84 TP",disabled:tp<84,run:()=>reviveSong(p)});}
  if(p.id==="noelle"){options.push({label:"ICE SHOCK · 16 TP",disabled:tp<16,run:()=>iceMove(p,"IceShock",16,18,1)});options.push({label:"ICE WAVE · 28 TP",disabled:tp<28,run:()=>iceMove(p,"IceWave",28,30,2)});}
  if(p.id==="berdly")options.push({label:"TORNADO · 20 TP",disabled:tp<20,run:()=>controlMove(p,"Tornado",20,16)});
@@ -283,7 +302,7 @@ function expandChimeraDomain(){
 }
 function endPlayerDomain(){playerDomain.active=false;playerDomain.turns=0;}
 function tickPlayerDomain(){if(playerDomain.active){playerDomain.turns--;if(playerDomain.turns<=0){endPlayerDomain();say("* Chimera Shadow Garden recedes. The battlefield returns to normal.");}}}
-const titanSystem={lightRadius:38,courage:[],phase:1,centipedes:[],nextCentipede:0,hands:null,bigShots:null,encounter:{phase:1,lastClass:"",phaseCounts:{1:0,2:0,3:0},lastAttack:""}};
+const titanSystem={lightRadius:38,baseLightRadius:38,brightenTurns:0,courage:[],phase:1,centipedes:[],nextCentipede:0,hands:null,bigShots:null,encounter:{phase:1,lastClass:"",phaseCounts:{1:0,2:0,3:0},lastAttack:""}};
 const knightSystem={
  domain:false,domainTurns:0,lastAttack:"",barrageUses:0,barrageVariation:0,twinSlashes:null,knightCombo:null,sanguineSlash:null,
  attacks:[
@@ -662,7 +681,7 @@ function stopBulletPhase(disrupted){
  bulletMode=false;titanSystem.hands=null;titanSystem.bigShots=null;titanSystem.desperation=null;titanSystem.centipedes=[];knightSystem.revolver=null;knightSystem.twinSlashes=null;knightSystem.knightCombo=null;knightSystem.sanguineSlash=null;clearInterval(bulletClock);clearInterval(patternClock);clearTimeout(attackClock);bulletClock=patternClock=attackClock=null;bullets=[];
  party.forEach(p=>p.guard=false);boss.exposed=Math.max(0,boss.exposed-1);tp=Math.min(100,tp+5);
  if(knightSystem.domain){knightSystem.domainTurns--;if(knightSystem.domainTurns<=0)endKnightDomain();}
- tickPlayerDomain();
+ tickPlayerDomain();tickTitanBrighten();
  busy=false;turn++;render();
  if(living().length===0){checkLoss();return;}
  say("* The Knight withdraws for a moment."+(disrupted?" Its attack was weakened by Tornado.":"")+"\\n* The party regains 5 TP.");
@@ -880,7 +899,7 @@ function startBulletPhase(attack,disrupted){
 function enemyTurn(){
  if(won||lost||busy)return;
  if(boss.frozenTurns>0){
-  boss.frozenTurns--;boss.exposed=Math.max(boss.exposed,1);tp=Math.min(100,tp+8);tickPlayerDomain();
+  boss.frozenTurns--;boss.exposed=Math.max(boss.exposed,1);tp=Math.min(100,tp+8);tickPlayerDomain();tickTitanBrighten();
   say("* The Knight is frozen solid. Its attack cannot begin! (+8 TP)");
   render();busy=false;turn++;$("turnlabel").textContent="PARTY TURN";setMenu([{label:"CONTINUE",run:begin}]);setSub([]);return;
  }
