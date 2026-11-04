@@ -325,7 +325,13 @@ function chooseKnightAttack(){
  if(titan.length&&nonTitan.length){
   const titanClass=a=>a.id==="titan_swarm"||a.id==="titan_hands"?"shield-up":"shield-down";
   const otherTitan=titan.filter(a=>titanClass(a)!==enc.lastClass);
-  if(enc.lastClass&&otherTitan.length)candidates=pool.filter(a=>!a.id.startsWith("titan_")||otherTitan.includes(a));
+  const freshTitan=titan.filter(a=>a.id!==enc.lastAttack);
+  // When a Titan pattern is selected again after a Knight move, rotate to
+  // another pattern instead of letting the shared lastAttack check miss it.
+  let preferredTitan=otherTitan.length?otherTitan:freshTitan;
+  if(enc.lastClass&&otherTitan.length)preferredTitan=otherTitan.filter(a=>a.id!==enc.lastAttack).length?otherTitan.filter(a=>a.id!==enc.lastAttack):otherTitan;
+  else if(freshTitan.length)preferredTitan=freshTitan;
+  if(preferredTitan.length)candidates=pool.filter(a=>!a.id.startsWith("titan_")||preferredTitan.includes(a));
  }
  const total=candidates.reduce((sum,a)=>sum+(a.weight||1),0);let roll=Math.random()*total,picked=candidates[0];
  for(const attack of candidates){roll-=attack.weight||1;if(roll<=0){picked=attack;break;}}
