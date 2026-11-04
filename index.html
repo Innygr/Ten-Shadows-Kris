@@ -268,7 +268,7 @@ function expandChimeraDomain(){
 }
 function endPlayerDomain(){playerDomain.active=false;playerDomain.turns=0;}
 function tickPlayerDomain(){if(playerDomain.active){playerDomain.turns--;if(playerDomain.turns<=0){endPlayerDomain();say("* Chimera Shadow Garden recedes. The battlefield returns to normal.");}}}
-const titanSystem={lightRadius:38,courage:[],phase:1,centipedes:[],nextCentipede:0,hands:null,bigShots:null};
+const titanSystem={lightRadius:38,courage:[],phase:1,centipedes:[],nextCentipede:0,hands:null,bigShots:null,encounter:{phase:1,lastClass:"",phaseCounts:{1:0,2:0,3:0},lastAttack:""}};
 const knightSystem={
  domain:false,domainTurns:0,lastAttack:"",barrageUses:0,barrageVariation:0,twinSlashes:null,knightCombo:null,sanguineSlash:null,
  attacks:[
@@ -315,9 +315,25 @@ function endKnightDomain(){knightSystem.domain=false;}
 function chooseKnightAttack(){
  const eligible=knightSystem.attacks.filter(a=>a.phases.includes(boss.phase));
  const pool=eligible.length?eligible:knightSystem.attacks;
- const total=pool.reduce((sum,a)=>sum+(a.weight||1),0);let roll=Math.random()*total,picked=pool[0];
- for(const attack of pool){roll-=attack.weight||1;if(roll<=0){picked=attack;break;}}
- if(pool.length>1&&picked.id===knightSystem.lastAttack){const alternatives=pool.filter(a=>a.id!==knightSystem.lastAttack);picked=alternatives[Math.floor(Math.random()*alternatives.length)];}
+ const titan=pool.filter(a=>a.id.startsWith("titan_"));
+ const nonTitan=pool.filter(a=>!a.id.startsWith("titan_"));
+ let candidates=pool;
+ // Keep Titan's shield-up and shield-down patterns alternating when possible.
+ // Knight attacks remain in the same shared rotation rather than being removed.
+ const enc=titanSystem.encounter,phase=boss.phase;
+ if(enc.phase!==phase){enc.phase=phase;enc.lastClass="";enc.phaseCounts[phase]=(enc.phaseCounts[phase]||0);}
+ if(titan.length&&nonTitan.length){
+  const titanClass=a=>a.id==="titan_swarm"||a.id==="titan_hands"?"shield-up":"shield-down";
+  const otherTitan=titan.filter(a=>titanClass(a)!==enc.lastClass);
+  if(enc.lastClass&&otherTitan.length)candidates=pool.filter(a=>!a.id.startsWith("titan_")||otherTitan.includes(a));
+ }
+ const total=candidates.reduce((sum,a)=>sum+(a.weight||1),0);let roll=Math.random()*total,picked=candidates[0];
+ for(const attack of candidates){roll-=attack.weight||1;if(roll<=0){picked=attack;break;}}
+ if(candidates.length>1&&picked.id===knightSystem.lastAttack){const alternatives=candidates.filter(a=>a.id!==knightSystem.lastAttack);picked=alternatives[Math.floor(Math.random()*alternatives.length)];}
+ if(picked.id.startsWith("titan_")){
+  enc.lastClass=picked.id==="titan_swarm"||picked.id==="titan_hands"?"shield-up":"shield-down";
+  enc.lastAttack=picked.id;enc.phaseCounts[phase]=(enc.phaseCounts[phase]||0)+1;
+ }
  knightSystem.lastAttack=picked.id;return picked;
 }
 function hitParty(target,raw){
