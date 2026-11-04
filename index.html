@@ -164,6 +164,7 @@ function chooseActor(){
  if(p.id==="ralsei")setMenu([
   {label:"✦ PACIFY",run:()=>actMenu(p)},
   {label:"♡ HEAL",run:()=>healMenu(p)},
+  {label:"♫ REVIVESONG · 84 TP",disabled:tp<84,run:()=>reviveSong(p)},
   {label:"🛡 DEFEND",run:()=>defend(p)},
   {label:"☻ ACT",run:()=>actMenu(p)}
  ]);
@@ -217,8 +218,16 @@ function controlMove(p,name,cost,dmg){
  render();afterAction(p.name+" used "+name);
 }
 function defend(p){if(busy)return;p.guard=true;tp=Math.min(100,tp+14);say("* "+p.name+" braces for impact. (+14 TP)");render();afterAction(p.name+" defended")}
+function wakeUpKris(p){
+ const kris=party.find(member=>member.id==="kris");
+ if(!kris||kris.hp>0)return;
+ kris.hp=1;
+ say("* "+p.name+" calls out to Kris. WAKE UP, KRIS! Kris gets back up with 1 HP.");
+ render();afterAction(p.name+" used Wake Up Kris");
+}
 function actMenu(p){
  setMenu([
+  {label:"WAKE UP KRIS",disabled:party.find(member=>member.id==="kris").hp>0,run:()=>wakeUpKris(p)},
   {label:"CHECK",run:()=>{say("* THE ROARING KNIGHT — a towering machine wrapped in a dark mantle.\n* Its armor is sturdy. Its movements are strangely deliberate. (ATK ?? DEF ??)");if(boss.exposed===0)tp=Math.min(100,tp+8);render();afterAction("checked the Knight")}},
   {label:"DISTRACT",run:()=>{boss.exposed=2;tp=Math.min(100,tp+12);say("* "+p.name+" draws the Knight's attention. Its guard is exposed! (+12 TP)");render();afterAction("distracted the Knight")}},
   {label:"Back",run:chooseActor}
@@ -241,6 +250,18 @@ function shadowMenu(p){
   say("* "+result.text+(result.damage>0?" ("+result.damage+" damage.)":""));
   render();afterAction("summoned "+s.name);
  }};}));
+ setSub([{label:"Back",run:chooseActor}]);
+}
+function reviveSong(p){
+ if(busy||tp<84)return;
+ const targets=party.filter(member=>member.hp>0);
+ setMenu(party.map(target=>({label:target.name+" · "+target.hp+"/"+target.max,disabled:target.hp>=target.max,run:()=>{
+  if(tp<84||busy)return;
+  tp-=84;
+  if(target.hp<=0){target.hp=Math.ceil(target.max/2);say("* Ralsei sings ReviveSong. "+target.name+" is revived!");}
+  else{target.hp=Math.min(target.max,target.hp+Math.ceil(target.max/2));say("* Ralsei sings ReviveSong. "+target.name+" is restored by the song.");}
+  render();afterAction("Ralsei used ReviveSong");
+ }})));
  setSub([{label:"Back",run:chooseActor}]);
 }
 function healMenu(p){
