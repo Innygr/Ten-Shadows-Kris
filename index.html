@@ -76,7 +76,21 @@ function scene(){
  for(let x=0;x<640;x+=48){ctx.fillStyle="#28243d";ctx.fillRect(x,225,2,75)}
  // distant pillars
  ctx.fillStyle="#121323";ctx.fillRect(34,115,22,105);ctx.fillRect(580,90,24,130);
- // boss glow + knight
+ // The Titan looms behind the Knight throughout this single shared encounter.
+ // Its hands and central core echo the hazards used during Titan attack turns.
+ ctx.save();
+ const titanPulse=.72+Math.sin(Date.now()/520)*.08;
+ ctx.globalAlpha=titanPulse;
+ ctx.shadowColor=boss.phase===3?"#ff496d":"#aaa6c7";ctx.shadowBlur=18;
+ ctx.fillStyle="#11111d";ctx.strokeStyle="#777487";ctx.lineWidth=3;
+ ctx.beginPath();ctx.ellipse(555,92,45,51,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+ ctx.fillRect(523,130,64,86);ctx.strokeRect(523,130,64,86);
+ ctx.beginPath();ctx.moveTo(528,143);ctx.lineTo(493,181);ctx.lineTo(481,218);ctx.lineTo(500,225);ctx.lineTo(525,190);ctx.stroke();
+ ctx.beginPath();ctx.moveTo(582,143);ctx.lineTo(610,176);ctx.lineTo(617,211);ctx.lineTo(599,219);ctx.lineTo(582,190);ctx.stroke();
+ ctx.fillStyle=boss.phase===3?"#ff496d":"#d8d3ee";ctx.shadowBlur=12;
+ ctx.beginPath();ctx.ellipse(555,151,12,18,0,0,Math.PI*2);ctx.fill();
+ ctx.restore();
+ // Knight remains in front: this is one encounter, not two separate fights.
  ctx.fillStyle=boss.phase===3?"#65334f":"#292748";ctx.globalAlpha=.23;ctx.beginPath();ctx.ellipse(470,192,110,100,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
  if(!SpriteAssets.draw(ctx,"enemies.roaring_knight",408,77,140,126))drawSprite(sprite.knight,408,77,7,palettes);
  // party
@@ -232,7 +246,7 @@ function actMenu(p){
  // character-specific ACT slot for every non-Kris party member here.
  const options=[
 
-  {label:"CHECK",run:()=>{say("* THE ROARING KNIGHT — a towering machine wrapped in a dark mantle.\\n* Its armor is sturdy. Its movements are strangely deliberate. (ATK ?? DEF ??)");if(boss.exposed===0)tp=Math.min(100,tp+8);render();afterAction("checked the Knight")}},
+  {label:"CHECK",run:()=>{say("* THE ROARING KNIGHT — a towering machine wrapped in a dark mantle.\\n* THE TITAN — a colossal presence looming behind it. Their attacks overlap, but the Knight's armor remains the party's target. (ATK ?? DEF ??)");if(boss.exposed===0)tp=Math.min(100,tp+8);render();afterAction("checked the Knight and Titan")}},
   {label:"DISTRACT",run:()=>{boss.exposed=2;tp=Math.min(100,tp+12);say("* "+p.name+" draws the Knight's attention. Its guard is exposed! (+12 TP)");render();afterAction("distracted the Knight")}}
  ];
  if(p.id!=="kris")options.unshift({label:"WAKE KRIS",disabled:party.find(member=>member.id==="kris").hp>0,run:()=>wakeUpKris(p)});
@@ -940,7 +954,7 @@ function aimSoul(e){if(!bulletMode)return;const r=canvas.getBoundingClientRect()
 canvas.addEventListener("pointerdown",e=>{if(bulletMode){if(canvas.setPointerCapture)canvas.setPointerCapture(e.pointerId);aimSoul(e);}});
 canvas.addEventListener("pointermove",aimSoul);
 function checkLoss(){endKnightDomain();endPlayerDomain();lost=true;busy=false;say("* The party falls back. The Knight remains before the fountain.\n* (Refresh the page to try again.)");setMenu([]);setSub([]);$("turnlabel").textContent="PARTY DOWN"}
-function victory(){endKnightDomain();endPlayerDomain();won=true;busy=false;boss.hp=0;render();say("* The Roaring Knight staggers. Its device flickers out.\\n* Kris's shadows settle. Susie says that was 'kinda sick'.\\n* Ralsei is already checking if everyone is okay.\\n\\n* YOU WON! (For now.)");setMenu([{label:"PLAY AGAIN",run:()=>location.reload()}]);setSub([]);$("turnlabel").textContent="VICTORY"}
+function victory(){endKnightDomain();endPlayerDomain();won=true;busy=false;boss.hp=0;render();say("* The Roaring Knight staggers as the Titan's glow fades. Their shared assault finally stops.\\n* Kris's shadows settle. Susie says that was 'kinda sick'.\\n* Ralsei is already checking if everyone is okay.\\n\\n* YOU WON! (For now.)");setMenu([{label:"PLAY AGAIN",run:()=>location.reload()}]);setSub([]);$("turnlabel").textContent="VICTORY"}
 render();setMenu([{label:"FIGHT",run:begin}]);setSub([]);
 </script>
 </body>
