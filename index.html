@@ -50,7 +50,7 @@ const party=[
  {id:"noelle",name:"NOELLE",hp:50,max:50,role:"ICE / CONTROL",guard:false,color:"#83c9ef"},
  {id:"berdly",name:"BERDLY",hp:54,max:54,role:"TECH SUPPORT",guard:false,color:"#e2c75c"}
 ];
-const boss={hp:260,max:260,phase:1,exposed:0,chill:0,frozenTurns:0};
+const boss={hp:260,max:260,phase:1,exposed:0,chill:0,frozenTurns:0,mercy:0,status:"Normal",pacified:false};
 let tp=35,active=0,actions=[],busy=false,won=false,lost=false,turn=1,anim=0,reservedTurns=new Set();
 const inventory={darkCandy:3};
 let hitCursor=0,lastBossDamage=0;
@@ -140,7 +140,7 @@ function render(){
  scene();
  $("hud").innerHTML=party.map(p=>'<div class="card"><div class="name" style="color:'+p.color+'">'+p.name+'</div><div class="stats">'+p.role+' · HP '+p.hp+'/'+p.max+'</div><div class="hpbar"><div class="hpfill" style="width:'+(p.hp/p.max*100)+'%"></div></div></div>').join("");
  $("bossfill").style.width=(boss.hp/boss.max*100)+"%";
- $("bossstatus").textContent=boss.frozenTurns>0?"FROZEN":(boss.chill>0?"CHILL "+boss.chill+"/3 · ":"")+(boss.exposed>0?"ARMOR: EXPOSED":"PHASE "+boss.phase+" · "+(boss.hp>0?boss.hp+" HP":"DEFEATED"));
+ $("bossstatus").textContent="MERCY "+boss.mercy+"% · "+(boss.frozenTurns>0?"FROZEN":(boss.chill>0?"CHILL "+boss.chill+"/3 · ":"")+(boss.exposed>0?"ARMOR: EXPOSED":"PHASE "+boss.phase+" · "+(boss.hp>0?boss.hp+" HP":"DEFEATED")));
  $("tpstatus").textContent="TP: "+tp+" / 100";
  $("itemstatus").textContent="DARK CANDY: "+inventory.darkCandy;
 }
@@ -210,12 +210,12 @@ function controlMove(p,name,cost,dmg){
 function defend(p){if(busy)return;p.guard=true;tp=Math.min(100,tp+14);say("* "+p.name+" braces for impact. (+14 TP)");render();afterAction(p.name+" defended")}
 function spare(p){
  if(busy)return;
- if(boss.exposed>0||boss.frozenTurns>0){
-  boss.hp=0;endKnightDomain();endPlayerDomain();won=true;busy=false;render();
-  say("* "+p.name+" approaches carefully.\\n* The Roaring Knight's weapon lowers.\\n* The battle ends without another blow.\\n\\n* YOU SPARED THE ROARING KNIGHT.");
+ if(boss.mercy>=100){
+  boss.hp=0;boss.pacified=true;endKnightDomain();endPlayerDomain();won=true;busy=false;render();
+  say("* "+p.name+" approaches carefully.\\n* The Roaring Knight lowers its weapon.\\n* The Titan's presence fades with it.\\n\\n* YOU SPARED THE ROARING KNIGHT AND THE TITAN.");
   setMenu([{label:"PLAY AGAIN",run:()=>location.reload()}]);setSub([]);$("turnlabel").textContent="SPARED";return;
  }
- say("* "+p.name+" tried to SPARE the Roaring Knight.\\n* The Knight is not ready to stand down.");
+ say("* "+p.name+" tried to SPARE the Knight.\\n* MERCY: "+boss.mercy+"%. The Knight is not ready to stand down.");
  render();afterAction(p.name+" tried to spare the Knight");
 }
 function tickTitanBrighten(){
@@ -247,7 +247,7 @@ function actMenu(p){
  const options=[
 
   {label:"CHECK",run:()=>{say("* THE ROARING KNIGHT — a towering machine wrapped in a dark mantle.\\n* THE TITAN — a colossal presence looming behind it. Their attacks overlap, but the Knight's armor remains the party's target. (ATK ?? DEF ??)");if(boss.exposed===0)tp=Math.min(100,tp+8);render();afterAction("checked the Knight and Titan")}},
-  {label:"DISTRACT",run:()=>{boss.exposed=2;tp=Math.min(100,tp+12);say("* "+p.name+" draws the Knight's attention. Its guard is exposed! (+12 TP)");render();afterAction("distracted the Knight")}}
+  {label:"DISTRACT",run:()=>{boss.exposed=2;boss.mercy=Math.min(100,boss.mercy+25);tp=Math.min(100,tp+12);say("* "+p.name+" draws the Knight's attention. Its guard is exposed! MERCY +25% ("+boss.mercy+"%). (+12 TP)");render();afterAction("distracted the Knight")}}
  ];
  if(p.id!=="kris")options.unshift({label:"WAKE KRIS",disabled:party.find(member=>member.id==="kris").hp>0,run:()=>wakeUpKris(p)});
  if(p.id==="kris"){options.push({label:"SHADOWS",run:()=>shadowMenu(p)});options.push({label:"DOMAIN EXPANSION · 60 TP",disabled:tp<60||playerDomain.used,run:expandChimeraDomain});}
