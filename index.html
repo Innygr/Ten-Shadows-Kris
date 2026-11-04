@@ -15,7 +15,7 @@ h1{font-size:clamp(17px,3vw,25px);letter-spacing:2px;margin:0}.tag{font-size:11p
 .card{border:1px solid #777286;padding:8px;background:#10101a;min-width:0}.name{font-weight:bold;font-size:14px}.stats{font-size:12px;color:#d4d1e2;margin-top:5px}.hpbar{height:7px;background:#3b3546;margin-top:5px}.hpfill{height:100%;background:#f4d45e;width:100%}
 #bossbar{border:1px solid #777286;padding:8px;background:#10101a;margin-bottom:10px;font-size:13px}.bossline{display:flex;justify-content:space-between;gap:10px}.bossfill{height:9px;background:#e65d78;width:100%;margin-top:6px}
 #dialogue{min-height:76px;padding:12px;border:2px solid var(--line);background:#050509;line-height:1.5;margin-bottom:10px;white-space:pre-wrap}
-#menu{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+#menu{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
 button{font: bold 14px "Courier New",monospace;color:white;background:#10101b;border:2px solid #c5c1d5;padding:12px 8px;cursor:pointer;min-height:45px}
 button:hover:not(:disabled),button:focus-visible{outline:none;border-color:var(--gold);color:var(--gold);background:#25213a}
 button:disabled{opacity:.35;cursor:not-allowed}
@@ -146,42 +146,18 @@ function chooseActor(){
  while(active<party.length&&party[active].hp<=0)active++;
  if(active>=party.length){enemyTurn();return}
  const p=party[active];
+ const attacks={kris:{damage:17,message:"Kris strikes with their blade."},susie:{damage:24,message:"Susie swings with all her strength."},ralsei:{damage:10,message:"Ralsei sends a gentle burst of magic."},noelle:{damage:15,message:"Noelle sends a sharp strike of ice."},berdly:{damage:18,message:"Berdly fires a precise energy shot."}};
+ const basic=attacks[p.id]||attacks.kris;
  $("turnlabel").textContent=p.name+"'S TURN";
  say("* "+p.name+"'s turn. What will they do?");
- if(p.id==="kris")setMenu([
-  {label:"⚔ FIGHT",run:()=>attack(p,17,"Kris strikes with their blade.")},
+ setMenu([
+  {label:"⚔ FIGHT",run:()=>attack(p,basic.damage,basic.message)},
   {label:"☻ ACT",run:()=>actMenu(p)},
+  {label:"✦ ITEM",run:()=>itemMenu()},
   {label:"🛡 DEFEND",run:()=>defend(p)},
-  {label:"☾ SHADOWS",run:()=>shadowMenu(p)},
-  {label:"DOMAIN EXPANSION · 60 TP",disabled:tp<60||playerDomain.used,run:expandChimeraDomain}
+  {label:"☆ SPARE",run:()=>spare(p)}
  ]);
- if(p.id==="susie")setMenu([
-  {label:"⚔ FIGHT",run:()=>attack(p,24,"Susie swings with all her strength.")},
-  {label:"💥 RUSH",run:()=>attack(p,34,"Susie charges. The Knight's armor shudders.")},
-  {label:"🛡 DEFEND",run:()=>defend(p)},
-  {label:"☻ ACT",run:()=>actMenu(p)}
- ]);
- if(p.id==="ralsei")setMenu([
-  {label:"✦ PACIFY",run:()=>actMenu(p)},
-  {label:"♡ HEAL",run:()=>healMenu(p)},
-  {label:"♫ REVIVESONG · 84 TP",disabled:tp<84,run:()=>reviveSong(p)},
-  {label:"🛡 DEFEND",run:()=>defend(p)},
-  {label:"☻ ACT",run:()=>actMenu(p)}
- ]);
- if(p.id==="noelle")setMenu([
-  {label:"❄ ICE SHOCK · 16 TP",disabled:tp<16,run:()=>iceMove(p,"IceShock",16,18,1)},
-  {label:"❄ ICE WAVE · 28 TP",disabled:tp<28,run:()=>iceMove(p,"IceWave",28,30,2)},
-  {label:"⚔ FIGHT",run:()=>attack(p,15,"Noelle sends a sharp strike of ice.")},
-  {label:"🛡 DEFEND",run:()=>defend(p)},
-  {label:"☻ ACT",run:()=>actMenu(p)}
- ]);
- if(p.id==="berdly")setMenu([
-  {label:"🌪 TORNADO · 20 TP",disabled:tp<20,run:()=>controlMove(p,"Tornado",20,16)},
-  {label:"⚔ FIGHT",run:()=>attack(p,18,"Berdly fires a precise energy shot.")},
-  {label:"🛡 DEFEND",run:()=>defend(p)},
-  {label:"☻ ACT",run:()=>actMenu(p)}
- ]);
- setSub([{label:"ITEM: Dark Candy ×"+inventory.darkCandy+" (+18 HP)",disabled:inventory.darkCandy<=0,run:()=>itemMenu()},{label:"Back",run:()=>chooseActor()}]);
+ setSub([]);
 }
 function afterAction(message){
  actions.push(message);
@@ -218,6 +194,16 @@ function controlMove(p,name,cost,dmg){
  render();afterAction(p.name+" used "+name);
 }
 function defend(p){if(busy)return;p.guard=true;tp=Math.min(100,tp+14);say("* "+p.name+" braces for impact. (+14 TP)");render();afterAction(p.name+" defended")}
+function spare(p){
+ if(busy)return;
+ if(boss.exposed>0||boss.frozenTurns>0){
+  boss.hp=0;endKnightDomain();endPlayerDomain();won=true;busy=false;render();
+  say("* "+p.name+" approaches carefully.\\n* The Roaring Knight's weapon lowers.\\n* The battle ends without another blow.\\n\\n* YOU SPARED THE ROARING KNIGHT.");
+  setMenu([{label:"PLAY AGAIN",run:()=>location.reload()}]);setSub([]);$("turnlabel").textContent="SPARED";return;
+ }
+ say("* "+p.name+" tried to SPARE the Roaring Knight.\\n* The Knight is not ready to stand down.");
+ render();afterAction(p.name+" tried to spare the Knight");
+}
 function wakeUpKris(p){
  const kris=party.find(member=>member.id==="kris");
  if(!kris||kris.hp>0)return;
@@ -226,12 +212,18 @@ function wakeUpKris(p){
  render();afterAction(p.name+" used Wake Up Kris");
 }
 function actMenu(p){
- setMenu([
+ const options=[
   {label:"WAKE UP KRIS",disabled:party.find(member=>member.id==="kris").hp>0,run:()=>wakeUpKris(p)},
-  {label:"CHECK",run:()=>{say("* THE ROARING KNIGHT — a towering machine wrapped in a dark mantle.\n* Its armor is sturdy. Its movements are strangely deliberate. (ATK ?? DEF ??)");if(boss.exposed===0)tp=Math.min(100,tp+8);render();afterAction("checked the Knight")}},
-  {label:"DISTRACT",run:()=>{boss.exposed=2;tp=Math.min(100,tp+12);say("* "+p.name+" draws the Knight's attention. Its guard is exposed! (+12 TP)");render();afterAction("distracted the Knight")}},
-  {label:"Back",run:chooseActor}
- ]);
+  {label:"CHECK",run:()=>{say("* THE ROARING KNIGHT — a towering machine wrapped in a dark mantle.\\n* Its armor is sturdy. Its movements are strangely deliberate. (ATK ?? DEF ??)");if(boss.exposed===0)tp=Math.min(100,tp+8);render();afterAction("checked the Knight")}},
+  {label:"DISTRACT",run:()=>{boss.exposed=2;tp=Math.min(100,tp+12);say("* "+p.name+" draws the Knight's attention. Its guard is exposed! (+12 TP)");render();afterAction("distracted the Knight")}}
+ ];
+ if(p.id==="kris"){options.push({label:"SHADOWS",run:()=>shadowMenu(p)});options.push({label:"DOMAIN EXPANSION · 60 TP",disabled:tp<60||playerDomain.used,run:expandChimeraDomain});}
+ if(p.id==="susie")options.push({label:"RUSH",run:()=>attack(p,34,"Susie charges. The Knight's armor shudders.")});
+ if(p.id==="ralsei"){options.push({label:"HEAL · 16 TP",disabled:tp<16,run:()=>healMenu(p)});options.push({label:"REVIVESONG · 84 TP",disabled:tp<84,run:()=>reviveSong(p)});}
+ if(p.id==="noelle"){options.push({label:"ICE SHOCK · 16 TP",disabled:tp<16,run:()=>iceMove(p,"IceShock",16,18,1)});options.push({label:"ICE WAVE · 28 TP",disabled:tp<28,run:()=>iceMove(p,"IceWave",28,30,2)});}
+ if(p.id==="berdly")options.push({label:"TORNADO · 20 TP",disabled:tp<20,run:()=>controlMove(p,"Tornado",20,16)});
+ options.push({label:"Back",run:chooseActor});
+ setMenu(options);setSub([]);
 }
 function shadowMenu(p){
  const roster=ShadowSystem.list();
@@ -250,7 +242,7 @@ function shadowMenu(p){
   say("* "+result.text+(result.damage>0?" ("+result.damage+" damage.)":""));
   render();afterAction("summoned "+s.name);
  }};}));
- setSub([{label:"Back",run:chooseActor}]);
+ setSub([{label:"Back",run:()=>actMenu(p)}]);
 }
 function reviveSong(p){
  if(busy||tp<84)return;
@@ -262,7 +254,7 @@ function reviveSong(p){
   else{target.hp=Math.min(target.max,target.hp+Math.ceil(target.max/2));say("* Ralsei sings ReviveSong. "+target.name+" is restored by the song.");}
   render();afterAction("Ralsei used ReviveSong");
  }})));
- setSub([{label:"Back",run:chooseActor}]);
+ setSub([{label:"Back",run:()=>actMenu(p)}]);
 }
 function healMenu(p){
  if(tp<16){say("* Not enough TP to heal.");return;}
@@ -270,7 +262,7 @@ function healMenu(p){
   if(tp<16){say("* Not enough TP!");return}
   tp-=16;target.hp=Math.min(target.max,target.hp+22);say("* Ralsei casts a gentle healing spell. "+target.name+" recovered HP.");render();afterAction("healed "+target.name)
  }})));
- setSub([{label:"Back",run:chooseActor}]);
+ setSub([{label:"Back",run:()=>actMenu(p)}]);
 }
 function itemMenu(){
  if(inventory.darkCandy<=0){say("* No Dark Candy left.");return;}
@@ -905,7 +897,7 @@ function aimSoul(e){if(!bulletMode)return;const r=canvas.getBoundingClientRect()
 canvas.addEventListener("pointerdown",e=>{if(bulletMode){if(canvas.setPointerCapture)canvas.setPointerCapture(e.pointerId);aimSoul(e);}});
 canvas.addEventListener("pointermove",aimSoul);
 function checkLoss(){endKnightDomain();endPlayerDomain();lost=true;busy=false;say("* The party falls back. The Knight remains before the fountain.\n* (Refresh the page to try again.)");setMenu([]);setSub([]);$("turnlabel").textContent="PARTY DOWN"}
-function victory(){endKnightDomain();won=true;busy=false;boss.hp=0;render();say("* The Roaring Knight staggers. Its device flickers out.\n* Kris's shadows settle. Susie says that was 'kinda sick'.\n* Ralsei is already checking if everyone is okay.\n\n* YOU WON! (For now.)");setMenu([{label:"PLAY AGAIN",run:()=>location.reload()}]);setSub([]);$("turnlabel").textContent="VICTORY"}
+function victory(){endKnightDomain();endPlayerDomain();won=true;busy=false;boss.hp=0;render();say("* The Roaring Knight staggers. Its device flickers out.\\n* Kris's shadows settle. Susie says that was 'kinda sick'.\\n* Ralsei is already checking if everyone is okay.\\n\\n* YOU WON! (For now.)");setMenu([{label:"PLAY AGAIN",run:()=>location.reload()}]);setSub([]);$("turnlabel").textContent="VICTORY"}
 render();setMenu([{label:"FIGHT",run:begin}]);setSub([]);
 </script>
 </body>
