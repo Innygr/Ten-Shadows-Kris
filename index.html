@@ -50,7 +50,7 @@ const party=[
  {id:"noelle",name:"NOELLE",hp:50,max:50,role:"ICE / CONTROL",guard:false,color:"#83c9ef"},
  {id:"berdly",name:"BERDLY",hp:54,max:54,role:"TECH SUPPORT",guard:false,color:"#e2c75c"}
 ];
-const boss={hp:260,max:260,phase:1,exposed:0,chill:0,frozenTurns:0,mercy:0,status:"Normal",pacified:false};
+const boss={hp:260,max:260,phase:1,exposed:0,chill:0,frozenTurns:0,mercy:0,status:"Normal",pacified:false,tiredImmune:true};
 let tp=35,active=0,actions=[],busy=false,won=false,lost=false,turn=1,anim=0,reservedTurns=new Set();
 const inventory={darkCandy:3};
 let hitCursor=0,lastBossDamage=0;
@@ -246,7 +246,7 @@ function actMenu(p){
  // character-specific ACT slot for every non-Kris party member here.
  const options=[
 
-  {label:"CHECK",run:()=>{say("* THE ROARING KNIGHT — a towering machine wrapped in a dark mantle.\\n* THE TITAN — a colossal presence looming behind it. Their attacks overlap, but the Knight's armor remains the party's target. (ATK ?? DEF ??)");if(boss.exposed===0)tp=Math.min(100,tp+8);render();afterAction("checked the Knight and Titan")}},
+  {label:"CHECK",run:()=>{say("* THE ROARING KNIGHT — a towering machine wrapped in a dark mantle.\\n* THE TITAN — a colossal presence looming behind it. Their attacks overlap, but the Knight's armor remains the party's target. Neither can become TIRED. (ATK ?? DEF ??)");if(boss.exposed===0)tp=Math.min(100,tp+8);render();afterAction("checked the Knight and Titan")}},
   {label:"DISTRACT",run:()=>{boss.exposed=2;boss.mercy=Math.min(100,boss.mercy+25);tp=Math.min(100,tp+12);say("* "+p.name+" draws the Knight's attention. Its guard is exposed! MERCY +25% ("+boss.mercy+"%). (+12 TP)");render();afterAction("distracted the Knight")}}
  ];
  if(p.id!=="kris")options.unshift({label:"WAKE KRIS",disabled:party.find(member=>member.id==="kris").hp>0,run:()=>wakeUpKris(p)});
