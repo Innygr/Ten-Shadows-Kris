@@ -13,7 +13,7 @@ h1{font-size:clamp(17px,3vw,25px);letter-spacing:2px;margin:0}.tag{font-size:11p
 #stage{display:block;width:100%;height:auto;aspect-ratio:640/300;background:#0b0b16;border:2px solid #b9b6c8;margin:12px 0;image-rendering:pixelated}
 #hud{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:10px 0}
 .card{border:1px solid #777286;padding:8px;background:#10101a;min-width:0}.name{font-weight:bold;font-size:14px}.stats{font-size:12px;color:#d4d1e2;margin-top:5px}.hpbar{height:7px;background:#3b3546;margin-top:5px}.hpfill{height:100%;background:#f4d45e;width:100%}
-#bossbar{border:1px solid #777286;padding:8px;background:#10101a;margin-bottom:10px;font-size:13px}.bossline{display:flex;justify-content:space-between;gap:10px}.bossfill{height:9px;background:#e65d78;width:100%;margin-top:6px}
+#bossbar{border:1px solid #777286;padding:8px;background:#10101a;margin-bottom:10px;font-size:13px}.bossline{display:flex;justify-content:space-between;gap:10px}.bossfill{height:9px;background:#e65d78;width:100%;margin-top:6px}.mercyline{display:flex;justify-content:space-between;gap:10px;margin-top:8px;font-size:11px;color:#aaa4b8}.mercybar{height:7px;margin-top:4px;background:#292432;border:1px solid #51465b;position:relative;overflow:hidden}.mercyfill{height:100%;width:100%;background:#b65b91;opacity:.35}.mercyx{position:absolute;inset:-7px 0 0;text-align:center;color:#ff637d;font-size:20px;font-weight:900;line-height:18px;text-shadow:0 0 4px #120711;}
 #dialogue{min-height:76px;padding:12px;border:2px solid var(--line);background:#050509;line-height:1.5;margin-bottom:10px;white-space:pre-wrap}
 #menu{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
 button{font: bold 14px "Courier New",monospace;color:white;background:#10101b;border:2px solid #c5c1d5;padding:12px 8px;cursor:pointer;min-height:45px}
@@ -30,7 +30,7 @@ button:disabled{opacity:.35;cursor:not-allowed}
 <header><h1>TEN SHADOWS: DARK WORLD INCIDENT</h1><div class="tag">A VERY NORMAL DELTARUNE-ISH BOSS FIGHT<br>DEMO 0.2 • DEVICE KNIGHT ENCOUNTER</div></header>
 <canvas id="stage" width="640" height="300" aria-label="Pixel-art battle scene"></canvas>
 <section id="hud" aria-label="Party status"></section>
-<section id="bossbar"><div class="bossline"><b id="bossname">THE ROARING KNIGHT & TITAN</b><span id="bossstatus">ARMOR: INTACT</span></div><div class="bossfill" id="bossfill"></div><div class="bossline" style="margin-top:8px"><span id="tpstatus">TP: 35 / 100</span><span id="itemstatus">DARK CANDY: 3</span></div></section>
+<section id="bossbar"><div class="bossline"><b id="bossname">THE ROARING KNIGHT & TITAN</b><span id="bossstatus">ARMOR: INTACT</span></div><div class="bossfill" id="bossfill"></div><div class="mercyline"><b>MERCY</b><span>UNAVAILABLE</span></div><div class="mercybar" role="img" aria-label="Mercy unavailable"><div class="mercyfill"></div><span class="mercyx" aria-hidden="true">×</span></div><div class="bossline" style="margin-top:8px"><span id="tpstatus">TP: 35 / 100</span><span id="itemstatus">DARK CANDY: 3</span></div></section>
 <div id="dialogue" aria-live="polite">* The air shakes. A huge silhouette blocks the way forward.\n* Kris feels their shadow move before they do.</div>
 <div id="menu"></div><div id="sub"></div>
 <footer id="footer"><span>DEFEND reduces damage and builds TP.</span><span id="turnlabel">PARTY TURN</span></footer>
@@ -140,7 +140,7 @@ function render(){
  scene();
  $("hud").innerHTML=party.map(p=>'<div class="card"><div class="name" style="color:'+p.color+'">'+p.name+'</div><div class="stats">'+p.role+' · HP '+p.hp+'/'+p.max+'</div><div class="hpbar"><div class="hpfill" style="width:'+(p.hp/p.max*100)+'%"></div></div></div>').join("");
  $("bossfill").style.width=(boss.hp/boss.max*100)+"%";
- $("bossstatus").textContent=(boss.mercyImmune?"MERCY: IMMUNE":"MERCY "+boss.mercy+"%")+" · "+(boss.frozenTurns>0?"FROZEN":(boss.chill>0?"CHILL "+boss.chill+"/3 · ":"")+(boss.exposed>0?"ARMOR: EXPOSED":"PHASE "+boss.phase+" · "+(boss.hp>0?boss.hp+" HP":"DEFEATED")));
+ $("bossstatus").textContent=+(boss.frozenTurns>0?"FROZEN":(boss.chill>0?"CHILL "+boss.chill+"/3 · ":"")+(boss.exposed>0?"ARMOR: EXPOSED":"PHASE "+boss.phase+" · "+(boss.hp>0?boss.hp+" HP":"DEFEATED")));
  $("tpstatus").textContent="TP: "+tp+" / 100";
  $("itemstatus").textContent="DARK CANDY: "+inventory.darkCandy;
 }
