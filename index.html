@@ -373,7 +373,8 @@ function chooseKnightAttack(){
  enc.turns++;
  // Coordinate a combined strike every fourth enemy turn; otherwise alternate
  // which boss leads the attack, while retaining Titan shield-pattern rotation.
- let source=combo&&enc.turns%4===0?"combo":(titan.length&&knight.length?(enc.lastSource==="titan"?"knight":"titan"):(titan.length?"titan":"knight"));
+ const comboInterval=phase===3?3:4;
+ let source=combo&&enc.turns%comboInterval===0?"combo":(titan.length&&knight.length?(enc.lastSource==="titan"?"knight":"titan"):(titan.length?"titan":"knight"));
  let candidates=source==="combo"?[combo]:source==="titan"?titan:knight;
  if(!candidates.length)candidates=eligible;
  if(source==="titan"&&candidates.length>1){
@@ -701,7 +702,10 @@ function spawnPattern(){
   case "box_cutter":{
    const x=Math.random()<.5?box.x+4:box.x+box.w-4;aimed(x,box.y+Math.random()*box.h,3.6,7,"#ff8ca5");break;}
  }
- if(knightSystem.domain&&Math.random()<.35)sword(box.x+12+Math.random()*(box.w-24),box.y-12,4.1,Math.PI/2,"#b28cff");
+ if(knightSystem.domain){
+  if(Math.random()<.55){const x=box.x+12+Math.random()*(box.w-24);spawnBullet(x,box.y-10,(Math.random()-.5)*.7,2.5+Math.random()*1.2,5,"#b9a0ff","orb");}
+  if(Math.random()<.35)sword(box.x+12+Math.random()*(box.w-24),box.y-12,4.1,Math.PI/2,"#b28cff");
+ }
 }
 function stopBulletPhase(disrupted){
  bulletMode=false;titanSystem.hands=null;titanSystem.bigShots=null;titanSystem.desperation=null;titanSystem.centipedes=[];knightSystem.revolver=null;knightSystem.twinSlashes=null;knightSystem.knightCombo=null;knightSystem.sanguineSlash=null;clearInterval(bulletClock);clearInterval(patternClock);clearTimeout(attackClock);bulletClock=patternClock=attackClock=null;bullets=[];
