@@ -253,7 +253,7 @@ function actMenu(p){
  if(p.id!=="kris")options.unshift({label:"WAKE KRIS",disabled:party.find(member=>member.id==="kris").hp>0,run:()=>wakeUpKris(p)});
  if(p.id==="kris"){options.push({label:"SHADOWS",run:()=>shadowMenu(p)});options.push({label:"DOMAIN EXPANSION · 60 TP",disabled:tp<60||playerDomain.used,run:expandChimeraDomain});}
  if(p.id==="susie"){
-  options.push({label:"BRIGHTEN · 4 TP",disabled:tp<4||party.find(member=>member.id==="ralsei").hp<=0||active!==1,run:brighten});
+  options.push({label:"BRIGHTEN · 4 TP",disabled:tp<4||party.find(member=>member.id==="ralsei").hp<=0||active!==1||titanSystem.brightenTurns>0,run:brighten});
   options.push({label:"RUSH",run:()=>attack(p,34,"Susie charges. The Knight's armor shudders.")});
  }
  if(p.id==="ralsei"){options.push({label:"HEAL · 16 TP",disabled:tp<16,run:()=>healMenu(p)});options.push({label:"REVIVESONG · 84 TP",disabled:tp<84,run:()=>reviveSong(p)});}
@@ -386,9 +386,8 @@ function chooseKnightAttack(){
  const total=candidates.reduce((sum,a)=>sum+(a.weight||1),0);
  let roll=Math.random()*total,picked=candidates[0];
  for(const attack of candidates){roll-=attack.weight||1;if(roll<=0){picked=attack;break;}}
- if(picked.id==="titan_knight_combo")enc.lastSource="combo";
- else if(picked.id.startsWith("titan_")){enc.lastSource="titan";enc.lastClass=picked.id==="titan_swarm"||picked.id==="titan_hands"?"shield-up":"shield-down";enc.phaseCounts[phase]++;}
- else enc.lastSource="knight";
+ if(picked.id.startsWith("titan_")&&picked.id!=="titan_knight_combo"){enc.lastSource="titan";enc.lastClass=picked.id==="titan_swarm"||picked.id==="titan_hands"?"shield-up":"shield-down";enc.phaseCounts[phase]++;}
+ else if(picked.id!=="titan_knight_combo")enc.lastSource="knight";
  enc.lastAttack=picked.id;knightSystem.lastAttack=picked.id;
  return picked;
 }
@@ -858,7 +857,7 @@ function updateSanguineSlash(){
  }
 }
 function startBulletPhase(attack,disrupted){
- bulletMode=true;bullets=[];knightSystem.revolver=null;knightSystem.twinSlashes=attack.id==="twin_slashes"?makeTwinSlashes():null;knightSystem.knightCombo=attack.id==="knight_combo"?makeKnightCombo():null;knightSystem.sanguineSlash=attack.id==="sanguine_slash"?makeSanguineSlash():(attack.id==="sanguine_slash_d2"?makeSanguineSlashD2():null);if(attack.id==="titan_swarm"){titanSystem.phase=boss.phase;titanSystem.centipedes=[];titanSystem.nextCentipede=Date.now()+350;titanSystem.nextSmallCentipede=Date.now()+900;titanSystem.centipedesStarted=false;}if(attack.id==="titan_hands"){titanSystem.phase=boss.phase;startTitanHands();}if(attack.id==="titan_big_shots"||attack.id==="titan_big_shots_2"||attack.id==="titan_big_shots_3"){titanSystem.phase=boss.phase;startTitanBigShots(attack.id==="titan_big_shots"?1:attack.id==="titan_big_shots_2"?2:3);}if(attack.id==="titan_desperation"){titanSystem.phase=boss.phase;startTitanDesperation();}if(attack.id==="crystal_barrage"){knightSystem.barrageVariation=knightSystem.barrageUses%3;knightSystem.barrageUses++;}soul.x=box.x+box.w/2;soul.y=box.y+box.h-24;soul.targetX=soul.x;soul.targetY=soul.y;soul.invuln=0;patternType=attack.id;
+ bulletMode=true;bullets=[];knightSystem.revolver=null;knightSystem.twinSlashes=attack.id==="twin_slashes"?makeTwinSlashes():null;knightSystem.knightCombo=attack.id==="knight_combo"?makeKnightCombo():null;knightSystem.sanguineSlash=attack.id==="sanguine_slash"?makeSanguineSlash():(attack.id==="sanguine_slash_d2"?makeSanguineSlashD2():null);if(attack.id==="titan_swarm"){titanSystem.phase=boss.phase;titanSystem.centipedes=[];titanSystem.nextCentipede=Date.now()+350;titanSystem.nextSmallCentipede=Date.now()+900;titanSystem.centipedesStarted=false;}if(attack.id==="titan_hands"){titanSystem.phase=boss.phase;startTitanHands();}if(attack.id==="titan_big_shots"||attack.id==="titan_big_shots_2"||attack.id==="titan_big_shots_3"){titanSystem.phase=boss.phase;startTitanBigShots(attack.id==="titan_big_shots"?1:attack.id==="titan_big_shots_2"?2:3);}if(attack.id==="titan_desperation"){titanSystem.phase=boss.phase;startTitanDesperation();}if(attack.id==="titan_knight_combo")titanSystem.phase=boss.phase;if(attack.id==="crystal_barrage"){knightSystem.barrageVariation=knightSystem.barrageUses%3;knightSystem.barrageUses++;}soul.x=box.x+box.w/2;soul.y=box.y+box.h-24;soul.targetX=soul.x;soul.targetY=soul.y;soul.invuln=0;patternType=attack.id;
  const duration=(attack.id==="sanguine_slash"||attack.id==="sanguine_slash_d2"||attack.id==="titan_swarm"||attack.id==="titan_hands"||attack.id==="titan_big_shots"||attack.id==="titan_big_shots_2"||attack.id==="titan_big_shots_3"||attack.id==="titan_desperation")?8500:(attack.id==="black_flash"?5200:6500);
  say("* "+attack.name+"! Dodge their attacks.\\n* Move with WASD, or guide the SOUL with your pointer / touch.");
  render();
