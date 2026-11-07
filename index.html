@@ -371,7 +371,7 @@ function chooseKnightAttack(){
  const combo=eligible.find(a=>a.id==="titan_knight_combo");
  if(enc.phase!==phase){enc.phase=phase;enc.lastClass="";enc.lastSource="";enc.phaseCounts[phase]=0;enc.turns=0;}
  enc.turns++;
- // Coordinate a combined strike every fourth enemy turn; otherwise alternate
+ // Coordinate combined strikes on a phase-specific cadence; otherwise alternate
  // which boss leads the attack, while retaining Titan shield-pattern rotation.
  const comboInterval=phase===3?3:4;
  let source=combo&&enc.turns%comboInterval===0?"combo":(titan.length&&knight.length?(enc.lastSource==="titan"?"knight":"titan"):(titan.length?"titan":"knight"));
@@ -934,16 +934,20 @@ function enemyTurn(){
  let attack;
  if(knightFrozen){
   // Freezing the Knight does not silence the Titan in this shared encounter.
+  const enc=titanSystem.encounter;
+  if(enc.phase!==boss.phase){enc.phase=boss.phase;enc.lastClass="";enc.lastSource="";enc.phaseCounts[boss.phase]=0;enc.turns=0;}
+  enc.turns++;
   const candidates=knightSystem.attacks.filter(a=>a.id.startsWith("titan_")&&a.id!=="titan_knight_combo"&&a.phases.includes(boss.phase));
-  const enc=titanSystem.encounter,shieldClass=a=>a.id==="titan_swarm"||a.id==="titan_hands"?"shield-up":"shield-down";
+  const shieldClass=a=>a.id==="titan_swarm"||a.id==="titan_hands"?"shield-up":"shield-down";
   let pool=candidates.filter(a=>shieldClass(a)!==enc.lastClass);
   if(!pool.length)pool=candidates;
   const fresh=pool.filter(a=>a.id!==enc.lastAttack);if(fresh.length)pool=fresh;
-  attack=pool[Math.floor(Math.random()*pool.length)]||candidates[0];
-  if(attack){enc.lastClass=shieldClass(attack);enc.lastSource="titan";enc.lastAttack=attack.id;}
+  attack=pool[Math.floor(Math.random()*pool.length)]||candidates[0]||knightSystem.attacks.find(a=>a.phases.includes(boss.phase));
+  if(attack&&attack.id.startsWith("titan_")&&attack.id!=="titan_knight_combo"){enc.lastClass=shieldClass(attack);enc.lastSource="titan";enc.lastAttack=attack.id;enc.phaseCounts[boss.phase]++;}
   say("* The Knight is frozen! The Titan attacks alone.");
  }else attack=chooseKnightAttack();
- const disrupted=knightDisrupted>0;
+ // Tornado weakens the Knight's next attack; preserve it while the Knight is frozen.
+ const disrupted=!knightFrozen&&knightDisrupted>0;
  if(disrupted)knightDisrupted--;
  if(!knightFrozen&&boss.phase===3&&!knightSystem.domain&&Math.random()<.45){
   startKnightDomain();say("* THE ROARING KNIGHT: DOMAIN EXPANSION — KINGDOM OF THE ROARING.\n* Stars and swords now fall inside the battle box.");
