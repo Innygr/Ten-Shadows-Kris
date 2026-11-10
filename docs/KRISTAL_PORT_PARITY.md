@@ -61,7 +61,9 @@ and has been tested in Kristal.
 - [x] Core rules: Berdly's TORNADO costs 20 TP, deals 16 damage, and disrupts the Knight's next attack.
 - [x] Core rules: every non-Kris party member receives WAKE KRIS in their ACT list.
 - [x] Core rules: WAKE KRIS restores Kris at 1 HP if Kris is down.
-- [ ] Kristal integration: all of these actions appear for the correct character, have correct target selection, costs, messages, and turn consumption.
+- [x] Kristal integration: first custom spell classes exist for RUSH, BRIGHTEN, HEAL, REVIVESONG, ICE SHOCK, ICE WAVE, and TORNADO, with costs and core effects covered by Lua tests.
+- [ ] Kristal integration: verify spell menus, target selection, action completion, and battle turn consumption in Kristal.
+- [ ] Kristal integration: consume CHILL/frozen and disruption flags in the Knight + Titan enemy-turn scheduler.
 
 ### Ten Shadows and domains
 
