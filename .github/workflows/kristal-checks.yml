@@ -65,7 +65,12 @@ jobs:
           test -f scripts/battle/encounters/runtime_smoke_test.lua
           test -f scripts/battle/enemies/runtime_dummy.lua
           test -f scripts/battle/waves/runtime_smoke.lua
-          echo "Runtime scaffold files are present"
+          test -f scripts/battle/bullets/runtime_test_bullet.lua
+          grep -q 'registerAct("Inspect"' scripts/battle/enemies/runtime_dummy.lua
+          grep -q 'registerActFor("kris", "Signal"' scripts/battle/enemies/runtime_dummy.lua
+          grep -q 'name == "Standard"' scripts/battle/enemies/runtime_dummy.lua
+          grep -q 'runtime_test_bullet' scripts/battle/waves/runtime_smoke.lua
+          echo "Runtime attack and ACT scaffold checks passed"
 
       - name: Stage clean Kristal mod folder
         run: |
