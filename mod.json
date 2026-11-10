@@ -6,10 +6,22 @@
   "engineVer": "v0.10.0",
   "chapter": 2,
   "encounter": "runtime_smoke_test",
-  "party": ["kris", "susie", "ralsei"],
+  "party": [
+    "kris",
+    "susie",
+    "ralsei",
+    "noelle",
+    "berdly"
+  ],
   "inventory": {
-    "items": ["darkburger", "darkburger", "darkburger"],
-    "key_items": ["cell_phone"]
+    "items": [
+      "darkburger",
+      "darkburger",
+      "darkburger"
+    ],
+    "key_items": [
+      "cell_phone"
+    ]
   },
   "dev": true
 }
