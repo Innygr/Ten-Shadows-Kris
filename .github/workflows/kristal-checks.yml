@@ -63,3 +63,13 @@ jobs:
           test -f scripts/battle/enemies/runtime_dummy.lua
           test -f scripts/battle/waves/runtime_smoke.lua
           echo "Runtime scaffold files are present"
+
+      - name: Package test project
+        run: git archive --format=zip --prefix=Ten-Shadows-Kris/ HEAD -o Ten-Shadows-Kris-test.zip
+
+      - name: Upload test project
+        uses: actions/upload-artifact@v4
+        with:
+          name: Ten-Shadows-Kris-test
+          path: Ten-Shadows-Kris-test.zip
+          if-no-files-found: error
