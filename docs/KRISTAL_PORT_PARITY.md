@@ -18,9 +18,10 @@ and has been tested in Kristal.
 - scripts/ten_shadows/flavor_text.lua: Lua-native flavor text registry with multiple variants per key, conditional entries, fallback text, and repeat avoidance. Registry logic is tested independently; battle dialogue is not wired to it yet.\n- scripts/ten_shadows/combat_state.lua: Lua-native party, TP, boss phase/status,
   summon, ACT/spell, domain, and encounter-scheduling rules. Not yet connected to the
   Kristal Encounter/Enemy/Wave/UI implementation.
-- The manifest now selects the five custom party IDs: Kris, Susie, Ralsei, Noelle, and Berdly.
-  Noelle uses Kristal's built-in Noelle actor; Berdly currently uses a temporary Kris actor
-  placeholder. Custom Knight/Titan boss sprite assets are not committed yet.
+- The manifest selects five custom party IDs: Kris, Susie, Ralsei, Noelle, and Berdly.
+  Their PartyMember definitions are in Kristal's required `data/party/` registry directory;
+  custom spells are in `data/spells/`. Noelle uses the built-in Noelle actor; Berdly currently
+  uses a temporary Kris actor placeholder. Custom Knight/Titan boss sprite assets are not committed yet.
 - A smoke-test scaffold is not considered runtime-verified until it has been launched with the
   project's target Kristal build.
 
@@ -32,7 +33,7 @@ and has been tested in Kristal.
 - [ ] Launch the project in Kristal v0.10.0-192-geaf9e0ef and confirm it reaches the battle.
 - [ ] Confirm the test wave ends cleanly and the battle can return to the menu without errors.
 - [ ] Replace the temporary encounter with the shared Knight + Titan enemy and real battle flow.
-- [x] Add custom PartyMember definitions for all five party IDs and set the manifest party roster.
+- [x] Add custom PartyMember definitions for all five party IDs in `data/party/` and set the manifest party roster.
 - [ ] Add dedicated Berdly and Knight/Titan sprites, then verify party turn order and downed-member handling in Kristal.
 - [ ] Add a real overworld start/map and route progression after the battle runtime is stable.
 
