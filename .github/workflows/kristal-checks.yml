@@ -69,19 +69,10 @@ jobs:
           test -f scripts/battle/enemies/runtime_dummy.lua
           test -f scripts/battle/waves/runtime_smoke.lua
           test -f scripts/battle/bullets/runtime_test_bullet.lua
-          test -f scripts/data/party/kris.lua
-          test -f scripts/data/party/kris.lua
-          test -f scripts/data/party/susie.lua
-          test -f scripts/data/party/ralsei.lua
-          test -f scripts/data/party/noelle.lua
-          test -f scripts/data/party/berdly.lua
-          test -f scripts/data/spells/ts_rush.lua
-          test -f scripts/data/spells/ts_brighten.lua
-          test -f scripts/data/spells/ts_heal.lua
-          test -f scripts/data/spells/ts_revivesong.lua
-          test -f scripts/data/spells/ts_ice_shock.lua
-          test -f scripts/data/spells/ts_ice_wave.lua
-          test -f scripts/data/spells/ts_tornado.lua
+          for member in kris susie ralsei noelle berdly; do test -f "data/party/$member.lua"; done
+          for spell in ts_rush ts_brighten ts_heal ts_revivesong ts_ice_shock ts_ice_wave ts_tornado; do test -f "data/spells/$spell.lua"; done
+          test ! -d scripts/data/party
+          test ! -d scripts/data/spells
           grep -q 'registerAct("Inspect"' scripts/battle/enemies/runtime_dummy.lua
           grep -q 'registerActFor("kris", "Signal"' scripts/battle/enemies/runtime_dummy.lua
           grep -q 'Standard = "\* The standard X-ACT handler works\.' scripts/battle/enemies/runtime_dummy.lua
@@ -90,13 +81,13 @@ jobs:
           done
           grep -q 'CHIMERA SHADOW GARDEN' scripts/battle/enemies/runtime_dummy.lua
           grep -q 'runtime_test_bullet' scripts/battle/waves/runtime_smoke.lua
-          echo "Runtime scaffold, five-member party, spell, domain, and Ten Shadows checks passed"
+          echo "Runtime scaffold, registry-loaded five-member party, spells, domain, and Ten Shadows checks passed"
 
       - name: Stage clean Kristal mod folder
         run: |
           mkdir -p dist/Ten-Shadows-Kris
           cp mod.json mod.lua dist/Ten-Shadows-Kris/
-          for dir in assets scripts libraries preview; do
+          for dir in assets data scripts libraries preview; do
             if [ -d "$dir" ]; then
               mkdir -p "dist/Ten-Shadows-Kris/$dir"
               rsync -a --exclude='*.md' --exclude='*.html' --exclude='*.js' \
