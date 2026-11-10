@@ -1,0 +1,65 @@
+name: Kristal project checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  static-checks:
+    name: Validate manifest and Lua syntax
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.1
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes lua5.1
+
+      - name: Validate mod.json
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          manifest_path = Path("mod.json")
+          manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+
+          required = ("id", "name", "version", "engineVer", "chapter", "encounter", "party")
+          missing = [key for key in required if key not in manifest]
+          if missing:
+              raise SystemExit("mod.json is missing required fields: " + ", ".join(missing))
+
+          if not isinstance(manifest["party"], list) or not manifest["party"]:
+              raise SystemExit("mod.json party must be a non-empty array")
+
+          if "darkInventory" in manifest:
+              raise SystemExit("Use Kristal's 'inventory' field, not 'darkInventory'")
+
+          print("mod.json is valid")
+          print("Project:", manifest["name"])
+          print("Engine target:", manifest["engineVer"])
+          print("Initial encounter:", manifest["encounter"])
+          PY
+
+      - name: Validate every Lua script
+        run: |
+          mapfile -t scripts < <(find . -type f -name '*.lua' -not -path './.git/*' | sort)
+          if [ "${#scripts[@]}" -eq 0 ]; then
+            echo "No Lua files found"
+            exit 1
+          fi
+          for script in "${scripts[@]}"; do
+            echo "Checking $script"
+            luac5.1 -p "$script"
+          done
+
+      - name: Verify runtime scaffold paths
+        run: |
+          test -f mod.lua
+          test -f scripts/battle/encounters/runtime_smoke_test.lua
+          test -f scripts/battle/enemies/runtime_dummy.lua
+          test -f scripts/battle/waves/runtime_smoke.lua
+          echo "Runtime scaffold files are present"
