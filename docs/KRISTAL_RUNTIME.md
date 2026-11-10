@@ -39,7 +39,9 @@ Ten-Shadows-Kris/
 Kristal discovers encounter, enemy, and wave classes by their script folders and file IDs.
 The initial manifest starts runtime_smoke_test, which adds runtime_dummy, which selects the
 runtime_smoke wave. The test enemy reuses the engine's built-in Kris actor so this first
-integration does not depend on custom sprite files.
+integration does not depend on custom actor sprite files. It registers Inspect and Kris-only
+Signal ACTs, preserves CHECK and the standard X-ACT response, and uses a custom visible
+bullet for a short dodgeable attack.
 
 ## Automated checks and artifacts
 
@@ -49,7 +51,9 @@ pushes, pull requests, and manual dispatch. It currently:
 - Parses `mod.json` and checks the required project fields.
 - Rejects the incorrect `darkInventory` key.
 - Runs Lua 5.1 syntax validation (`luac5.1 -p`) on every Lua file.\n- Executes `tests/flavor_text_test.lua` to check multiple variants, repeat avoidance, conditions, and fallbacks.
-- Confirms the smoke-test entry-point files exist.
+- Confirms the smoke-test encounter, enemy, wave, and custom bullet files exist.
+- Checks that the runtime enemy registers both custom ACTs and handles the standard X-ACT.
+- Checks that the smoke wave spawns the custom runtime-test bullet.
 - Packages a clean Kristal mod folder as `Ten-Shadows-Kris-test.zip`.
 - Checks out Kristal v0.10.0, integrates the mod as the target mod, and creates
   `Ten-Shadows-Kris.love` from the engine source.
@@ -87,10 +91,11 @@ find . -type f -name '*.lua' -not -path './.git/*' -print0 |
 2. For the mod ZIP, launch the target Kristal build and select Ten Shadows Kris. For the
    standalone archive, the integrated mod should start automatically.
 3. Create a new file. The manifest should route into the runtime smoke-test encounter.
-4. Confirm the placeholder enemy and battle UI load.
-5. Defend through the short test wave and confirm it exits cleanly.
-6. Finish the encounter and confirm Kristal returns without a Lua error.
-7. Record the exact engine build and any console traceback before changing the scaffold.
+4. Confirm the placeholder enemy, battle UI, and ACT menu load.
+5. Use CHECK, Inspect, Kris's Signal ACT, and the standard X-ACT; confirm each returns dialogue.
+6. Dodge the five slow bullets during the short attack wave, then confirm the wave exits cleanly.
+7. Finish the encounter and confirm Kristal returns without a Lua error.
+8. Record the exact engine build and any console traceback before changing the scaffold.
 
 The repository work environment does not contain the user's Kristal/LÖVE runtime, so this
 launch checklist remains unverified here. Do not mark runtime checks complete based only on
@@ -103,7 +108,7 @@ static inspection or successful GitHub commits.
   can be placed in the manifest party list safely.
 - The temporary test enemy is not the Knight + Titan. It exists only to prove the engine's
   mod -> encounter -> enemy -> wave loading path.
-- The test wave is intentionally short and contains no custom projectile patterns.
+- The runtime smoke wave now fires five slow, visible test bullets. It is a basic attack/collision test, not a production boss pattern.
 - No overworld map is configured yet. The first milestone is a known-good battle runtime;
   the route map and story entry point follow once that is stable.
 - No networking transport is present. Multiplayer requirements are defined separately in
