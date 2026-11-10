@@ -1,6 +1,6 @@
 # Kristal Port Parity — HTML Prototype
 
-The browser build (`index.html` plus its JavaScript modules) is the feature reference.
+The browser build (index.html plus its JavaScript modules) is the feature reference.
 The intended shipped implementation is the Kristal/Lua game. New gameplay work should
 be made in Kristal first; HTML is a reference and regression checklist, not the target.
 
@@ -10,13 +10,29 @@ and has been tested in Kristal.
 
 ## Current Kristal foundation
 
-- `scripts/objects/soul_ejection.lua`: detached SOUL movement/drawing controller. Not yet
+- mod.json and mod.lua now provide a project manifest and initialization hook.
+- scripts/battle/encounters/runtime_smoke_test.lua, runtime_dummy.lua, and runtime_smoke.lua
+  provide a minimal boot-to-battle smoke-test path. This is not the real boss encounter.
+- scripts/objects/soul_ejection.lua: detached SOUL movement/drawing controller. Not yet
   connected to Kris's overworld controls, collapse/restore sequence, or character dialogue.
-- `scripts/ten_shadows/combat_state.lua`: Lua-native party, TP, boss phase/status,
-  summon, ACT/spell, domain, and encounter-scheduling rules. Not yet connected to a
+- scripts/ten_shadows/combat_state.lua: Lua-native party, TP, boss phase/status,
+  summon, ACT/spell, domain, and encounter-scheduling rules. Not yet connected to the
   Kristal Encounter/Enemy/Wave/UI implementation.
-- The repository currently has no committed `mod.json`, `mod.lua`, Kristal map, or
-  registered battle encounter. The Lua modules are groundwork, not a runnable Kristal port.
+- The manifest currently starts a temporary encounter using the built-in Kris/Susie/Ralsei party.
+  No custom Noelle/Berdly party definitions or custom boss sprite assets are committed yet.
+- A smoke-test scaffold is not considered runtime-verified until it has been launched with the
+  project's target Kristal build.
+
+## Runtime checklist
+
+- [x] Kristal project manifest with project ID, engine version, chapter, initial encounter, and party.
+- [x] Mod initialization hook.
+- [x] Encounter registration path, enemy class, and a short no-projectile test wave.
+- [ ] Launch the project in Kristal v0.10.0-192-geaf9e0ef and confirm it reaches the battle.
+- [ ] Confirm the test wave ends cleanly and the battle can return to the menu without errors.
+- [ ] Replace the temporary encounter with the shared Knight + Titan enemy and real battle flow.
+- [ ] Add the custom five-member party definitions, stats, sprites, and turn integration.
+- [ ] Add a real overworld start/map and route progression after the battle runtime is stable.
 
 ## Feature parity checklist
 
@@ -112,12 +128,14 @@ and has been tested in Kristal.
 
 ## Implementation order
 
-1. Make the repository a valid Kristal mod and register the battle encounter.
-2. Connect `combat_state.lua` to the Kristal Encounter, enemy, party actions, TP UI, and items.
-3. Port the full Knight/Titan wave library, including all 37 attack definitions.
-4. Integrate SOUL ejection into the overworld and then into the boss encounter.
-5. Port route state, flavor text, sprites, and battle presentation.
-6. Test every action, phase transition, attack, status, and win/loss path in the actual
+1. Launch and verify the new runtime smoke test in the target Kristal build.
+2. Replace the placeholder enemy with the shared Knight + Titan encounter while keeping the
+   project launchable at every step.
+3. Connect the combat-state rules to Kristal party actions, TP UI, items, enemy state, and waves.
+4. Port the full Knight/Titan wave library, including all 37 attack definitions.
+5. Integrate SOUL ejection into the overworld and then into the boss encounter.
+6. Port route state, flavor text, sprites, and battle presentation.
+7. Test every action, phase transition, attack, status, and win/loss path in the actual
    Kristal runtime. Only then mark the matching checklist entries complete.
 
 This checklist intentionally distinguishes **Lua rules implemented** from **playable Kristal
