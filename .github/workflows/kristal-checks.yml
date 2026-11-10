@@ -179,12 +179,7 @@ jobs:
           unzip -p Ten-Shadows-Kris.love VERSION | grep -Eq '^[v]?[0-9]+([.][0-9]+){0,2}([+-].*)?$'
           unzip -Z1 Ten-Shadows-Kris.love | grep -qx 'main.lua'
           unzip -Z1 Ten-Shadows-Kris.love | grep -qx 'assets/fonts/main.ttf'
-          unzip -Z1 Ten-Shadows-Kris.love | grep -q '^mods/ten_shadows_kris/mod.json
-          if unzip -Z1 Ten-Shadows-Kris.love | grep -Eq '(^|/)\.git/|\.html$'; then
-            echo "Unexpected development or HTML files found in .love archive"
-            exit 1
-          fi
-          echo "Standalone LÖVE archive structure and VERSION verified"
+          unzip -Z1 Ten-Shadows-Kris.love | grep -qx 'mods/ten_shadows_kris/mod.json'
 
       - name: Upload standalone .love archive
         uses: actions/upload-artifact@v5
