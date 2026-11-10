@@ -59,8 +59,12 @@
   root.FlavorText = api;
 
   // Confirmed opening flavor text for the Roaring Knight.
-  register("roaring_knight.opening", [
+  register("roaring_knight.early", [
     "You feel incoming dread."
+  ]);
+
+  register("roaring_knight.opening", [
+    "No one is holding back anymore... Do your best. The fate of the world is in your hands"
   ]);
 
   // Base Knight battle flavor: the North and East winds.
