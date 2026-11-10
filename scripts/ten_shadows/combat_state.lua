@@ -98,6 +98,7 @@ function CombatState.new()
         turn = 1,
         knight_disrupted = 0,
         player_domain = {active = false, turns = 0, used = false},
+        knight_domain = {active = false, turns = 0},
         titan = {light_radius = 38, base_light_radius = 38, brighten_turns = 0},
         encounter = {
             phase = 1, last_class = "", last_source = "",
@@ -260,7 +261,7 @@ function CombatState.new()
     end
 
     function state:castReviveSong(target)
-        if not target or not self:spendTP(84) then return false end
+        if not target or (target.hp > 0 and target.hp >= target.max_hp) or not self:spendTP(84) then return false end
         if target.hp <= 0 then
             target.hp = math.ceil(target.max_hp / 2)
             return true, "revived"
@@ -278,6 +279,13 @@ function CombatState.new()
         return true
     end
 
+    function state:startKnightDomain()
+        if self.boss.phase ~= 3 or self.knight_domain.active then return false end
+        self.knight_domain.active = true
+        self.knight_domain.turns = 3
+        return true
+    end
+
     function state:tickEnemyTurnEffects()
         if self.boss.exposed > 0 then self.boss.exposed = self.boss.exposed - 1 end
         if self.titan.brighten_turns > 0 then
@@ -291,6 +299,13 @@ function CombatState.new()
             if self.player_domain.turns <= 0 then
                 self.player_domain.active = false
                 self.player_domain.turns = 0
+            end
+        end
+        if self.knight_domain.active then
+            self.knight_domain.turns = self.knight_domain.turns - 1
+            if self.knight_domain.turns <= 0 then
+                self.knight_domain.active = false
+                self.knight_domain.turns = 0
             end
         end
     end
@@ -430,7 +445,12 @@ function CombatState.new()
             encounter.last_attack = picked.id
         end
 
-        return picked, frozen
+        local domain_started = false
+        if not frozen and phase == 3 and not self.knight_domain.active and math.random() < 0.45 then
+            domain_started = self:startKnightDomain()
+        end
+
+        return picked, frozen, domain_started
     end
 
     function state:canSpare()
