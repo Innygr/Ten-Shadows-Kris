@@ -69,8 +69,8 @@ jobs:
           test -f scripts/battle/enemies/runtime_dummy.lua
           test -f scripts/battle/waves/runtime_smoke.lua
           test -f scripts/battle/bullets/runtime_test_bullet.lua
-          for member in kris susie ralsei noelle berdly; do test -f "data/party/$member.lua"; done
-          for spell in ts_rush ts_brighten ts_heal ts_revivesong ts_ice_shock ts_ice_wave ts_tornado; do test -f "data/spells/$spell.lua"; done
+          for member in kris susie ralsei noelle berdly; do test -f "scripts/data/party/$member.lua"; done
+          for spell in ts_rush ts_brighten ts_heal ts_revivesong ts_ice_shock ts_ice_wave ts_tornado; do test -f "scripts/data/spells/$spell.lua"; done
           grep -q 'registerAct("Inspect"' scripts/battle/enemies/runtime_dummy.lua
           grep -q 'registerActFor("kris", "Signal"' scripts/battle/enemies/runtime_dummy.lua
           grep -q 'Standard = "\* The standard X-ACT handler works\.' scripts/battle/enemies/runtime_dummy.lua
@@ -78,8 +78,9 @@ jobs:
             grep -Fq "{\"$shadow\"," scripts/battle/enemies/runtime_dummy.lua
           done
           grep -q 'CHIMERA SHADOW GARDEN' scripts/battle/enemies/runtime_dummy.lua
+          grep -q 'Game:setPartyMembers("kris", "susie", "ralsei", "noelle", "berdly")' mod.lua
           grep -q 'runtime_test_bullet' scripts/battle/waves/runtime_smoke.lua
-          echo "Runtime scaffold, registry-loaded five-member party, spells, domain, and Ten Shadows checks passed"
+          echo "Runtime scaffold, mod-registered five-member party, spells, domain, and Ten Shadows checks passed"
 
       - name: Stage clean Kristal mod folder
         run: |
