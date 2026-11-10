@@ -151,17 +151,25 @@ jobs:
       - name: Build and verify .love archive
         run: |
           cd kristal-engine
+
+          # Kristal reads this root-level file at startup to initialize SemVer.
+          test -s VERSION
+          grep -Eq '^[v]?[0-9]+(\\.[0-9]+){0,2}([+-].*)?$' VERSION
+
           zip -9 -r ../Ten-Shadows-Kris.love \
-            assets configs data data_templates lib mods src \
+            VERSION assets configs data data_templates lib mods src \
             conf.lua gamecontrollerdb.txt icon.png main.lua LICENSE
           cd ..
+
+          unzip -Z1 Ten-Shadows-Kris.love | grep -qx 'VERSION'
+          unzip -p Ten-Shadows-Kris.love VERSION | grep -Eq '^[v]?[0-9]+(\\.[0-9]+){0,2}([+-].*)?$'
           unzip -Z1 Ten-Shadows-Kris.love | grep -qx 'main.lua'
           unzip -Z1 Ten-Shadows-Kris.love | grep -q '^mods/ten_shadows_kris/mod.json$'
           if unzip -Z1 Ten-Shadows-Kris.love | grep -Eq '(^|/)\.git/|\.html$'; then
             echo "Unexpected development or HTML files found in .love archive"
             exit 1
           fi
-          echo "Standalone LÖVE archive structure verified"
+          echo "Standalone LÖVE archive structure and VERSION verified"
 
       - name: Upload standalone .love archive
         uses: actions/upload-artifact@v4
