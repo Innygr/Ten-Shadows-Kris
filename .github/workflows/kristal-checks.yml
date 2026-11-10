@@ -69,8 +69,17 @@ jobs:
           grep -q 'registerAct("Inspect"' scripts/battle/enemies/runtime_dummy.lua
           grep -q 'registerActFor("kris", "Signal"' scripts/battle/enemies/runtime_dummy.lua
           grep -q 'name == "Standard"' scripts/battle/enemies/runtime_dummy.lua
+          grep -q 'registerActFor("susie", "RUSH"' scripts/battle/enemies/runtime_dummy.lua
+          grep -q 'registerActFor("ralsei", "REVIVESONG"' scripts/battle/enemies/runtime_dummy.lua
+          grep -q 'registerActFor("noelle", "ICE SHOCK"' scripts/battle/enemies/runtime_dummy.lua
+          grep -q 'registerActFor("noelle", "ICE WAVE"' scripts/battle/enemies/runtime_dummy.lua
+          grep -q 'registerActFor("berdly", "TORNADO"' scripts/battle/enemies/runtime_dummy.lua
+          for shadow in TOAD NUE "DIVINE DOG" "GREAT SERPENT" "MAX ELEPHANT" "RABBIT ESCAPE" "ROUND DEER" "PIERCING OX" "TIGER FUNERAL" MAHORAGA; do
+            grep -q "\"$shadow\"" scripts/battle/enemies/runtime_dummy.lua
+          done
+          grep -q 'CHIMERA SHADOW GARDEN' scripts/battle/enemies/runtime_dummy.lua
           grep -q 'runtime_test_bullet' scripts/battle/waves/runtime_smoke.lua
-          echo "Runtime attack and ACT scaffold checks passed"
+          echo "Runtime attack, party spell, domain, and Ten Shadows ACT checks passed"
 
       - name: Stage clean Kristal mod folder
         run: |
