@@ -56,6 +56,9 @@ jobs:
             luac5.1 -p "$script"
           done
 
+      - name: Test flavor text registry
+        run: lua5.1 tests/flavor_text_test.lua
+
       - name: Verify runtime scaffold paths
         run: |
           test -f mod.lua
