@@ -42,6 +42,28 @@ The initial manifest starts runtime_smoke_test, which adds runtime_dummy, which 
 runtime_smoke wave. The test enemy reuses the engine's built-in Kris actor so this first
 integration does not depend on custom sprite files.
 
+## Automated checks
+
+The repository includes `.github/workflows/kristal-checks.yml`. GitHub Actions runs it on
+pushes, pull requests, and manual dispatch. It currently:
+
+- Parses `mod.json` and checks the required project fields.
+- Rejects the incorrect `darkInventory` key.
+- Runs Lua 5.1 syntax validation (`luac5.1 -p`) on every Lua file.
+- Confirms the smoke-test entry-point files exist.
+
+These checks catch malformed configuration and Lua syntax errors. They do **not** boot Kristal,
+load assets, verify engine API calls, or play through the encounter. A green CI run is a static
+pass, not proof of an in-game test pass.
+
+To run the same checks locally on Ubuntu/Debian, install `lua5.1` and `python3`, then run:
+
+```sh
+python3 -m json.tool mod.json >/dev/null
+find . -type f -name '*.lua' -not -path './.git/*' -print0 |
+  xargs -0 -n1 luac5.1 -p
+```
+
 ## First launch checklist
 
 1. Place the repository folder in the Kristal mods directory.
