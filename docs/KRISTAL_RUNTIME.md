@@ -4,7 +4,8 @@
 
 The initial project manifest targets the installed engine reported for development:
 
-- Kristal: v0.10.0-192-geaf9e0ef
+- Installed Kristal build: v0.10.0-192-geaf9e0ef
+- Manifest compatibility target: v0.10.0
 - Runtime: LÖVE 11.5
 - Project entry: mod.json
 - Mod initialization: mod.lua
@@ -51,6 +52,11 @@ pushes, pull requests, and manual dispatch. It currently:
 - Rejects the incorrect `darkInventory` key.
 - Runs Lua 5.1 syntax validation (`luac5.1 -p`) on every Lua file.
 - Confirms the smoke-test entry-point files exist.
+- Packages the repository into a `Ten-Shadows-Kris-test.zip` artifact when checks pass.
+
+Download the `Ten-Shadows-Kris-test` artifact from the successful workflow run's
+**Actions → Artifacts** section. Extract the project folder into Kristal's projects/mods
+location. The artifact is a Kristal project folder, not a standalone executable.
 
 These checks catch malformed configuration and Lua syntax errors. They do **not** boot Kristal,
 load assets, verify engine API calls, or play through the encounter. A green CI run is a static
