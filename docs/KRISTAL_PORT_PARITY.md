@@ -15,7 +15,7 @@ and has been tested in Kristal.
   provide a minimal boot-to-battle smoke-test path. This is not the real boss encounter.
 - scripts/objects/soul_ejection.lua: detached SOUL movement/drawing controller. Not yet
   connected to Kris's overworld controls, collapse/restore sequence, or character dialogue.
-- scripts/ten_shadows/combat_state.lua: Lua-native party, TP, boss phase/status,
+- scripts/ten_shadows/flavor_text.lua: Lua-native flavor text registry with multiple variants per key, conditional entries, fallback text, and repeat avoidance. Registry logic is tested independently; battle dialogue is not wired to it yet.\n- scripts/ten_shadows/combat_state.lua: Lua-native party, TP, boss phase/status,
   summon, ACT/spell, domain, and encounter-scheduling rules. Not yet connected to the
   Kristal Encounter/Enemy/Wave/UI implementation.
 - The manifest currently starts a temporary encounter using the built-in Kris/Susie/Ralsei party.
@@ -116,7 +116,7 @@ and has been tested in Kristal.
 ### Route state, dialogue, visuals, and assets
 
 - [ ] Port the Weird Route: Ice counters/flags/history without inventing route activation conditions.
-- [ ] Port the flavor-text registry and its conditional selection.
+- [x] Port the flavor-text registry to Lua, including multiple variants per key, conditional selection, fallback text, and avoiding an immediate repeat when alternatives exist.\n- [ ] Connect flavor text selection to Kristal battle dialogue and story-state conditions.
 - [ ] Port opening/battle flavor text and the Odd Radio / mayo armor entries where those items exist.
 - [ ] Port sprite-sheet animation handling and sprite-asset manifest fallback behaviour.
 - [ ] Port the battle scene composition: party lineup, Knight foreground, Titan looming behind,
