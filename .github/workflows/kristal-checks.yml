@@ -70,6 +70,7 @@ jobs:
           test -f scripts/battle/waves/runtime_smoke.lua
           test -f scripts/battle/bullets/runtime_test_bullet.lua
           test -f scripts/data/party/kris.lua
+          test -f scripts/data/party/kris.lua
           test -f scripts/data/party/susie.lua
           test -f scripts/data/party/ralsei.lua
           test -f scripts/data/party/noelle.lua
