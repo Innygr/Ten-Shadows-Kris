@@ -4,7 +4,7 @@ function RuntimeDummy:init()
     super.init(self)
 
     self.name = "Runtime Check"
-    -- Reuse a built-in Kristal actor so the smoke test needs no custom sprite assets.
+    -- Reuse a built-in Kristal actor so the smoke test needs no custom actor assets.
     self:setActor("kris")
 
     self.max_health = 260
@@ -17,22 +17,29 @@ function RuntimeDummy:init()
     self.tired_percentage = 0
 
     self.waves = {"runtime_smoke"}
-
-    self.dialogue = {
-        "The runtime is responding.",
-    }
+    self.dialogue = {"The runtime is responding."}
     self.check = "AT 1 DF 0\n* A temporary engine smoke test.\n* Not the Knight + Titan encounter."
     self.text = {
         "* The battle runtime initialized.",
-        "* This placeholder will be replaced by the real encounter.",
+        "* A test attack is incoming.",
     }
+
+    -- Exercise ACT registration and dispatch independently of the real boss ACTs.
+    self:registerAct("Inspect", "Read the runtime status")
+    self:registerActFor("kris", "Signal", "Test a character-specific ACT")
 end
 
 function RuntimeDummy:onAct(battler, name)
-    if name == "Check" then
-        return super.onAct(self, battler, name)
+    if name == "Inspect" then
+        return "* ACT registration works.\n* ACT dispatch works."
+    elseif name == "Signal" then
+        return "* Kris's character-specific ACT works."
+    elseif name == "Standard" then
+        return "* The standard X-ACT handler works."
     end
-    return "* The runtime test has no custom ACTs yet."
+
+    -- Keep Kristal's built-in CHECK implementation.
+    return super.onAct(self, battler, name)
 end
 
 return RuntimeDummy
