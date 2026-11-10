@@ -3,7 +3,7 @@
   "name": "Ten Shadows Kris",
   "subtitle": "An aborted Weird Route file",
   "version": "0.1.0",
-  "engineVer": "v0.10.0",
+  "engineVer": "v0.10.0-192-geaf9e0ef",
   "chapter": 2,
   "encounter": "runtime_smoke_test",
   "party": ["kris", "susie", "ralsei"],
