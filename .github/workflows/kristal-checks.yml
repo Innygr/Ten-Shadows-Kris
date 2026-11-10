@@ -154,7 +154,7 @@ jobs:
 
           # Kristal reads this root-level file at startup to initialize SemVer.
           test -s VERSION
-          grep -Eq '^[v]?[0-9]+(\\.[0-9]+){0,2}([+-].*)?$' VERSION
+          grep -Eq '^[v]?[0-9]+([.][0-9]+){0,2}([+-].*)?$' VERSION
 
           zip -9 -r ../Ten-Shadows-Kris.love \
             VERSION assets configs data data_templates lib mods src \
@@ -162,7 +162,7 @@ jobs:
           cd ..
 
           unzip -Z1 Ten-Shadows-Kris.love | grep -qx 'VERSION'
-          unzip -p Ten-Shadows-Kris.love VERSION | grep -Eq '^[v]?[0-9]+(\\.[0-9]+){0,2}([+-].*)?$'
+          unzip -p Ten-Shadows-Kris.love VERSION | grep -Eq '^[v]?[0-9]+([.][0-9]+){0,2}([+-].*)?$'
           unzip -Z1 Ten-Shadows-Kris.love | grep -qx 'main.lua'
           unzip -Z1 Ten-Shadows-Kris.love | grep -q '^mods/ten_shadows_kris/mod.json$'
           if unzip -Z1 Ten-Shadows-Kris.love | grep -Eq '(^|/)\.git/|\.html$'; then
