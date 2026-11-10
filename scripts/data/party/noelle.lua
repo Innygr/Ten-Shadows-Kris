@@ -5,7 +5,7 @@ function character:init()
     self.name = "Noelle"
     self:setActor("noelle")
     self.level = Game.chapter
-    self.title = "Frostcaster"
+    self.title = "Snowcaster"
     self.soul_priority = 1
     self.has_act = true
     self.has_spells = true
