@@ -5,13 +5,6 @@ local ACT_TEXT = {
     Signal = "* Kris's character-specific ACT works.",
     Standard = "* The standard X-ACT handler works.",
     ["WAKE KRIS"] = "* The party calls out to Kris.\\n* WAKE KRIS ACT dispatch works.",
-    RUSH = "* Susie charges forward with a powerful strike.",
-    BRIGHTEN = "* Susie and Ralsei combine their strength.\\n* BRIGHTEN ACT dispatch works.",
-    HEAL = "* Ralsei calls on healing magic.\\n* HEAL ACT dispatch works.",
-    REVIVESONG = "* Ralsei sings a restorative song.\\n* REVIVESONG ACT dispatch works.",
-    ["ICE SHOCK"] = "* Noelle casts ICE SHOCK.\\n* The target is struck by freezing magic.",
-    ["ICE WAVE"] = "* Noelle casts ICE WAVE.\\n* A larger wave of frost surges forward.",
-    TORNADO = "* Berdly summons a cutting gust of wind.",
     ["CHIMERA SHADOW GARDEN"] = "* DOMAIN EXPANSION — CHIMERA SHADOW GARDEN.\\n* The battlefield sinks into a sea of shadows.",
     TOAD = "* TOAD binds the target and disrupts its next attack.",
     NUE = "* NUE dives from above. (+5 TP)",
@@ -69,16 +62,9 @@ function RuntimeDummy:init()
     self:registerActFor("kris", "CHIMERA SHADOW GARDEN", "Expand the domain", nil, 60)
 
     -- Susie and Ralsei.
-    self:registerActFor("susie", "RUSH", "A powerful charge")
-    self:registerActFor("susie", "BRIGHTEN", "Susie + Ralsei light", {"ralsei"}, 4)
-    self:registerActFor("ralsei", "HEAL", "Restore an ally", nil, 16)
-    self:registerActFor("ralsei", "REVIVESONG", "Revive or restore an ally", nil, 84)
 
     -- Noelle and Berdly are registered now so the runtime test can exercise
     -- their full ACT set once their custom party definitions are integrated.
-    self:registerActFor("noelle", "ICE SHOCK", "Single-target ice spell", nil, 16)
-    self:registerActFor("noelle", "ICE WAVE", "Stronger ice spell", nil, 28)
-    self:registerActFor("berdly", "TORNADO", "Disrupt with wind", nil, 20)
 
     -- All non-Kris party members can call Kris back if Kris is down.
     for _, char in ipairs({"susie", "ralsei", "noelle", "berdly"}) do
