@@ -9,8 +9,9 @@ feature reference and parity checklist; new gameplay systems should be implement
 before changes to the JavaScript/HTML/CSS prototype.
 
 See [Kristal Port Parity](docs/KRISTAL_PORT_PARITY.md) for the feature inventory and port status,
-[Kristal Runtime Requirements](docs/KRISTAL_RUNTIME.md) for the engine entry point and smoke test,
-and [Multiplayer Baseline](docs/MULTIPLAYER_BASELINE.md) for the networking architecture contract.
+[Kristal Runtime Requirements](docs/KRISTAL_RUNTIME.md) for the engine entry point, build artifacts,
+and smoke test, and [Multiplayer Baseline](docs/MULTIPLAYER_BASELINE.md) for the networking
+architecture contract.
 
 ## Current Kristal foundation
 
@@ -20,6 +21,17 @@ and [Multiplayer Baseline](docs/MULTIPLAYER_BASELINE.md) for the networking arch
 - scripts/objects/soul_ejection.lua: detached SOUL controller foundation.
 - scripts/ten_shadows/combat_state.lua: Lua-native combat rules for the five-member party,
   TP, ACTs/spells, Ten Shadows, domains, shared Knight + Titan phases/statuses, and attack scheduling.
+
+## Build artifacts
+
+GitHub Actions publishes two artifacts after the checks pass:
+
+- `Ten-Shadows-Kris-test`: clean Kristal mod ZIP for an existing Kristal installation.
+- `Ten-Shadows-Kris-love`: standalone `.love` archive with the Kristal v0.10.0 engine integrated
+  and configured to start this mod automatically. Requires LÖVE 11.5.
+
+The HTML/JavaScript browser prototype and documentation are source/reference material; they are
+not included in either game package.
 
 The initial runtime encounter is deliberately a placeholder, not the real Knight + Titan fight.
 The manifest currently uses Kristal's built-in Kris/Susie/Ralsei party so it does not reference
