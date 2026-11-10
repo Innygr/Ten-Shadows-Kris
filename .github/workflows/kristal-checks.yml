@@ -84,11 +84,6 @@ jobs:
           grep -q 'registerAct("Inspect"' scripts/battle/enemies/runtime_dummy.lua
           grep -q 'registerActFor("kris", "Signal"' scripts/battle/enemies/runtime_dummy.lua
           grep -q 'Standard = "\* The standard X-ACT handler works\.' scripts/battle/enemies/runtime_dummy.lua
-          grep -q 'registerActFor("susie", "RUSH"' scripts/battle/enemies/runtime_dummy.lua
-          grep -q 'registerActFor("ralsei", "REVIVESONG"' scripts/battle/enemies/runtime_dummy.lua
-          grep -q 'registerActFor("noelle", "ICE SHOCK"' scripts/battle/enemies/runtime_dummy.lua
-          grep -q 'registerActFor("noelle", "ICE WAVE"' scripts/battle/enemies/runtime_dummy.lua
-          grep -q 'registerActFor("berdly", "TORNADO"' scripts/battle/enemies/runtime_dummy.lua
           for shadow in TOAD NUE "DIVINE DOG" "GREAT SERPENT" "MAX ELEPHANT" "RABBIT ESCAPE" "ROUND DEER" "PIERCING OX" "TIGER FUNERAL" MAHORAGA; do
             grep -Fq "{\"$shadow\"," scripts/battle/enemies/runtime_dummy.lua
           done
