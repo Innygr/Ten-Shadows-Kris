@@ -59,6 +59,9 @@ jobs:
       - name: Test flavor text registry
         run: lua5.1 tests/flavor_text_test.lua
 
+      - name: Test runtime spell effects
+        run: lua5.1 tests/runtime_spells_test.lua
+
       - name: Verify runtime scaffold paths
         run: |
           test -f mod.lua
