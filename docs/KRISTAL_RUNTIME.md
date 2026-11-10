@@ -48,7 +48,7 @@ pushes, pull requests, and manual dispatch. It currently:
 
 - Parses `mod.json` and checks the required project fields.
 - Rejects the incorrect `darkInventory` key.
-- Runs Lua 5.1 syntax validation (`luac5.1 -p`) on every Lua file.
+- Runs Lua 5.1 syntax validation (`luac5.1 -p`) on every Lua file.\n- Executes `tests/flavor_text_test.lua` to check multiple variants, repeat avoidance, conditions, and fallbacks.
 - Confirms the smoke-test entry-point files exist.
 - Packages a clean Kristal mod folder as `Ten-Shadows-Kris-test.zip`.
 - Checks out Kristal v0.10.0, integrates the mod as the target mod, and creates
