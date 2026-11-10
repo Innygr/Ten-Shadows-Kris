@@ -135,11 +135,11 @@ function CombatState.new()
         local dealt = math.floor(amount * multiplier + 0.5)
         self.boss.hp = math.max(0, self.boss.hp - dealt)
         local phase_changed = false
-        if self.boss.hp <= 78 and self.boss.phase < 3 then
-            self.boss.phase = 3
-            phase_changed = true
-        elseif self.boss.hp <= 175 and self.boss.phase < 2 then
+        if self.boss.phase == 1 and self.boss.hp <= 175 then
             self.boss.phase = 2
+            phase_changed = true
+        elseif self.boss.phase == 2 and self.boss.hp <= 78 then
+            self.boss.phase = 3
             phase_changed = true
         end
         if phase_changed then
@@ -205,10 +205,68 @@ function CombatState.new()
     end
 
     function state:brighten()
+        local susie = self:getMember("susie")
+        local ralsei = self:getMember("ralsei")
+        if not susie or susie.hp <= 0 or not ralsei or ralsei.hp <= 0 then return false end
         if self.titan.brighten_turns > 0 or not self:spendTP(4) then return false end
         self.titan.light_radius = 58
         self.titan.brighten_turns = 1
         return true
+    end
+
+    function state:checkBoss()
+        local gained = 0
+        if self.boss.exposed <= 0 then
+            gained = 8
+            self:addTP(gained)
+        end
+        return gained
+    end
+
+    function state:distractKnight()
+        self:expose(2)
+        self:addTP(12)
+    end
+
+    function state:rushWithSusie()
+        if not self:getMember("susie") or self:getMember("susie").hp <= 0 then return false end
+        return self:damageBoss(34)
+    end
+
+    function state:castIceShock()
+        if not self:spendTP(16) then return false end
+        local dealt = self:damageBoss(18)
+        local frozen = self:applyChill(1)
+        return true, dealt, frozen
+    end
+
+    function state:castIceWave()
+        if not self:spendTP(28) then return false end
+        local dealt = self:damageBoss(30)
+        local frozen = self:applyChill(2)
+        return true, dealt, frozen
+    end
+
+    function state:castTornado()
+        if not self:spendTP(20) then return false end
+        local dealt = self:damageBoss(16)
+        self:disruptKnight()
+        return true, dealt
+    end
+
+    function state:castHeal(target)
+        if not target or target.hp <= 0 or target.hp >= target.max_hp or not self:spendTP(16) then return false end
+        return self:heal(target, 22)
+    end
+
+    function state:castReviveSong(target)
+        if not target or not self:spendTP(84) then return false end
+        if target.hp <= 0 then
+            target.hp = math.ceil(target.max_hp / 2)
+            return true, "revived"
+        end
+        self:heal(target, math.ceil(target.max_hp / 2))
+        return true, "healed"
     end
 
     function state:expandChimeraDomain()
