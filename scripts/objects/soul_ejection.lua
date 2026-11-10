@@ -10,6 +10,7 @@ function SoulEjection:init(x, y, options)
 
     options = options or {}
 
+    self.owner = options.owner
     self.speed = options.speed or 150
     self.bounds = options.bounds
     self.onInteract = options.onInteract
@@ -57,8 +58,8 @@ function SoulEjection:update()
     end
 
     if self.bounds then
-        self.x = Utils.clamp(self.x, self.bounds.left, self.bounds.right)
-        self.y = Utils.clamp(self.y, self.bounds.top, self.bounds.bottom)
+        self.x = math.max(self.bounds.left, math.min(self.bounds.right, self.x))
+        self.y = math.max(self.bounds.top, math.min(self.bounds.bottom, self.y))
     end
 
     if Input.pressed("confirm") and self.onInteract then
