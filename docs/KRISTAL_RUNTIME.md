@@ -109,14 +109,19 @@ static inspection or successful GitHub commits.
 
 ## Current intentional limitations
 
-- The initial test party is the engine-provided Kris, Susie, and Ralsei. Noelle and Berdly
-  require their own Kristal party definitions, stats, actions, and visual assets before they
-  can be placed in the manifest party list safely.
+- The manifest now selects all five party IDs. Kris, Susie, Ralsei, and Noelle use their
+  matching built-in actors; Berdly currently uses Kris's actor as a temporary visual placeholder
+  until dedicated Berdly battle/overworld art is added. The custom party data sets the project's
+  intended HP and stats for all five members.
 - The temporary test enemy is not the Knight + Titan. It exists only to prove the engine's
   mod -> encounter -> enemy -> wave loading path and ACT registration/dispatch.
-- Runtime ACT handlers currently return test dialogue; they do not yet execute the full
-  combat-state effects (damage, healing, chill, exposure, adaptation, or domain duration).
-  Those effects still need to be connected to the real shared boss encounter.
+- The first custom spell set now has real Kristal spell classes: Susie's RUSH and BRIGHTEN;
+  Ralsei's HEAL and REVIVESONG; Noelle's ICE SHOCK and ICE WAVE; and Berdly's TORNADO.
+  Damage, healing, revival, and the temporary defense buff are implemented in the shared
+  runtime spell helper and covered by Lua tests. CHILL/freeze and Tornado disruption are
+  currently recorded as target state flags; the real Knight + Titan turn scheduler still needs
+  to consume those flags. The Ten Shadows ACT entries and Chimera Shadow Garden still need
+  their actual summon/domain presentation and combat effects.
 - The runtime smoke wave now fires five slow, visible test bullets. It is a basic attack/collision test, not a production boss pattern.
 - No overworld map is configured yet. The first milestone is a known-good battle runtime;
   the route map and story entry point follow once that is stable.
@@ -132,3 +137,30 @@ static inspection or successful GitHub commits.
 - [ ] Encounter can finish and return cleanly.
 - [ ] No Lua traceback appears during startup, battle, or exit.
 - [ ] A fresh save and a second launch both behave consistently.
+
+
+## Five-member party and first spell pass
+
+The current manifest party is Kris, Susie, Ralsei, Noelle, and Berdly. Custom PartyMember
+definitions live under `scripts/data/party/`, and custom Spell definitions live under
+`scripts/data/spells/` as required by Kristal v0.10.0. The first spell pass is:
+
+| Character | Spell | TP | Current effect |
+| --- | --- | ---: | --- |
+| Susie | RUSH | 0 | 34 damage |
+| Susie | BRIGHTEN | 4 | +1 temporary DEF to active party members |
+| Ralsei | HEAL | 16 | Restore 22 HP to one ally |
+| Ralsei | REVIVESONG | 84 | Revive at half HP, or heal half max HP |
+| Noelle | ICE SHOCK | 16 | 18 damage; adds 1 CHILL |
+| Noelle | ICE WAVE | 28 | 30 damage; adds 2 CHILL |
+| Berdly | TORNADO | 20 | 16 damage; records next-attack disruption |
+
+`tests/runtime_spells_test.lua` exercises the shared effects without needing the graphical
+runtime. GitHub Actions also syntax-checks every Lua file and packages both artifacts. This is
+still not a substitute for launching the project in Kristal: party menu visibility, target
+selection, animations, spell action completion, and battle transitions must be checked in-game.
+
+Kris's Ten Shadows remain registered as enemy ACTs for the current scaffold. The summon list
+and domain rules exist in `scripts/ten_shadows/combat_state.lua`, but their runtime ACT
+handlers are not yet connected to those rules. Berdly's actor is explicitly a placeholder;
+his actual art is still outstanding.
