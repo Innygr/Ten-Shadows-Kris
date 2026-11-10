@@ -4,7 +4,6 @@ local ACT_TEXT = {
     Inspect = "* ACT registration works.\\n* ACT dispatch works.",
     Signal = "* Kris's character-specific ACT works.",
     Standard = "* The standard X-ACT handler works.",
-    Standard = "* The standard X-ACT handler works.",
     ["WAKE KRIS"] = "* The party calls out to Kris.\\n* WAKE KRIS ACT dispatch works.",
     RUSH = "* Susie charges forward with a powerful strike.",
     BRIGHTEN = "* Susie and Ralsei combine their strength.\\n* BRIGHTEN ACT dispatch works.",
