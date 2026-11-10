@@ -181,13 +181,6 @@ jobs:
           unzip -Z1 Ten-Shadows-Kris.love | grep -qx 'assets/fonts/main.ttf'
           unzip -Z1 Ten-Shadows-Kris.love | grep -qx 'mods/ten_shadows_kris/mod.json'
 
-      - name: Upload standalone .love archive
-        uses: actions/upload-artifact@v5
-        with:
-          name: Ten-Shadows-Kris-love
-          path: Ten-Shadows-Kris.love
-          if-no-files-found: error
-
           if unzip -Z1 Ten-Shadows-Kris.love | grep -Eq '(^|/)\.git/|\.html$'; then
             echo "Unexpected development or HTML files found in .love archive"
             exit 1
