@@ -6,6 +6,7 @@ The initial project manifest targets the installed engine reported for developme
 
 - Installed Kristal build: v0.10.0-192-geaf9e0ef
 - Manifest compatibility target: v0.10.0
+- CI standalone archive engine: Kristal v0.10.0
 - Runtime: LÖVE 11.5
 - Project entry: mod.json
 - Mod initialization: mod.lua
@@ -32,10 +33,7 @@ Ten-Shadows-Kris/
 │   │   └── soul_ejection.lua
 │   └── ten_shadows/
 │       └── combat_state.lua
-└── docs/
-    ├── KRISTAL_PORT_PARITY.md
-    ├── KRISTAL_RUNTIME.md
-    └── MULTIPLAYER_BASELINE.md
+└── assets/
 ```
 
 Kristal discovers encounter, enemy, and wave classes by their script folders and file IDs.
@@ -43,7 +41,7 @@ The initial manifest starts runtime_smoke_test, which adds runtime_dummy, which 
 runtime_smoke wave. The test enemy reuses the engine's built-in Kris actor so this first
 integration does not depend on custom sprite files.
 
-## Automated checks
+## Automated checks and artifacts
 
 The repository includes `.github/workflows/kristal-checks.yml`. GitHub Actions runs it on
 pushes, pull requests, and manual dispatch. It currently:
@@ -52,17 +50,29 @@ pushes, pull requests, and manual dispatch. It currently:
 - Rejects the incorrect `darkInventory` key.
 - Runs Lua 5.1 syntax validation (`luac5.1 -p`) on every Lua file.
 - Confirms the smoke-test entry-point files exist.
-- Packages the repository into a `Ten-Shadows-Kris-test.zip` artifact when checks pass.
+- Packages a clean Kristal mod folder as `Ten-Shadows-Kris-test.zip`.
+- Checks out Kristal v0.10.0, integrates the mod as the target mod, and creates
+  `Ten-Shadows-Kris.love` from the engine source.
 
-Download the `Ten-Shadows-Kris-test` artifact from the successful workflow run's
-**Actions → Artifacts** section. Extract the project folder into Kristal's projects/mods
-location. The artifact is a Kristal project folder, not a standalone executable.
+The workflow publishes two separate artifacts:
 
-These checks catch malformed configuration and Lua syntax errors. They do **not** boot Kristal,
-load assets, verify engine API calls, or play through the encounter. A green CI run is a static
-pass, not proof of an in-game test pass.
+- **Ten-Shadows-Kris-test** — the mod folder to install into an existing Kristal setup.
+- **Ten-Shadows-Kris-love** — a standalone LÖVE archive containing the Kristal v0.10.0
+  engine with Ten Shadows Kris integrated and configured to start automatically.
 
-To run the same checks locally on Ubuntu/Debian, install `lua5.1` and `python3`, then run:
+Download either artifact from the successful workflow run's **Actions → Artifacts** section.
+The standalone `.love` archive requires LÖVE 11.5; it is not a platform-specific executable.
+The test ZIP is intended for Kristal's normal project/mods location.
+
+The packaging steps deliberately exclude the browser prototype (`*.html`, root-level
+prototype JavaScript), Markdown documentation, and repository metadata from the game packages.
+Those files remain useful in the source repository but are not runtime game content.
+
+These checks catch malformed configuration and Lua syntax errors and verify archive structure.
+They do **not** boot Kristal/LÖVE, load every asset, verify all engine API calls, or play through
+the encounter. A green CI run is a build pass, not proof of an in-game test pass.
+
+To run the static checks locally on Ubuntu/Debian, install `lua5.1` and `python3`, then run:
 
 ```sh
 python3 -m json.tool mod.json >/dev/null
@@ -72,8 +82,10 @@ find . -type f -name '*.lua' -not -path './.git/*' -print0 |
 
 ## First launch checklist
 
-1. Place the repository folder in the Kristal mods directory.
-2. Launch the target Kristal build and select Ten Shadows Kris.
+1. Download the `Ten-Shadows-Kris-test` artifact and extract its project folder into
+   Kristal's projects/mods location, or launch the standalone `.love` archive with LÖVE 11.5.
+2. For the mod ZIP, launch the target Kristal build and select Ten Shadows Kris. For the
+   standalone archive, the integrated mod should start automatically.
 3. Create a new file. The manifest should route into the runtime smoke-test encounter.
 4. Confirm the placeholder enemy and battle UI load.
 5. Defend through the short test wave and confirm it exits cleanly.
