@@ -4,8 +4,9 @@ function Mod:init()
 end
 
 function Mod:postInit()
-    -- This event runs after Game:load and before the player can enter an encounter.
-    -- Set the full five-member test roster here: Battle:createPartyBattlers()
-    -- copies Game.party before Encounter:onBattleInit() is called.
+    -- mod.json supplies the default party for new saves. Saved games retain
+    -- their saved party, so force the full roster here for this runtime test.
+    -- Game:load has created Game.world by this point, and battle battlers are
+    -- created later from Game.party when an encounter begins.
     Game:setPartyMembers("kris", "susie", "ralsei", "noelle", "berdly")
 end
