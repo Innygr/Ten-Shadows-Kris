@@ -34,9 +34,10 @@ The HTML/JavaScript browser prototype and documentation are source/reference mat
 not included in either game package.
 
 The initial runtime encounter is deliberately a placeholder, not the real Knight + Titan fight.
-The manifest currently uses Kristal's built-in Kris/Susie/Ralsei party so it does not reference
-unimplemented Noelle/Berdly character definitions. The five-member party remains a required
-gameplay integration task.
+The manifest includes all five project party members: Kris, Susie, Ralsei, Noelle, and Berdly.
+Noelle and Berdly are included in the runtime test roster; their in-game visibility still needs
+verification in a local Kristal launch. The current Berdly actor uses Kris as a temporary visual
+fallback until dedicated art is added.
 
 ## Multiplayer
 
