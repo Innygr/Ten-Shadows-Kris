@@ -41,10 +41,10 @@ The initial manifest starts runtime_smoke_test, which adds runtime_dummy, which 
 runtime_smoke wave. The test enemy reuses the engine's built-in Kris actor so this first
 integration does not depend on custom actor sprite files. It registers Inspect and Kris-only
 Signal ACTs, preserves CHECK and the standard X-ACT response, and uses a custom visible
-bullet for a short dodgeable attack. The test enemy also registers the party spell ACTs
-(RUSH, BRIGHTEN, HEAL, REVIVESONG, ICE SHOCK, ICE WAVE, TORNADO, and WAKE KRIS),
-Chimera Shadow Garden, and all ten Ten Shadows summons with their TP costs. Noelle and
-Berdly's ACTs are registered for when their custom party definitions are added.
+bullet for a short dodgeable attack. The test enemy also registers the party spell ACTs (RUSH, BRIGHTEN, HEAL, REVIVESONG,
+ICE SHOCK, ICE WAVE, and TORNADO), Chimera Shadow Garden, and all ten Ten Shadows
+summons with their TP costs. The five custom party definitions and seven custom spells
+must live in Kristal's registry directories: `data/party/` and `data/spells/`.
 
 ## Automated checks and artifacts
 
@@ -97,7 +97,7 @@ find . -type f -name '*.lua' -not -path './.git/*' -print0 |
 3. Create a new file. The manifest should route into the runtime smoke-test encounter.
 4. Confirm the placeholder enemy, battle UI, and ACT menu load.
 5. Open Kris's ACT list and confirm all ten shadows plus Chimera Shadow Garden appear with their TP costs.
-6. Confirm the available party members' spell ACTs appear and return dialogue; Noelle/Berdly ACTs await their party definitions.
+6. Confirm all five party members (Kris, Susie, Ralsei, Noelle, Berdly) load, and their spell menus expose the expected custom spells.
 7. Use CHECK, Inspect, Kris's Signal ACT, and the standard X-ACT; confirm each returns dialogue.
 8. Dodge the five slow bullets during the short attack wave, then confirm the wave exits cleanly.
 9. Finish the encounter and confirm Kristal returns without a Lua error.
@@ -141,9 +141,10 @@ static inspection or successful GitHub commits.
 
 ## Five-member party and first spell pass
 
-The current manifest party is Kris, Susie, Ralsei, Noelle, and Berdly. Custom PartyMember
-definitions live under `scripts/data/party/`, and custom Spell definitions live under
-`scripts/data/spells/` as required by Kristal v0.10.0. The first spell pass is:
+The current manifest party is Kris, Susie, Ralsei, Noelle, and Berdly. Kristal v0.10.0's
+registry loads custom PartyMember definitions from `data/party/` and custom Spell definitions
+from `data/spells/` (not `scripts/data/...`). The build workflow must package the `data/`
+directory as well as `scripts/`. The first spell pass is:
 
 | Character | Spell | TP | Current effect |
 | --- | --- | ---: | --- |
