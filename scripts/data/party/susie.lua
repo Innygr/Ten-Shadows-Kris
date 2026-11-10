@@ -20,7 +20,7 @@ function character:init()
     self.menu_icon = "party/susie/head"
     self.head_icons = "party/susie/icon"
     self.name_sprite = "party/susie/name"
-    self.attack_sprite = "effects/attack/claw"
+    self.attack_sprite = "effects/attack/cut"
     self.attack_sound = "laz_c"
 end
 
