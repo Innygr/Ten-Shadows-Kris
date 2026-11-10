@@ -41,7 +41,10 @@ The initial manifest starts runtime_smoke_test, which adds runtime_dummy, which 
 runtime_smoke wave. The test enemy reuses the engine's built-in Kris actor so this first
 integration does not depend on custom actor sprite files. It registers Inspect and Kris-only
 Signal ACTs, preserves CHECK and the standard X-ACT response, and uses a custom visible
-bullet for a short dodgeable attack.
+bullet for a short dodgeable attack. The test enemy also registers the party spell ACTs
+(RUSH, BRIGHTEN, HEAL, REVIVESONG, ICE SHOCK, ICE WAVE, TORNADO, and WAKE KRIS),
+Chimera Shadow Garden, and all ten Ten Shadows summons with their TP costs. Noelle and
+Berdly's ACTs are registered for when their custom party definitions are added.
 
 ## Automated checks and artifacts
 
@@ -52,7 +55,8 @@ pushes, pull requests, and manual dispatch. It currently:
 - Rejects the incorrect `darkInventory` key.
 - Runs Lua 5.1 syntax validation (`luac5.1 -p`) on every Lua file.\n- Executes `tests/flavor_text_test.lua` to check multiple variants, repeat avoidance, conditions, and fallbacks.
 - Confirms the smoke-test encounter, enemy, wave, and custom bullet files exist.
-- Checks that the runtime enemy registers both custom ACTs and handles the standard X-ACT.
+- Checks that the runtime enemy registers party spells, all ten shadows, and Chimera Shadow Garden.
+- Checks that the runtime enemy handles custom ACTs and the standard X-ACT.
 - Checks that the smoke wave spawns the custom runtime-test bullet.
 - Packages a clean Kristal mod folder as `Ten-Shadows-Kris-test.zip`.
 - Checks out Kristal v0.10.0, integrates the mod as the target mod, and creates
@@ -92,10 +96,12 @@ find . -type f -name '*.lua' -not -path './.git/*' -print0 |
    standalone archive, the integrated mod should start automatically.
 3. Create a new file. The manifest should route into the runtime smoke-test encounter.
 4. Confirm the placeholder enemy, battle UI, and ACT menu load.
-5. Use CHECK, Inspect, Kris's Signal ACT, and the standard X-ACT; confirm each returns dialogue.
-6. Dodge the five slow bullets during the short attack wave, then confirm the wave exits cleanly.
-7. Finish the encounter and confirm Kristal returns without a Lua error.
-8. Record the exact engine build and any console traceback before changing the scaffold.
+5. Open Kris's ACT list and confirm all ten shadows plus Chimera Shadow Garden appear with their TP costs.
+6. Confirm the available party members' spell ACTs appear and return dialogue; Noelle/Berdly ACTs await their party definitions.
+7. Use CHECK, Inspect, Kris's Signal ACT, and the standard X-ACT; confirm each returns dialogue.
+8. Dodge the five slow bullets during the short attack wave, then confirm the wave exits cleanly.
+9. Finish the encounter and confirm Kristal returns without a Lua error.
+10. Record the exact engine build and any console traceback before changing the scaffold.
 
 The repository work environment does not contain the user's Kristal/LÖVE runtime, so this
 launch checklist remains unverified here. Do not mark runtime checks complete based only on
@@ -107,7 +113,10 @@ static inspection or successful GitHub commits.
   require their own Kristal party definitions, stats, actions, and visual assets before they
   can be placed in the manifest party list safely.
 - The temporary test enemy is not the Knight + Titan. It exists only to prove the engine's
-  mod -> encounter -> enemy -> wave loading path.
+  mod -> encounter -> enemy -> wave loading path and ACT registration/dispatch.
+- Runtime ACT handlers currently return test dialogue; they do not yet execute the full
+  combat-state effects (damage, healing, chill, exposure, adaptation, or domain duration).
+  Those effects still need to be connected to the real shared boss encounter.
 - The runtime smoke wave now fires five slow, visible test bullets. It is a basic attack/collision test, not a production boss pattern.
 - No overworld map is configured yet. The first milestone is a known-good battle runtime;
   the route map and story entry point follow once that is stable.
