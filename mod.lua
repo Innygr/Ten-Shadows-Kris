@@ -38,6 +38,7 @@ local function addMenu(battle, enemy, entries, back)
             description = entry[2],
             tp = entry[3] or 0,
             callback = entry[4],
+            party = entry[5] or {},
         })
     end
     if back then
@@ -74,9 +75,8 @@ function Mod:onBattleEnemySelect(reason, selected)
             end)
         end}
         root[#root + 1] = {"BRIGHTEN", "Kris strengthens the party.", 4, function(item)
-            item.party = {"kris", "susie", "ralsei"}
             battle:pushAction("ACT", enemy, item)
-        end}
+        end, {"kris", "susie", "ralsei"}}
         root[#root + 1] = {"CHECK", "Check the target.", 0, function(item)
             battle:pushAction("ACT", enemy, item)
         end}
