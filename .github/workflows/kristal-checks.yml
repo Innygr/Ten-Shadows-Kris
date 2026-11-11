@@ -71,6 +71,9 @@ jobs:
       - name: Test Vessel SOUL-mode boss attacks
         run: lua5.1 tests/soul_mode_attacks_test.lua
 
+      - name: Test six-member party registration and UI
+        run: lua5.1 tests/six_party_test.lua
+
       - name: Verify runtime scaffold paths
         run: |
           test -f mod.lua
@@ -79,6 +82,7 @@ jobs:
           test -f scripts/battle/waves/runtime_smoke.lua
           test -f scripts/battle/bullets/runtime_test_bullet.lua
           test -f tests/soul_mode_attacks_test.lua
+          test -f tests/six_party_test.lua
           grep -q 'SOUL_MODE_ATTACKS' scripts/ten_shadows/combat_state.lua
           for member in kris susie ralsei noelle berdly vessel; do test -f "scripts/data/party/$member.lua"; done
           test -f scripts/data/actors/vessel.lua
