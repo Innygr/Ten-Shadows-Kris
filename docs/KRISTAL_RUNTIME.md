@@ -44,7 +44,7 @@ Signal ACTs, preserves CHECK and the standard X-ACT response, and uses a custom 
 bullet for a short dodgeable attack. The test enemy also registers the party spell ACTs (RUSH, BRIGHTEN, HEAL, REVIVESONG,
 ICE SHOCK, ICE WAVE, and TORNADO), Chimera Shadow Garden, and all ten Ten Shadows
 summons with their TP costs. The five custom party definitions and seven custom spells
-must live in Kristal's registry directories: `data/party/` and `data/spells/`.
+must live in the mod registry directories: `scripts/data/party/` and `scripts/data/spells/`.
 
 ## Automated checks and artifacts
 
@@ -142,9 +142,8 @@ static inspection or successful GitHub commits.
 ## Five-member party and first spell pass
 
 The current manifest party is Kris, Susie, Ralsei, Noelle, and Berdly. Kristal v0.10.0's
-registry loads custom PartyMember definitions from `data/party/` and custom Spell definitions
-from `data/spells/` (not `scripts/data/...`). The build workflow must package the `data/`
-directory as well as `scripts/`. The first spell pass is:
+registry loads custom PartyMember definitions from `scripts/data/party/` and custom Spell definitions
+from `scripts/data/spells/`. Keep these paths inside the mod's `scripts/` tree. The first spell pass is:
 
 | Character | Spell | TP | Current effect |
 | --- | --- | ---: | --- |
@@ -165,3 +164,15 @@ Kris's Ten Shadows remain registered as enemy ACTs for the current scaffold. The
 and domain rules exist in `scripts/ten_shadows/combat_state.lua`, but their runtime ACT
 handlers are not yet connected to those rules. Berdly's actor is explicitly a placeholder;
 his actual art is still outstanding.
+
+
+## Party balance and equipment exclusions
+
+The current mod-balanced stat profiles for the expanded test party are:
+
+| Member | HP | ATK | DEF | MAG |
+| --- | ---: | ---: | ---: | ---: |
+| Noelle | 50 | 7 | 1 | 11 |
+| Berdly | 54 | 16 | 2 | 6 |
+
+Noelle keeps the project's accepted 50 HP while retaining a low physical attack and high magic. Berdly's values are original mod balance, not claimed as canonical Deltarune party stats. The ThornRing is explicitly denylisted in CombatState.BLACKLISTED_EQUIPMENT; future equipment import and equip paths must check CombatState.isEquipmentBlacklisted(item_id). The current prototype does not yet implement a complete equipment UI or loader, so the denylist is in place as a rule for the upcoming equipment integration rather than a claim that a finished menu filter already exists. tests/combat_balance_test.lua covers the denylist and party HP baselines.
