@@ -7,7 +7,7 @@ function character:init()
     self.level = Game.chapter
     self.title = "Snowcaster"
     self.soul_priority = 1
-    self.has_act = true
+    self.has_act = false
     self.has_spells = true
     self.has_xact = true
     self.xact_name = "N-Action"
