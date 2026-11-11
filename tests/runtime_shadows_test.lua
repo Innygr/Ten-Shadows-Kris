@@ -75,6 +75,15 @@ assert(Game.party[1] == kris_member, "Kris must return after three turns")
 assert(kris_battler.chara == kris_member, "Kris's battle slot must be restored")
 assert(not Shadows.isMahoragaSummoned(), "summon state must clear on return")
 
+-- Ending a battle early must also restore Kris immediately, without waiting
+-- for all three enemy turns.
+local early_summon = Shadows.use("MAHORAGA", user, target)
+assert(string.find(early_summon, "SUMMONED"), "Mahoraga must be summonable again")
+assert(Shadows.onBattleEnd(), "battle-end cleanup must dismiss Mahoraga")
+assert(Game.party[1] == kris_member, "battle-end cleanup must restore Kris to the party")
+assert(kris_battler.chara == kris_member, "battle-end cleanup must restore Kris's battler")
+assert(not Shadows.isMahoragaSummoned(), "battle-end cleanup must clear summon state")
+
 local enemy = {waves = {"test_wave"}, ten_shadows_disrupted = true}
 assert(Shadows.onEnemyTurnStart(enemy) == true, "disruption must suppress the next wave")
 assert(#enemy.waves == 0, "disrupted enemy must not launch its wave")
