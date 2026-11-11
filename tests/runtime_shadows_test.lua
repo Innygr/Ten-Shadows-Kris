@@ -53,6 +53,28 @@ Shadows.addChill(chilled, 3)
 assert(chilled.ten_shadows_frozen_turns == 1, "three chill must freeze")
 assert(#chilled.waves == 0, "freeze must suppress the next wave")
 
+local kris_member = {id = "kris", health = 290}
+local mahoraga_member = {id = "mahoraga", health = 520}
+local kris_battler = {chara = kris_member}
+Game.party = {kris_member, member()}
+Game.getPartyMember = function(_, id)
+    if id == "mahoraga" then return mahoraga_member end
+end
+Game.battle.party = {kris_battler, {chara = Game.party[2]}}
+
+local summon_message = Shadows.use("MAHORAGA", user, target)
+assert(string.find(summon_message, "SUMMONED"), "Mahoraga ACT must summon")
+assert(Game.party[1] == mahoraga_member, "Mahoraga must replace Kris in the active party")
+assert(kris_battler.chara == mahoraga_member, "Kris's battle slot must become Mahoraga")
+assert(Shadows.isMahoragaSummoned(), "summon state must be active")
+Shadows.onEnemyTurnEnd({})
+Shadows.onEnemyTurnEnd({})
+assert(Game.party[1] == mahoraga_member, "Mahoraga must remain for the first two turns")
+Shadows.onEnemyTurnEnd({})
+assert(Game.party[1] == kris_member, "Kris must return after three turns")
+assert(kris_battler.chara == kris_member, "Kris's battle slot must be restored")
+assert(not Shadows.isMahoragaSummoned(), "summon state must clear on return")
+
 local enemy = {waves = {"test_wave"}, ten_shadows_disrupted = true}
 assert(Shadows.onEnemyTurnStart(enemy) == true, "disruption must suppress the next wave")
 assert(#enemy.waves == 0, "disrupted enemy must not launch its wave")
