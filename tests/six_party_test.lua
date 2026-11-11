@@ -39,7 +39,9 @@ assert(source:find("local page_offset = selected > 3 and 3 or 0", 1, true),
 
 assert(vessel:find('self:setActor("vessel")', 1, true),
     "Vessel must use its own registered actor")
-assert(vessel:find('self.menu_icon = "player/heart"', 1, true),
-    "Vessel must have a distinct party-menu icon")
+assert(vessel:find('self.menu_icon = "party/kris/head"', 1, true),
+    "Vessel must have a gray Kris head icon")
 
 print("Six-member party registration, save migration, battler creation, UI paging, and Vessel identity checks passed")
+
+assert(source:find("local column = math.floor((index - 1) / 3)", 1, true), "six-member battle formation must use two columns and three rows")
