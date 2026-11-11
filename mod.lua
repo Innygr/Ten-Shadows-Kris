@@ -69,15 +69,38 @@ function Mod:postInit()
             return x, y
         end
 
-        -- Fit all six action boxes across the 640px battle strip.
+        -- Keep the action boxes full-size and readable. Show three at a time:
+        -- Kris/Susie/Ralsei first, then Noelle/Berdly/Vessel after Ralsei confirms.
         local original_battle_ui_init = BattleUI.init
         BattleUI.init = function(ui, ...)
             original_battle_ui_init(ui, ...)
             if #Game.battle.party == 6 then
-                local compact_width = 640 / 6
+                ui._six_party_scroll_x = 0
                 for index, box in ipairs(ui.action_boxes) do
-                    box.scale_x = 0.5
-                    box.x = (index - 1) * compact_width
+                    box.scale_x = 1
+                    box.x = (index - 1) * 213
+                end
+            end
+        end
+
+        local original_battle_ui_update = BattleUI.update
+        BattleUI.update = function(ui, ...)
+            original_battle_ui_update(ui, ...)
+            if #Game.battle.party == 6 then
+                local selecting = Game.battle.current_selecting or 1
+                local page = selecting > 3 and 1 or 0
+                local target_x = -page * 639
+                local current_x = ui._six_party_scroll_x or 0
+                local difference = target_x - current_x
+                if math.abs(difference) < 2 then
+                    current_x = target_x
+                else
+                    current_x = current_x + Utils.clamp(difference, -42 * DTMULT, 42 * DTMULT)
+                end
+                ui._six_party_scroll_x = current_x
+
+                for index, box in ipairs(ui.action_boxes) do
+                    box.x = (index - 1) * 213 + current_x
                 end
             end
         end
