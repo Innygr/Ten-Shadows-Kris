@@ -42,7 +42,7 @@ return {
             offsetx = 0, offsety = 0, parallaxx = 1, parallaxy = 1,
             properties = {},
             objects = {
-                {id=6, name="savepoint", class="", shape="rectangle", x=300, y=260, width=40, height=40, rotation=0, visible=true, properties={marker="spawn", heals=true, text1="* The shadows gather quietly around you.", text2="* Your party is restored. The power of the Ten Shadows shines within you."}}
+                {id=6, name="savepoint", class="", shape="rectangle", x=300, y=260, width=40, height=40, rotation=0, visible=true, properties={marker="spawn", heals=true, text1_1="* The shadows gather quietly around you.", text1_2="* Your party is restored. The power of the Ten Shadows shines within you."}}
             }
         }
     }
