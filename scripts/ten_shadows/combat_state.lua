@@ -9,19 +9,20 @@ CombatState.PARTY = {
     {id = "kris",   name = "Kris",   max_hp = 290, role = "TEN SHADOWS"},
     {id = "susie",  name = "Susie",  max_hp = 350, role = "HEAVY HITTER"},
     {id = "ralsei", name = "Ralsei", max_hp = 250, role = "SUPPORT"},
-}
-
--- Recruitable characters are defined but are not part of the starting trio.
-CombatState.RESERVE_PARTY = {
     {id = "noelle", name = "Noelle", max_hp = 260, role = "SNOWCASTER"},
     {id = "berdly", name = "Berdly", max_hp = 310, role = "TECH SUPPORT"},
     {id = "vessel", name = "Vessel", max_hp = 240, role = "SOUL BEARER"},
 }
 
+CombatState.RESERVE_PARTY = {}
+
 CombatState.BASIC_ATTACKS = {
     kris = {damage = 17},
     susie = {damage = 24},
     ralsei = {damage = 10},
+    noelle = {damage = 7},
+    berdly = {damage = 20},
+    vessel = {damage = 12},
 }
 
 CombatState.SHADOWS = {
@@ -449,6 +450,8 @@ function CombatState.new()
         elseif member_id == "ralsei" then
             actions[#actions + 1] = "HEAL"
             actions[#actions + 1] = "REVIVESONG"
+        elseif member_id == "vessel" then
+            actions[#actions + 1] = "SOUL MODE"
         elseif member_id == "noelle" then
             actions[#actions + 1] = "ICE SHOCK"
             actions[#actions + 1] = "ICE WAVE"
