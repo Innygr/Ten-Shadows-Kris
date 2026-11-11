@@ -9,7 +9,7 @@ return {
     tilesets = {},
     layers = {
         {
-            type = "tilelayer", id = 1, name = "floor", class = "",
+            type = "tilelayer", id = 1, name = "floor", class = "", encoding = "lua",
             width = 16, height = 12, x = 0, y = 0,
             opacity = 1, visible = true, offsetx = 0, offsety = 0,
             parallaxx = 1, parallaxy = 1, properties = {},
