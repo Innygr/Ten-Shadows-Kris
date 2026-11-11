@@ -34,7 +34,9 @@ installSixPartySupport = function()
         DarkMenu.updateSelectedBoxes = function(menu, ...)
             local result = original_update_selected_boxes(menu, ...)
             local healthbar = Game.world and Game.world.healthbar
-            if #Game.party == 6 and healthbar and #healthbar.action_boxes == 6 then
+            if #Game.party == 6 and healthbar then
+                assert(#healthbar.action_boxes == 6,
+                    "Ten Shadows Kris: overworld health bar is missing party action boxes")
                 local selected = menu.selected_party or 1
                 local page_offset = selected > 3 and 3 or 0
                 for index, box in ipairs(healthbar.action_boxes) do
@@ -132,6 +134,8 @@ installSixPartySupport = function()
         BattleUI.init = function(ui, ...)
             original_battle_ui_init(ui, ...)
             if #Game.battle.party == 6 then
+                assert(#ui.action_boxes == 6,
+                    "Ten Shadows Kris: BattleUI did not create all six action boxes")
                 ui._six_party_scroll_x = 0
                 for index, box in ipairs(ui.action_boxes) do
                     box.scale_x = 1
@@ -145,7 +149,9 @@ installSixPartySupport = function()
         -- immediately, so a tween can leave the selected character off-screen
         -- while ACTIONSELECT is already accepting input.
         local function syncSixPartyActionBoxes(ui)
-            if not Game.battle or #ui.action_boxes ~= 6 then return end
+            if not Game.battle or #Game.battle.party ~= 6 then return end
+            assert(#ui.action_boxes == 6,
+                "Ten Shadows Kris: six-member battle is missing action boxes")
             local selecting = Game.battle.current_selecting or 1
             local page_offset = selecting > 3 and 3 or 0
             for index, box in ipairs(ui.action_boxes) do
