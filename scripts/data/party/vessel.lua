@@ -5,6 +5,7 @@ function character:init()
     self.name = "Vessel"
     -- Placeholder actor art: reuse Kris until original Vessel sprites are supplied.
     self:setActor("kris")
+    self:setArmor(1, "soul_anchor")
     self.level = Game.chapter
     self.title = "SOUL BEARER"
     self.soul_priority = 3
