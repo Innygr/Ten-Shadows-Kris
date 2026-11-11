@@ -19,24 +19,28 @@ architecture contract.
 - scripts/battle/encounters/runtime_smoke_test.lua, runtime_dummy.lua, and runtime_smoke.lua
   provide a minimal encounter/enemy/wave path for the first runtime check.
 - scripts/objects/soul_ejection.lua: detached SOUL controller foundation.
-- scripts/ten_shadows/combat_state.lua: Lua-native combat rules for the five-member party,
+- scripts/ten_shadows/combat_state.lua: Lua-native combat rules for the six-member party,
   TP, ACTs/spells, Ten Shadows, domains, shared Knight + Titan phases/statuses, and attack scheduling.
 
 ## Build artifacts
 
-GitHub Actions publishes two artifacts after the checks pass:
+GitHub Actions publishes three clearly separated artifacts after the checks pass:
 
-- `Ten-Shadows-Kris-test`: clean Kristal mod ZIP for an existing Kristal installation.
-- `Ten-Shadows-Kris-love`: standalone `.love` archive with the Kristal v0.10.0 engine integrated
-  and configured to start this mod automatically. Requires LÖVE 11.5.
+- `Ten-Shadows-Kris-standalone`: recommended download. A ZIP containing the complete
+  `Ten-Shadows-Kris.love` game archive plus launch instructions. Open the `.love` file with
+  **LÖVE 11.5**. It includes the Kristal v0.10.0 engine and its required assets, including
+  `assets/fonts/main.ttf`.
+- `Ten-Shadows-Kris-love`: the raw standalone `.love` archive, also requiring LÖVE 11.5.
+- `Ten-Shadows-Kris-mod`: mod-only ZIP for installation inside an existing Kristal v0.10.0
+  installation. **Do not launch this ZIP or its extracted folder directly**; it does not contain
+  the engine entry point or engine fonts.
 
 The HTML/JavaScript browser prototype and documentation are source/reference material; they are
 not included in either game package.
 
 The initial runtime encounter is deliberately a placeholder, not the real Knight + Titan fight.
-The manifest includes all five project party members: Kris, Susie, Ralsei, Noelle, and Berdly.
-Noelle and Berdly are included in the runtime test roster; their in-game visibility still needs
-verification in a local Kristal launch. The current Berdly actor uses Kris as a temporary visual
+The manifest includes all six project party members: Kris, Susie, Ralsei, Noelle, Berdly, and Vessel.
+Their in-game visibility and turn flow still need verification in a local Kristal launch. The current Berdly actor uses Kris as a temporary visual
 fallback until dedicated art is added.
 
 ## Multiplayer
