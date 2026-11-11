@@ -17,8 +17,8 @@ CombatState.BASIC_ATTACKS = {
     kris = {damage = 17},
     susie = {damage = 24},
     ralsei = {damage = 10},
-    noelle = {damage = 15},
-    berdly = {damage = 18},
+    noelle = {damage = 7},
+    berdly = {damage = 16},
 }
 
 CombatState.SHADOWS = {
@@ -73,6 +73,17 @@ CombatState.KNIGHT_ATTACKS = {
     {id="roaring_fire", name="ROARING FIRE", phases={3}, weight=1},
     {id="black_flash", name="THE ROARING", phases={3}, weight=1},
 }
+
+-- Items on this denylist must never be imported into the mod's equipment data.
+-- The actual equipment UI/loader is not implemented yet; all future equipment
+-- entry points must consult isEquipmentBlacklisted before accepting an item.
+CombatState.BLACKLISTED_EQUIPMENT = {
+    thornring = true,
+}
+
+function CombatState.isEquipmentBlacklisted(item_id)
+    return CombatState.BLACKLISTED_EQUIPMENT[string.lower(tostring(item_id or ""))] == true
+end
 
 local function copyParty()
     local party = {}
