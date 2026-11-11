@@ -94,6 +94,8 @@ jobs:
           grep -q 'name="spawn"' scripts/world/maps/test_room.lua
           python3 - <<'PY'
           import json
+          from pathlib import Path
+
           manifest = json.load(open("mod.json", encoding="utf-8"))
           assert manifest["party"] == ["kris", "susie", "ralsei", "noelle", "berdly", "vessel"], manifest["party"]
           source = open("mod.lua", encoding="utf-8").read()
