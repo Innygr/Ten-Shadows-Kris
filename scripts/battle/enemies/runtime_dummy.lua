@@ -4,7 +4,6 @@ local ACT_TEXT = {
     Inspect = "* ACT registration works.\\n* ACT dispatch works.",
     Signal = "* Kris's character-specific ACT works.",
     Standard = "* The standard X-ACT handler works.",
-    ["WAKE KRIS"] = "* The party calls out to Kris.\\n* WAKE KRIS ACT dispatch works.",
     ["CHIMERA SHADOW GARDEN"] = "* DOMAIN EXPANSION — CHIMERA SHADOW GARDEN.\\n* The battlefield sinks into a sea of shadows.",
     TOAD = "* TOAD binds the target and disrupts its next attack.",
     NUE = "* NUE dives from above. (+5 TP)",
@@ -61,15 +60,9 @@ function RuntimeDummy:init()
     end
     self:registerActFor("kris", "CHIMERA SHADOW GARDEN", "Expand the domain", nil, 60)
 
-    -- Susie and Ralsei.
-
-    -- Noelle and Berdly are registered now so the runtime test can exercise
-    -- their full ACT set once their custom party definitions are integrated.
-
-    -- All non-Kris party members can call Kris back if Kris is down.
-    for _, char in ipairs({"susie", "ralsei", "noelle", "berdly"}) do
-        self:registerActFor(char, "WAKE KRIS", "Restore Kris to the battle")
-    end
+    -- Kris is the only current party member with an ACT menu.
+    -- Spell-capable members use SPELL instead; they do not receive ACT entries.
+    -- The Vessel/SOUL will receive its own ACT access when its party member is added.
 end
 
 function RuntimeDummy:onAct(battler, name)
