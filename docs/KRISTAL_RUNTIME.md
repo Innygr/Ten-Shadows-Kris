@@ -97,7 +97,7 @@ find . -type f -name '*.lua' -not -path './.git/*' -print0 |
 3. Create a new file. The manifest should route into the runtime smoke-test encounter.
 4. Confirm the placeholder enemy, battle UI, and ACT menu load.
 5. Open Kris's ACT list and confirm all ten shadows plus Chimera Shadow Garden appear with their TP costs.
-6. Confirm all five party members (Kris, Susie, Ralsei, Noelle, Berdly) load, and their spell menus expose the expected custom spells.
+6. Confirm only Kris, Susie, and Ralsei load. Kris has ACT; Susie and Ralsei have SPELL but no ACT menu.
 7. Use CHECK, Inspect, Kris's Signal ACT, and the standard X-ACT; confirm each returns dialogue.
 8. Dodge the five slow bullets during the short attack wave, then confirm the wave exits cleanly.
 9. Finish the encounter and confirm Kristal returns without a Lua error.
@@ -141,9 +141,9 @@ static inspection or successful GitHub commits.
 
 ## Five-member party and first spell pass
 
-The current manifest party is Kris, Susie, Ralsei, Noelle, and Berdly. Kristal v0.10.0's
+The current manifest party is Kris, Susie, and Ralsei. Noelle and Berdly definitions remain available for later recruitment but are not in the starting roster. Kristal v0.10.0's
 registry loads custom PartyMember definitions from `scripts/data/party/` and custom Spell definitions
-from `scripts/data/spells/`. Keep these paths inside the mod's `scripts/` tree. The first spell pass is:
+from `scripts/data/spells/`. Keep these paths inside the mod's `scripts/` tree. Only Kris has the ACT menu in the current roster. Susie and Ralsei have spell menus but no ACT menu. The SOUL/Vessel will also receive ACT access when its party implementation is added. The first spell pass is:
 
 | Character | Spell | TP | Current effect |
 | --- | --- | ---: | --- |
@@ -168,7 +168,7 @@ his actual art is still outstanding.
 
 ## Party balance and equipment exclusions
 
-The current mod-balanced stat profiles for the expanded test party are:
+The current mod-balanced stat profiles for the active three-member party are:
 
 | Member | HP | ATK | DEF | MAG |
 | --- | ---: | ---: | ---: | ---: |
@@ -178,7 +178,7 @@ The current mod-balanced stat profiles for the expanded test party are:
 | Noelle | 220 | 7 | 1 | 11 |
 | Berdly | 240 | 20 | 2 | 8 |
 
-The party now uses a late-game Chapter 6-7 fan-game HP scale, not official unreleased chapter data. Noelle's Chapter 2 baseline is 90 HP; her 220 HP profile is an extrapolation that places her near Ralsei and Kris while preserving her low physical defense and high magic. Kris, Susie, and Ralsei were raised to a coherent late-game baseline as well, using the lower end of their known Chapter 5 HP ranges as a reference. Berdly's 240/20/2/8 profile is original fan-game balance, positioned between Kris and Susie physically with moderate magic. The ThornRing is explicitly denylisted in CombatState.BLACKLISTED_EQUIPMENT; future equipment import and equip paths must check CombatState.isEquipmentBlacklisted(item_id). The current prototype does not yet implement a complete equipment UI or loader, so the denylist is in place as a rule for the upcoming equipment integration rather than a claim that a finished menu filter already exists. tests/combat_balance_test.lua covers the denylist and all five party HP baselines.
+The party now uses a late-game Chapter 6-7 fan-game HP scale, not official unreleased chapter data. Noelle's Chapter 2 baseline is 90 HP; her 220 HP profile is an extrapolation that places her near Ralsei and Kris while preserving her low physical defense and high magic. Kris, Susie, and Ralsei were raised to a coherent late-game baseline as well, using the lower end of their known Chapter 5 HP ranges as a reference. Berdly's 240/20/2/8 profile is original fan-game balance, positioned between Kris and Susie physically with moderate magic. The ThornRing is explicitly denylisted in CombatState.BLACKLISTED_EQUIPMENT; future equipment import and equip paths must check CombatState.isEquipmentBlacklisted(item_id). The current prototype does not yet implement a complete equipment UI or loader, so the denylist is in place as a rule for the upcoming equipment integration rather than a claim that a finished menu filter already exists. tests/combat_balance_test.lua covers the denylist and verifies the active three-member roster.
 
 
 ## Vessel SOUL-mode boss attack sets
