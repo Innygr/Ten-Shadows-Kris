@@ -60,12 +60,13 @@ function Mod:postInit()
             if #Game.battle.party ~= 6 then
                 return original_party_position(encounter, index)
             end
-            local column = index > 3 and 1 or 0
-            local row = (index - 1) % 3
+            -- Three compact columns and two rows keep the full party visible.
+            local column = (index - 1) % 3
+            local row = math.floor((index - 1) / 3)
             local battler = Game.battle.party[index]
             local ox, oy = battler.chara:getBattleOffset()
-            local x = 36 + (column * 34) + (battler.actor:getWidth() / 2 + ox) * 2
-            local y = 30 + (row * 48) + (battler.actor:getHeight() + oy) * 2
+            local x = 28 + (column * 46) + (battler.actor:getWidth() / 2 + ox) * 2
+            local y = 62 + (row * 76) + (battler.actor:getHeight() + oy) * 2
             return x, y
         end
 
