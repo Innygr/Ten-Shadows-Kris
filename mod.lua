@@ -11,6 +11,16 @@ function Mod:postInit()
     if not Mod._six_party_battle_patch then
         Mod._six_party_battle_patch = true
 
+        -- Every encounter passes through TRANSITIONOUT when it ends. Hook the
+        -- engine lifecycle here so temporary summons are cleaned up even when
+        -- a future encounter does not define its own onBattleEnd callback.
+        local original_battle_transition_out = Battle.onTransitionOutState
+        Battle.onTransitionOutState = function(battle, ...)
+            local Shadows = modRequire("scripts/ten_shadows/runtime_shadows")
+            Shadows.onBattleEnd()
+            return original_battle_transition_out(battle, ...)
+        end
+
         Battle.createPartyBattlers = function(battle)
             -- Story setup can replace Game.party after Mod:postInit. Rebuild the
             -- intended roster at battle construction time, before Kristal creates
