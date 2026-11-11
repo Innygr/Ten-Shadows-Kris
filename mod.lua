@@ -132,6 +132,64 @@ installSixPartySupport = function()
             return x, y
         end
 
+        -- Temporary runtime trace for the six-member hand-off. If the final
+        -- selection stalls, these checkpoints show whether Kristal reached
+        -- ACTIONS, ATTACKING, or stopped while processing an action.
+        local function traceSixPartyBattle(stage, battle)
+            if #battle.party ~= 6 then return end
+            local queued = 0
+            for _, action in pairs(battle.character_actions or {}) do
+                if action then queued = queued + 1 end
+            end
+            local pending = 0
+            for _, action in ipairs(battle.current_actions or {}) do
+                if not (battle.processed_action or {})[action] then pending = pending + 1 end
+            end
+            print(string.format(
+                "[Ten Shadows Kris] %s | state=%s selecting=%s queued=%d processing=%s pending=%d",
+                stage, tostring(battle:getState()), tostring(battle.current_selecting),
+                queued, tostring(battle.processing_action and battle.processing_action.action or "none"), pending
+            ))
+        end
+
+        local original_next_party = Battle.nextParty
+        Battle.nextParty = function(battle, ...)
+            traceSixPartyBattle("nextParty:before", battle)
+            local result = original_next_party(battle, ...)
+            traceSixPartyBattle("nextParty:after", battle)
+            return result
+        end
+
+        local original_start_processing = Battle.startProcessing
+        Battle.startProcessing = function(battle, ...)
+            traceSixPartyBattle("startProcessing:before", battle)
+            local result = original_start_processing(battle, ...)
+            traceSixPartyBattle("startProcessing:after", battle)
+            return result
+        end
+
+        local original_actions_state = Battle.onActionsState
+        Battle.onActionsState = function(battle, ...)
+            local result = original_actions_state(battle, ...)
+            traceSixPartyBattle("onActionsState", battle)
+            return result
+        end
+
+        local original_attacking_state = Battle.onAttackingState
+        Battle.onAttackingState = function(battle, ...)
+            local result = original_attacking_state(battle, ...)
+            traceSixPartyBattle("onAttackingState", battle)
+            return result
+        end
+
+        local original_finish_action = Battle.finishAction
+        Battle.finishAction = function(battle, action, ...)
+            traceSixPartyBattle("finishAction:before:" .. tostring(action and action.action or "current"), battle)
+            local result = original_finish_action(battle, action, ...)
+            traceSixPartyBattle("finishAction:after", battle)
+            return result
+        end
+
         -- Keep the action boxes full-size and readable. Show three at a time:
         -- Kris/Susie/Ralsei first, then Noelle/Berdly/Vessel after Ralsei confirms.
         local original_battle_ui_init = BattleUI.init
