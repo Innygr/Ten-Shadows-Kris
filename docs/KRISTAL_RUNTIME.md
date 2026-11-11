@@ -172,7 +172,10 @@ The current mod-balanced stat profiles for the expanded test party are:
 
 | Member | HP | ATK | DEF | MAG |
 | --- | ---: | ---: | ---: | ---: |
-| Noelle | 50 | 7 | 1 | 11 |
-| Berdly | 54 | 16 | 2 | 6 |
+| Kris | 240 | 17 | 2 | 0 |
+| Susie | 290 | 24 | 2 | 2 |
+| Ralsei | 210 | 10 | 2 | 9 |
+| Noelle | 220 | 7 | 1 | 11 |
+| Berdly | 240 | 20 | 2 | 8 |
 
-Noelle keeps the project's accepted 50 HP while retaining a low physical attack and high magic. Berdly's values are original mod balance, not claimed as canonical Deltarune party stats. The ThornRing is explicitly denylisted in CombatState.BLACKLISTED_EQUIPMENT; future equipment import and equip paths must check CombatState.isEquipmentBlacklisted(item_id). The current prototype does not yet implement a complete equipment UI or loader, so the denylist is in place as a rule for the upcoming equipment integration rather than a claim that a finished menu filter already exists. tests/combat_balance_test.lua covers the denylist and party HP baselines.
+The party now uses a late-game Chapter 6-7 fan-game HP scale, not official unreleased chapter data. Noelle's Chapter 2 baseline is 90 HP; her 220 HP profile is an extrapolation that places her near Ralsei and Kris while preserving her low physical defense and high magic. Kris, Susie, and Ralsei were raised to a coherent late-game baseline as well, using the lower end of their known Chapter 5 HP ranges as a reference. Berdly's 240/20/2/8 profile is original fan-game balance, positioned between Kris and Susie physically with moderate magic. The ThornRing is explicitly denylisted in CombatState.BLACKLISTED_EQUIPMENT; future equipment import and equip paths must check CombatState.isEquipmentBlacklisted(item_id). The current prototype does not yet implement a complete equipment UI or loader, so the denylist is in place as a rule for the upcoming equipment integration rather than a claim that a finished menu filter already exists. tests/combat_balance_test.lua covers the denylist and all five party HP baselines.
