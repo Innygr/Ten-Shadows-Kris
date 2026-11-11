@@ -13,9 +13,9 @@ function character:init()
     self.xact_name = "R-Action"
     self:addSpell("ts_heal")
     self:addSpell("ts_revivesong")
-    self.health = 44
-    self.stats = {health = 44, attack = 10, defense = 2, magic = 9}
-    self.max_stats = {health = 44}
+    self.health = 210
+    self.stats = {health = 210, attack = 10, defense = 2, magic = 9}
+    self.max_stats = {health = 210}
     self.color = {0, 1, 0}
     self.menu_icon = "party/ralsei/head"
     self.head_icons = "party/ralsei/icon"
