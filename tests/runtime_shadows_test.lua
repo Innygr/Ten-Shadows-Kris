@@ -48,6 +48,11 @@ assert(tension == 13, "Rabbit Escape must grant 8 TP")
 Shadows.use("ROUND DEER", user, target)
 assert(allies[1].healed == 26 and allies[2].healed == 26, "Round Deer must heal all active allies")
 
+local chilled = {waves = {"ice_wave"}}
+Shadows.addChill(chilled, 3)
+assert(chilled.ten_shadows_frozen_turns == 1, "three chill must freeze")
+assert(#chilled.waves == 0, "freeze must suppress the next wave")
+
 local enemy = {waves = {"test_wave"}, ten_shadows_disrupted = true}
 assert(Shadows.onEnemyTurnStart(enemy) == true, "disruption must suppress the next wave")
 assert(#enemy.waves == 0, "disrupted enemy must not launch its wave")
