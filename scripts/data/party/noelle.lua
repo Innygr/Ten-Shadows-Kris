@@ -14,11 +14,11 @@ function character:init()
     self:addSpell("ts_ice_shock")
     self:addSpell("ts_ice_wave")
 
-    -- Mod-balanced LV2 profile. Preserve the project's accepted 50 HP while
-    -- retaining Noelle's low physical attack and high spell aptitude.
-    self.health = 50
-    self.stats = {health = 50, attack = 7, defense = 1, magic = 11}
-    self.max_stats = {health = 50}
+    -- Chapter 2's 90 HP baseline scaled to a late-game Chapter 6-7 fan-game
+    -- profile. Keep her fragile physical defense and high magic aptitude.
+    self.health = 220
+    self.stats = {health = 220, attack = 7, defense = 1, magic = 11}
+    self.max_stats = {health = 220}
     self.color = {1, 1, 0}
     self.menu_icon = "party/noelle/head"
     self.head_icons = "party/noelle/icon"
