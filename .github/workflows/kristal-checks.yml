@@ -177,7 +177,7 @@ jobs:
           grep -q 'SOUL MODE' mod.lua
           echo "Runtime scaffold, six-member party, nested ACT menus, spells, domain, and Ten Shadows checks passed"
 
-      - name: Stage clean Kristal mod folder
+      - name: Stage clean Kristal mod folder (not a standalone game)
         run: |
           mkdir -p dist/Ten-Shadows-Kris
           cp mod.json mod.lua dist/Ten-Shadows-Kris/
@@ -189,16 +189,16 @@ jobs:
             fi
           done
 
-      - name: Package Kristal test project
+      - name: Package Kristal mod for an existing engine
         run: |
           cd dist
-          zip -9 -r ../Ten-Shadows-Kris-test.zip Ten-Shadows-Kris
+          zip -9 -r ../Ten-Shadows-Kris-mod.zip Ten-Shadows-Kris
 
-      - name: Upload test project
+      - name: Upload Kristal mod package
         uses: actions/upload-artifact@v5
         with:
-          name: Ten-Shadows-Kris-test
-          path: Ten-Shadows-Kris-test.zip
+          name: Ten-Shadows-Kris-mod
+          path: Ten-Shadows-Kris-mod.zip
           if-no-files-found: error
 
   build-love:
@@ -282,6 +282,32 @@ jobs:
             exit 1
           fi
           echo "Standalone LÖVE archive structure and VERSION verified"
+
+      - name: Create standalone download bundle
+        run: |
+          mkdir -p standalone-download
+          cp Ten-Shadows-Kris.love standalone-download/
+          cat > standalone-download/README.txt <<'EOF'
+          TEN SHADOWS KRIS - STANDALONE BUILD
+
+          Launch Ten-Shadows-Kris.love with LÖVE 11.5.
+
+          This is the complete standalone game archive. It includes the matching
+          Kristal v0.10.0 engine and this mod, including assets/fonts/main.ttf.
+
+          Do NOT launch the Ten-Shadows-Kris-mod package as a game. That package
+          contains only the mod folder and must be installed inside an existing
+          Kristal v0.10.0 installation.
+          EOF
+          cd standalone-download
+          zip -9 -r ../Ten-Shadows-Kris-standalone.zip .
+
+      - name: Upload standalone download bundle
+        uses: actions/upload-artifact@v5
+        with:
+          name: Ten-Shadows-Kris-standalone
+          path: Ten-Shadows-Kris-standalone.zip
+          if-no-files-found: error
 
       - name: Upload standalone .love archive
         uses: actions/upload-artifact@v5
