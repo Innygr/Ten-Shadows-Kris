@@ -53,19 +53,23 @@ expect(revived, true, "revive clears down state")
 local buffed = 0
 Game = {
     battle = {
-        party = {{
-            isActive = function() return true end,
-            chara = {addStatBuff = function(_, stat, amount, cap)
+        party = {
+            {isActive = function() return true end, chara = {id = "kris", addStatBuff = function(_, stat, amount, cap)
                 expect(stat, "defense", "brighten stat")
                 expect(amount, 1, "brighten amount")
                 expect(cap, 1, "brighten cap")
                 buffed = buffed + 1
-            end},
-        }},
+            end}},
+            {isActive = function() return true end, chara = {id = "susie", addStatBuff = function() buffed = buffed + 1 end}},
+            {isActive = function() return true end, chara = {id = "ralsei", addStatBuff = function() buffed = buffed + 1 end}},
+            {isActive = function() return true end, chara = {id = "noelle", addStatBuff = function() error("Noelle must not be buffed") end}},
+            {isActive = function() return true end, chara = {id = "berdly", addStatBuff = function() error("Berdly must not be buffed") end}},
+            {isActive = function() return true end, chara = {id = "vessel", addStatBuff = function() error("Vessel must not be buffed") end}},
+        },
     },
 }
 expect(Effects.brighten(), true, "brighten succeeds in battle")
-expect(buffed, 1, "brighten buffs active party")
+expect(buffed, 3, "brighten buffs Kris, Susie, and Ralsei only")
 expect(Game.battle.ten_shadows_brightened, true, "brighten state flag")
 
 print("Runtime spell effect tests passed.")
