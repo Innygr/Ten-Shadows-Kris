@@ -6,9 +6,16 @@
 local CombatState = {}
 
 CombatState.PARTY = {
-    {id = "kris",   name = "Kris",   max_hp = 240, role = "TEN SHADOWS"},
-    {id = "susie",  name = "Susie",  max_hp = 290, role = "HEAVY HITTER"},
-    {id = "ralsei", name = "Ralsei", max_hp = 210, role = "SUPPORT"},
+    {id = "kris",   name = "Kris",   max_hp = 290, role = "TEN SHADOWS"},
+    {id = "susie",  name = "Susie",  max_hp = 350, role = "HEAVY HITTER"},
+    {id = "ralsei", name = "Ralsei", max_hp = 250, role = "SUPPORT"},
+}
+
+-- Recruitable characters are defined but are not part of the starting trio.
+CombatState.RESERVE_PARTY = {
+    {id = "noelle", name = "Noelle", max_hp = 260, role = "SNOWCASTER"},
+    {id = "berdly", name = "Berdly", max_hp = 310, role = "TECH SUPPORT"},
+    {id = "vessel", name = "Vessel", max_hp = 240, role = "SOUL BEARER"},
 }
 
 CombatState.BASIC_ATTACKS = {
@@ -435,9 +442,10 @@ function CombatState.new()
             actions[#actions + 1] = "SHADOWS"
             if not self.player_domain.used then actions[#actions + 1] = "CHIMERA SHADOW GARDEN" end
         end
-        if member_id == "susie" then
-            actions[#actions + 1] = "RUSH"
+        if member_id == "kris" then
             actions[#actions + 1] = "BRIGHTEN"
+        elseif member_id == "susie" then
+            actions[#actions + 1] = "RUSH"
         elseif member_id == "ralsei" then
             actions[#actions + 1] = "HEAL"
             actions[#actions + 1] = "REVIVESONG"
