@@ -8,10 +8,9 @@ function character:init()
     self.title = "TEN SHADOWS"
     self.soul_priority = 2
     self.has_act = true
-    self.has_spells = true
+    self.has_spells = false
     self.has_xact = true
     self.xact_name = "K-Action"
-    self:addSpell("ts_brighten")
     self.health = 290
     self.stats = {health = 290, attack = 17, defense = 2, magic = 0}
     self.max_stats = {health = 290}
