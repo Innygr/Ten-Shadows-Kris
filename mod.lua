@@ -118,13 +118,15 @@ installSixPartySupport = function()
             if #Game.battle.party ~= 6 then
                 return original_party_position(encounter, index)
             end
-            -- Three compact columns and two rows keep the full party visible.
-            local column = (index - 1) % 3
-            local row = math.floor((index - 1) / 3)
+            -- Keep the six battlers in the same party-side region used by
+            -- Kristal's native three-member formation: two columns, three rows.
+            -- The engine adds each actor's battle offset after this anchor.
+            local column = math.floor((index - 1) / 3)
+            local row = (index - 1) % 3
             local battler = Game.battle.party[index]
             local ox, oy = battler.chara:getBattleOffset()
-            local x = 28 + (column * 46) + (battler.actor:getWidth() / 2 + ox) * 2
-            local y = 62 + (row * 76) + (battler.actor:getHeight() + oy) * 2
+            local x = 28 + (column * 54) + (battler.actor:getWidth() / 2 + ox) * 2
+            local y = 30 + (row * 68) + (battler.actor:getHeight() + oy) * 2
             return x, y
         end
 
