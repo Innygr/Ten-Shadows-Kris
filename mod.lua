@@ -12,6 +12,18 @@ function Mod:postInit()
         Mod._six_party_battle_patch = true
 
         Battle.createPartyBattlers = function(battle)
+            -- Story setup can replace Game.party after Mod:postInit. Rebuild the
+            -- intended roster at battle construction time, before Kristal creates
+            -- battlers or the action boxes are initialized.
+            Game.party = {
+                Game:getPartyMember("kris"),
+                Game:getPartyMember("susie"),
+                Game:getPartyMember("ralsei"),
+                Game:getPartyMember("noelle"),
+                Game:getPartyMember("berdly"),
+                Game:getPartyMember("vessel"),
+            }
+
             for i = 1, #Game.party do
                 local party_member = Game.party[i]
                 local created = false
