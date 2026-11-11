@@ -4,6 +4,7 @@ function character:init()
     super.init(self)
     self.name = "Kris"
     self:setActor("kris")
+    self:setArmor(1, "shadow_cloak")
     self.level = Game.chapter
     self.title = "TEN SHADOWS"
     self.soul_priority = 2
