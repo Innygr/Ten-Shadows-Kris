@@ -6,11 +6,11 @@
 local CombatState = {}
 
 CombatState.PARTY = {
-    {id = "kris",   name = "Kris",   max_hp = 48, role = "TEN SHADOWS"},
-    {id = "susie",  name = "Susie",  max_hp = 62, role = "HEAVY HITTER"},
-    {id = "ralsei", name = "Ralsei", max_hp = 44, role = "SUPPORT"},
-    {id = "noelle", name = "Noelle", max_hp = 50, role = "ICE / CONTROL"},
-    {id = "berdly", name = "Berdly", max_hp = 54, role = "TECH SUPPORT"},
+    {id = "kris",   name = "Kris",   max_hp = 240, role = "TEN SHADOWS"},
+    {id = "susie",  name = "Susie",  max_hp = 290, role = "HEAVY HITTER"},
+    {id = "ralsei", name = "Ralsei", max_hp = 210, role = "SUPPORT"},
+    {id = "noelle", name = "Noelle", max_hp = 220, role = "ICE / CONTROL"},
+    {id = "berdly", name = "Berdly", max_hp = 240, role = "TECH SUPPORT"},
 }
 
 CombatState.BASIC_ATTACKS = {
@@ -18,7 +18,7 @@ CombatState.BASIC_ATTACKS = {
     susie = {damage = 24},
     ralsei = {damage = 10},
     noelle = {damage = 7},
-    berdly = {damage = 16},
+    berdly = {damage = 20},
 }
 
 CombatState.SHADOWS = {
