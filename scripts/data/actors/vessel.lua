@@ -51,7 +51,7 @@ function actor:onSpriteInit(sprite)
         kris:onSpriteInit(sprite)
     end
     if not sprite:getFX("vessel_gray_red_outline") then
-        sprite:addFX(ShaderFX(VESSEL_SHADER, {}, 0), "vessel_gray_red_outline")
+        sprite:addFX(ShaderFX(VESSEL_SHADER, {}, false, 0), "vessel_gray_red_outline")
     end
 end
 
