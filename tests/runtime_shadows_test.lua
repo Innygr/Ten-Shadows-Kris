@@ -58,5 +58,6 @@ assert(Shadows.onEnemyTurnStart(enemy) == true, "disruption must suppress the ne
 assert(#enemy.waves == 0, "disrupted enemy must not launch its wave")
 Shadows.onEnemyTurnEnd(enemy)
 assert(enemy.waves[1] == "test_wave", "enemy waves must restore after disruption")
+assert(Shadows.onEnemyTurnStart(enemy) == false, "disruption must not suppress a second wave")
 
 print("Ten Shadows effects and Attack scaling tests passed.")
