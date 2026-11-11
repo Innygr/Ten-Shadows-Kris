@@ -11,14 +11,15 @@ function character:init()
     self.has_spells = true
     self.has_xact = true
     self.xact_name = "N-Action"
-    self:addSpell("ts_ice_shock")
+    self:addSpell("heal_prayer")
+    self:addSpell("sleep_mist")
+    self:addSpell("ice_shock")
     self:addSpell("ts_ice_wave")
-
-    -- Chapter 2's 90 HP baseline scaled to a late-game Chapter 6-7 fan-game
-    -- profile. Keep her fragile physical defense and high magic aptitude.
-    self.health = 220
-    self.stats = {health = 220, attack = 7, defense = 1, magic = 11}
-    self.max_stats = {health = 220}
+    -- SnowGrave is a route/boss-gated custom addition, never equipment-gated.
+    self:addSpell("ts_snowgrave")
+    self.health = 260
+    self.stats = {health = 260, attack = 7, defense = 1, magic = 11}
+    self.max_stats = {health = 260}
     self.color = {1, 1, 0}
     self.menu_icon = "party/noelle/head"
     self.head_icons = "party/noelle/icon"
