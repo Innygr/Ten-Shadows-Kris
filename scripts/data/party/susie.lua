@@ -13,9 +13,9 @@ function character:init()
     self.xact_name = "S-Action"
     self:addSpell("ts_rush")
     self:addSpell("ts_brighten")
-    self.health = 62
-    self.stats = {health = 62, attack = 24, defense = 2, magic = 2}
-    self.max_stats = {health = 62}
+    self.health = 290
+    self.stats = {health = 290, attack = 24, defense = 2, magic = 2}
+    self.max_stats = {health = 290}
     self.color = {0.7, 0.1, 0.1}
     self.menu_icon = "party/susie/head"
     self.head_icons = "party/susie/icon"
