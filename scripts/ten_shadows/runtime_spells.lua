@@ -1,12 +1,9 @@
 -- Runtime effects shared by the party's custom Kristal spells.
--- Kept small and engine-facing so spell classes do not duplicate battle rules.
 local RuntimeSpells = {}
 
 function RuntimeSpells.damage(user, target, amount)
     local exposed = target.ten_shadows_exposed_turns or 0
-    if exposed > 0 then
-        amount = math.floor(amount * 1.4 + 0.5)
-    end
+    if exposed > 0 then amount = math.floor(amount * 1.4 + 0.5) end
     target:hurt(amount, user)
     return amount
 end
@@ -48,8 +45,11 @@ end
 
 function RuntimeSpells.brighten()
     if not Game or not Game.battle then return false end
+    local eligible = {kris = true, susie = true, ralsei = true}
     for _, battler in ipairs(Game.battle.party) do
-        if battler:isActive() then
+        local id = battler.chara and battler.chara.id
+        -- The Brighten buff explicitly excludes reserve recruits and the Vessel.
+        if eligible[id] and battler:isActive() then
             battler.chara:addStatBuff("defense", 1, 1)
         end
     end
