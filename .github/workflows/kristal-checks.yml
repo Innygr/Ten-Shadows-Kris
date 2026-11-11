@@ -65,6 +65,9 @@ jobs:
       - name: Test combat balance and equipment blacklist
         run: lua5.1 tests/combat_balance_test.lua
 
+      - name: Test Vessel SOUL-mode boss attacks
+        run: lua5.1 tests/soul_mode_attacks_test.lua
+
       - name: Verify runtime scaffold paths
         run: |
           test -f mod.lua
@@ -72,6 +75,8 @@ jobs:
           test -f scripts/battle/enemies/runtime_dummy.lua
           test -f scripts/battle/waves/runtime_smoke.lua
           test -f scripts/battle/bullets/runtime_test_bullet.lua
+          test -f tests/soul_mode_attacks_test.lua
+          grep -q 'SOUL_MODE_ATTACKS' scripts/ten_shadows/combat_state.lua
           for member in kris susie ralsei noelle berdly; do test -f "scripts/data/party/$member.lua"; done
           for spell in ts_rush ts_brighten ts_heal ts_revivesong ts_ice_shock ts_ice_wave ts_tornado; do test -f "scripts/data/spells/$spell.lua"; done
           grep -q 'registerAct("Inspect"' scripts/battle/enemies/runtime_dummy.lua
