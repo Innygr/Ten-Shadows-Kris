@@ -32,8 +32,16 @@ local function expose(target, turns)
     target.ten_shadows_exposed_turns = math.max(target.ten_shadows_exposed_turns or 0, turns or 1)
 end
 
+local function suppressNextWave(target)
+    if target.waves and not target.ten_shadows_saved_waves then
+        target.ten_shadows_saved_waves = target.waves
+        target.waves = {}
+    end
+end
+
 local function disrupt(target)
     target.ten_shadows_disrupted = true
+    suppressNextWave(target)
 end
 
 local function chill(target, amount)
@@ -42,6 +50,7 @@ local function chill(target, amount)
         target.ten_shadows_chill = target.ten_shadows_chill - 3
         target.ten_shadows_frozen_turns = math.max(target.ten_shadows_frozen_turns or 0, 1)
         expose(target, 1)
+        suppressNextWave(target)
         return true
     end
     return false
