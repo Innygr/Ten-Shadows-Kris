@@ -74,6 +74,18 @@ function RuntimeDummy:init()
     -- The Vessel's SOUL MODE menu is supplied by Mod:onBattleEnemySelect.
 end
 
+function RuntimeDummy:onTurnStart()
+    super.onTurnStart(self)
+    local Shadows = modRequire("scripts/ten_shadows/runtime_shadows")
+    Shadows.onEnemyTurnStart(self)
+end
+
+function RuntimeDummy:onTurnEnd()
+    super.onTurnEnd(self)
+    local Shadows = modRequire("scripts/ten_shadows/runtime_shadows")
+    Shadows.onEnemyTurnEnd(self)
+end
+
 function RuntimeDummy:onAct(battler, name)
     if name == "BRIGHTEN" then
         -- The ACT registration consumes Kris, Susie, and Ralsei's turns.
