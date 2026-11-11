@@ -3,9 +3,8 @@ local character, super = Class(PartyMember, "berdly")
 function character:init()
     super.init(self)
     self.name = "Berdly"
-    -- Berdly has no canonical playable-party stat block in Deltarune.
-    -- This is a mod-balanced profile: strong physical output, moderate HP,
-    -- and enough magic for his technical/support spell.
+    -- Original late-game fan-game profile; Deltarune has no standard
+    -- playable-party stat block for Berdly.
     self:setActor("kris")
     self.level = Game.chapter
     self.title = "TECH SUPPORT"
@@ -15,9 +14,9 @@ function character:init()
     self.has_xact = true
     self.xact_name = "B-Action"
     self:addSpell("ts_tornado")
-    self.health = 54
-    self.stats = {health = 54, attack = 16, defense = 2, magic = 6}
-    self.max_stats = {health = 54}
+    self.health = 240
+    self.stats = {health = 240, attack = 20, defense = 2, magic = 8}
+    self.max_stats = {health = 240}
     self.color = {0.2, 0.75, 1}
     self.menu_icon = "party/kris/head"
     self.head_icons = "party/kris/icon"
