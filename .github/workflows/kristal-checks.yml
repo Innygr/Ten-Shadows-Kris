@@ -123,7 +123,10 @@ jobs:
           assert 'Game:getPartyMember("vessel")' in source
           assert 'for i = 1, #Game.party do' in source
           assert 'math.min(3, #Game.party)' not in source
-          assert 'ui.action_boxes' in source and 'selecting > 3' in source
+          assert 'ui.action_boxes' in source and 'syncSixPartyActionBoxes' in source
+          assert 'local page_offset = selecting > 3 and 3 or 0' in source
+          assert 'local original_battle_ui_draw = BattleUI.draw' in source
+          assert 'local original_action_select_state = Battle.onActionSelectState' in source
 
           expected_gear = {
               "kris": "shadow_cloak",
