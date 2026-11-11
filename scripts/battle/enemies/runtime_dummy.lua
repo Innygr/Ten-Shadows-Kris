@@ -14,7 +14,14 @@ local ACT_TEXT = {
     ["ROUND DEER"] = "* ROUND DEER restores the party's strength.",
     ["PIERCING OX"] = "* PIERCING OX charges through, leaving the target exposed.",
     ["TIGER FUNERAL"] = "* TIGER FUNERAL unleashes a fierce, chilling strike.",
-    MAHORAGA = "* MAHORAGA appears.\\n* The adaptation wheel turns."
+    MAHORAGA = "* MAHORAGA appears.\\n* The adaptation wheel turns.",
+    ["RED SOUL"] = "* The Vessel selects RED SOUL.",
+    ["BLUE SOUL"] = "* The Vessel selects BLUE SOUL.",
+    ["GREEN SOUL"] = "* The Vessel selects GREEN SOUL.",
+    ["YELLOW SOUL"] = "* The Vessel selects YELLOW SOUL.",
+    ["PURPLE SOUL"] = "* The Vessel selects PURPLE SOUL.",
+    ["ORANGE SOUL"] = "* The Vessel selects ORANGE SOUL.",
+    ["CYAN SOUL"] = "* The Vessel selects CYAN SOUL."
 }
 
 function RuntimeDummy:init()
@@ -44,7 +51,7 @@ function RuntimeDummy:init()
     -- Brighten spends only the active trio's turns; reserve recruits and Vessel are excluded.
     self:registerActFor("kris", "BRIGHTEN", "Kris strengthens the party", {"kris", "susie", "ralsei"}, 4)
 
-    -- Kris: Ten Shadows roster and domain.
+    -- Legacy direct ACT definitions remain as a fallback for test harnesses.
     local shadows = {
         {"TOAD", "Binding and disruption", 0},
         {"NUE", "Strike and gain TP", 20},
@@ -64,7 +71,7 @@ function RuntimeDummy:init()
 
     -- Kris is the only current party member with an ACT menu.
     -- Spell-capable members use SPELL instead; they do not receive ACT entries.
-    -- The Vessel/SOUL will receive its own ACT access when its party member is added.
+    -- The Vessel's SOUL MODE menu is supplied by Mod:onBattleEnemySelect.
 end
 
 function RuntimeDummy:onAct(battler, name)
