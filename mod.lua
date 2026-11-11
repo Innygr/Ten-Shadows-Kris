@@ -51,14 +51,9 @@ function Mod:postInit()
             -- Story setup can replace Game.party after Mod:postInit. Rebuild the
             -- intended roster at battle construction time, before Kristal creates
             -- battlers or the action boxes are initialized.
-            Game.party = {
-                Game:getPartyMember("kris"),
-                Game:getPartyMember("susie"),
-                Game:getPartyMember("ralsei"),
-                Game:getPartyMember("noelle"),
-                Game:getPartyMember("berdly"),
-                Game:getPartyMember("vessel"),
-            }
+            Game:setPartyMembers(unpack(roster))
+            assert(#Game.party == 6 and Game.party[6].id == "vessel",
+                "Ten Shadows Kris: Vessel missing from the battle roster")
 
             for i = 1, #Game.party do
                 local party_member = Game.party[i]
