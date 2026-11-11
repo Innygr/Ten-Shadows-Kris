@@ -104,6 +104,15 @@ and has been tested in Kristal.
   and swords layered over the selected attack.
 - [ ] Kristal integration: combined Titan + Knight collision attack.
 
+### Vessel SOUL-mode boss attacks
+
+- [x] Core data: separate Knight, Titan, and combined attack definitions for Red, Blue, Green, Yellow, Purple, Orange, and Cyan SOUL modes.
+- [x] Core rules: selecting a Vessel mode switches the shared enemy scheduler to that mode's attack pool; Titan and Knight turns alternate, with a synchronized attack on the combo cadence.
+- [x] Core rules: a frozen Knight still yields a Titan attack from the selected mode.
+- [ ] Kristal integration: connect Vessel mode changes to state:setSoulMode(mode).
+- [ ] Kristal integration: implement the 21 unique mode-specific Knight/Titan/combined Wave patterns using each definition's pattern key.
+- [ ] Kristal integration: playtest each SOUL mode and verify arena movement, hitboxes, timing, and difficulty scaling in the actual Kristal runtime.
+
 ### SOUL control and ejection
 
 - [x] Foundation: independent detached SOUL controller with directional movement,
