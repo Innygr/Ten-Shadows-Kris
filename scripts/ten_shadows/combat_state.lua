@@ -74,6 +74,62 @@ CombatState.KNIGHT_ATTACKS = {
     {id="black_flash", name="THE ROARING", phases={3}, weight=1},
 }
 
+
+-- Vessel SOUL-mode attack sets. These are scheduler-ready attack definitions;
+-- each pattern key is the contract the future Kristal Wave implementation will use.
+-- The mode is selected by the Vessel and changes BOTH bosses' attack pools.
+local function soulAttack(id, name, source, pattern, mechanic, phases, weight)
+    return {
+        id = id, name = name, source = source, pattern = pattern,
+        mechanic = mechanic, phases = phases or {1, 2, 3}, weight = weight or 1,
+    }
+end
+
+CombatState.SOUL_MODE_ATTACKS = {
+    red = {
+        label = "RED SOUL",
+        titan = {soulAttack("red_titan_pulse_barrage", "TITAN · HEARTBEAT BARRAGE", "titan", "radial-pulse-barrage", "Read the pulse, then weave between expanding shots.")},
+        knight = {soulAttack("red_knight_crosscut", "KNIGHT · CROSSCUT", "knight", "crosscut-burst", "Avoid the opening sweep before the crossing blade paths.")},
+        combo = {soulAttack("red_knight_titan_crash", "KNIGHT + TITAN · REDLINE", "combo", "redline-crash", "Both bosses synchronize a crosscut with a pulse burst.", {1, 2, 3})},
+    },
+    blue = {
+        label = "BLUE SOUL",
+        titan = {soulAttack("blue_titan_vertical_crush", "TITAN · GRAVITY DROP", "titan", "falling-columns", "Gravity pulls the SOUL low while marked columns descend.")},
+        knight = {soulAttack("blue_knight_gravity_rake", "KNIGHT · GRAVITY RAKE", "knight", "gravity-arc", "A sword arc changes the arena's vertical pull.")},
+        combo = {soulAttack("blue_knight_titan_slam", "KNIGHT + TITAN · DEEP PRESSURE", "combo", "gravity-slam", "A gravity shift leads into a synchronized slam.", {1, 2, 3})},
+    },
+    green = {
+        label = "GREEN SOUL",
+        titan = {soulAttack("green_titan_laser_grid", "TITAN · GUARDIAN GRID", "titan", "timed-laser-grid", "A timed grid tests defensive positioning.")},
+        knight = {soulAttack("green_knight_guardbreak", "KNIGHT · GUARD BREAK", "knight", "feint-then-lunge", "The Knight feints before committing to a marked strike.")},
+        combo = {soulAttack("green_knight_titan_breach", "KNIGHT + TITAN · BREACH", "combo", "guardbreak-grid", "The Knight pressures the guard while the Titan closes safe lanes.", {1, 2, 3})},
+    },
+    yellow = {
+        label = "YELLOW SOUL",
+        titan = {soulAttack("yellow_titan_bigshot_volley", "TITAN · BIG SHOT VOLLEY", "titan", "aimed-projectile-volley", "Aimed shots arrive in readable volleys.")},
+        knight = {soulAttack("yellow_knight_ricochet", "KNIGHT · RICOCHET BLADES", "knight", "ricochet-blades", "The Knight launches blades that rebound across the arena.")},
+        combo = {soulAttack("yellow_knight_titan_crossfire", "KNIGHT + TITAN · CROSSFIRE", "combo", "aimed-crossfire", "Ricochets and aimed shots overlap in alternating lanes.", {1, 2, 3})},
+    },
+    purple = {
+        label = "PURPLE SOUL",
+        titan = {soulAttack("purple_titan_thread_cage", "TITAN · THREAD CAGE", "titan", "closing-thread-grid", "Thread lanes close in and leave a shifting route.")},
+        knight = {soulAttack("purple_knight_thread_snare", "KNIGHT · THREAD SNARE", "knight", "thread-lane-snare", "Sword strikes mark thread lanes that constrain movement.")},
+        combo = {soulAttack("purple_knight_titan_tangle", "KNIGHT + TITAN · ENTANGLEMENT", "combo", "thread-cage-crosscut", "The Knight cuts across the Titan's closing thread cage.", {1, 2, 3})},
+    },
+    orange = {
+        label = "ORANGE SOUL",
+        titan = {soulAttack("orange_titan_moving_walls", "TITAN · MOVING WALLS", "titan", "moving-hazard-lanes", "Keep moving through shifting hazard lanes.")},
+        knight = {soulAttack("orange_knight_chase_combo", "KNIGHT · CHASE COMBO", "knight", "moving-target-slashes", "The Knight pressures the SOUL with advancing slash paths.")},
+        combo = {soulAttack("orange_knight_titan_stampede", "KNIGHT + TITAN · STAMPEDE", "combo", "chase-and-sweep", "The Knight advances as the Titan sweeps the opposite lane.", {1, 2, 3})},
+    },
+    cyan = {
+        label = "CYAN SOUL",
+        titan = {soulAttack("cyan_titan_pulse_clock", "TITAN · PULSE CLOCK", "titan", "timed-pulse-rings", "Wait through the tell, then move between timed pulse rings.")},
+        knight = {soulAttack("cyan_knight_stop_start", "KNIGHT · STOP-START", "knight", "pause-then-strike", "The Knight alternates pauses with sudden committed strikes.")},
+        combo = {soulAttack("cyan_knight_titan_sync", "KNIGHT + TITAN · SYNCHRONIZED", "combo", "timed-cross-pulse", "A Knight strike lands between the Titan's timed pulses.", {1, 2, 3})},
+    },
+}
+
 -- Items on this denylist must never be imported into the mod's equipment data.
 -- The actual equipment UI/loader is not implemented yet; all future equipment
 -- entry points must consult isEquipmentBlacklisted before accepting an item.
@@ -110,12 +166,33 @@ function CombatState.new()
         knight_disrupted = 0,
         player_domain = {active = false, turns = 0, used = false},
         knight_domain = {active = false, turns = 0},
+        soul_mode = nil, -- nil keeps the original attack library until the Vessel selects a mode.
         titan = {light_radius = 38, base_light_radius = 38, brighten_turns = 0},
         encounter = {
             phase = 1, last_class = "", last_source = "",
             last_attack = "", turns = 0, phase_counts = {[1]=0,[2]=0,[3]=0},
         },
     }
+
+    function state:setSoulMode(mode)
+        if mode ~= nil then
+            mode = string.lower(tostring(mode))
+            if not CombatState.SOUL_MODE_ATTACKS[mode] then
+                return false, "Unknown SOUL mode: " .. mode
+            end
+        end
+        self.soul_mode = mode
+        self.encounter.last_class = ""
+        self.encounter.last_source = ""
+        self.encounter.last_attack = ""
+        self.encounter.turns = 0
+        return true
+    end
+
+    function state:getSoulModeAttacks()
+        if not self.soul_mode then return nil end
+        return CombatState.SOUL_MODE_ATTACKS[self.soul_mode]
+    end
 
     function state:getMember(id)
         for _, member in ipairs(self.party) do
@@ -394,15 +471,27 @@ function CombatState.new()
         if frozen then self.boss.frozen_turns = self.boss.frozen_turns - 1 end
 
         local eligible, titan, knight, combo = {}, {}, {}, nil
-        for _, attack in ipairs(CombatState.KNIGHT_ATTACKS) do
-            if attack.phases[1] == phase or attack.phases[2] == phase or attack.phases[3] == phase then
-                eligible[#eligible + 1] = attack
-                if attack.id == "titan_knight_combo" then
-                    combo = attack
-                elseif string.sub(attack.id, 1, 6) == "titan_" then
-                    titan[#titan + 1] = attack
-                else
-                    knight[#knight + 1] = attack
+        local mode_attacks = self:getSoulModeAttacks()
+        local attack_groups = mode_attacks
+            and {mode_attacks.titan, mode_attacks.knight, mode_attacks.combo}
+            or {CombatState.KNIGHT_ATTACKS}
+
+        for _, group in ipairs(attack_groups) do
+            for _, attack in ipairs(group) do
+                if attack.phases[1] == phase or attack.phases[2] == phase or attack.phases[3] == phase then
+                    eligible[#eligible + 1] = attack
+                    local attack_source = attack.source
+                    if not attack_source then
+                        attack_source = attack.id == "titan_knight_combo" and "combo"
+                            or (string.sub(attack.id, 1, 6) == "titan_" and "titan" or "knight")
+                    end
+                    if attack_source == "combo" then
+                        combo = attack
+                    elseif attack_source == "titan" then
+                        titan[#titan + 1] = attack
+                    else
+                        knight[#knight + 1] = attack
+                    end
                 end
             end
         end
@@ -446,13 +535,19 @@ function CombatState.new()
         end
 
         if picked then
-            if string.sub(picked.id, 1, 6) == "titan_" and picked.id ~= "titan_knight_combo" then
+            local picked_source = picked.source
+            if not picked_source then
+                picked_source = picked.id == "titan_knight_combo" and "combo"
+                    or (string.sub(picked.id, 1, 6) == "titan_" and "titan" or "knight")
+            end
+            if picked_source == "titan" then
                 encounter.last_source = "titan"
-                encounter.last_class = (picked.id == "titan_swarm" or picked.id == "titan_hands") and "shield-up" or "shield-down"
+                encounter.last_class = picked.shield_class or ((picked.id == "titan_swarm" or picked.id == "titan_hands") and "shield-up" or "shield-down")
                 encounter.phase_counts[phase] = encounter.phase_counts[phase] + 1
-            elseif picked.id ~= "titan_knight_combo" then
+            elseif picked_source == "knight" then
                 encounter.last_source = "knight"
             end
+            picked.soul_mode = self.soul_mode
             encounter.last_attack = picked.id
         end
 
