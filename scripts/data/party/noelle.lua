@@ -14,10 +14,11 @@ function character:init()
     self:addSpell("ts_ice_shock")
     self:addSpell("ts_ice_wave")
 
-    -- Chapter 2 Deltarune baseline (LV2): HP 90 / ATK 3 / DEF 1 / MAG 11.
-    self.health = 90
-    self.stats = {health = 90, attack = 3, defense = 1, magic = 11}
-    self.max_stats = {health = 90}
+    -- Mod-balanced LV2 profile. Preserve the project's accepted 50 HP while
+    -- retaining Noelle's low physical attack and high spell aptitude.
+    self.health = 50
+    self.stats = {health = 50, attack = 7, defense = 1, magic = 11}
+    self.max_stats = {health = 50}
     self.color = {1, 1, 0}
     self.menu_icon = "party/noelle/head"
     self.head_icons = "party/noelle/icon"
