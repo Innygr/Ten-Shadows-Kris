@@ -62,6 +62,9 @@ jobs:
       - name: Test runtime spell effects
         run: lua5.1 tests/runtime_spells_test.lua
 
+      - name: Test Ten Shadows effects and Attack scaling
+        run: lua5.1 tests/runtime_shadows_test.lua
+
       - name: Test combat balance and equipment blacklist
         run: lua5.1 tests/combat_balance_test.lua
 
@@ -118,6 +121,8 @@ jobs:
           grep -q 'self.has_act = false' scripts/data/party/susie.lua
           grep -q 'self.has_act = false' scripts/data/party/ralsei.lua
           grep -q 'self.has_act = true' scripts/data/party/kris.lua
+          grep -q 'magic = 10' scripts/data/party/kris.lua
+          grep -q 'runtime_shadows' scripts/battle/enemies/runtime_dummy.lua
           if grep -Eq 'registerActFor\("(susie|ralsei|noelle|berdly)"' scripts/battle/enemies/runtime_dummy.lua; then exit 1; fi
           grep -q 'function Mod:onBattleEnemySelect' mod.lua
           grep -q 'TEN SHADOWS' mod.lua
