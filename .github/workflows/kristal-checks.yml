@@ -81,6 +81,10 @@ jobs:
           test -f tests/soul_mode_attacks_test.lua
           grep -q 'SOUL_MODE_ATTACKS' scripts/ten_shadows/combat_state.lua
           for member in kris susie ralsei noelle berdly vessel; do test -f "scripts/data/party/$member.lua"; done
+          test -f scripts/data/actors/vessel.lua
+          grep -q 'Registry.getActor("kris")' scripts/data/actors/vessel.lua
+          grep -q 'vessel_gray_red_outline' scripts/data/actors/vessel.lua
+          grep -q 'self:setActor("vessel")' scripts/data/party/vessel.lua
           test -f scripts/world/maps/test_room.lua
           for gear in shadow_cloak ironhide_vest healing_sash frost_guard aero_cape soul_anchor; do
             test -f "scripts/data/items/armor/$gear.lua"
