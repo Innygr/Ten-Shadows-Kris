@@ -4,7 +4,33 @@ end
 
 function Mod:postInit()
     -- All six characters are present in the encounter party.
-    Game:setPartyMembers("kris", "susie", "ralsei", "noelle", "berdly", "vessel")
+    local roster = {"kris", "susie", "ralsei", "noelle", "berdly", "vessel"}
+    for _, id in ipairs(roster) do
+        assert(Game:getPartyMember(id), "Ten Shadows Kris: party member '" .. id .. "' was not registered")
+    end
+    Game:setPartyMembers(unpack(roster))
+    assert(#Game.party == 6 and Game.party[6].id == "vessel",
+        "Ten Shadows Kris: expected all six party members, including Vessel")
+
+    -- Kristal's overworld health bar is laid out for at most three visible
+    -- boxes. Keep all six in Game.party, but page the health-bar boxes while
+    -- the party selector is open so members 4-6 can actually be selected.
+    if not Mod._six_party_overworld_selector_patch then
+        Mod._six_party_overworld_selector_patch = true
+        local original_update_selected_boxes = DarkMenu.updateSelectedBoxes
+        DarkMenu.updateSelectedBoxes = function(menu, ...)
+            local result = original_update_selected_boxes(menu, ...)
+            local healthbar = Game.world and Game.world.healthbar
+            if #Game.party == 6 and healthbar and #healthbar.action_boxes == 6 then
+                local selected = menu.selected_party or 1
+                local page_offset = selected > 3 and 3 or 0
+                for index, box in ipairs(healthbar.action_boxes) do
+                    box.x = (index - page_offset - 1) * 213
+                end
+            end
+            return result
+        end
+    end
 
     -- Kristal normally hard-caps battle creation at three party members.
     -- This mod deliberately expands that to the complete six-member roster.
