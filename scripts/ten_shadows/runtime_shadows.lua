@@ -21,6 +21,9 @@ end
 local function damage(user, target, multiplier)
     if not target or not target.hurt then return 0 end
     local amount = math.floor(attackStat(user) * multiplier + 0.5)
+    if (target.ten_shadows_exposed_turns or 0) > 0 then
+        amount = math.floor(amount * 1.4 + 0.5)
+    end
     target:hurt(amount, user)
     return amount
 end
@@ -54,8 +57,8 @@ local function healParty(amount)
 end
 
 local function addTP(amount)
-    if Game and Game.battle and Game.battle.addTP then
-        Game.battle:addTP(amount)
+    if Game and Game.giveTension then
+        Game:giveTension(amount)
     end
 end
 
