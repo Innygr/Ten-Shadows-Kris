@@ -18,7 +18,8 @@ function character:init()
     self.max_stats = {health = 240}
     self.color = {0.72, 0.72, 0.76}
     self.dmg_color = {0.95, 0.08, 0.12}
-    self.menu_icon = "party/kris/head"
+    -- Use the SOUL heart as a distinct temporary party-menu icon until custom Vessel UI art exists.
+    self.menu_icon = "player/heart"
     self.head_icons = "party/kris/icon"
     self.attack_sprite = "effects/attack/cut"
     self.attack_sound = "laz_c"
