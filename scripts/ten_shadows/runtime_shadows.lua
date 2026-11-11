@@ -188,7 +188,9 @@ function Shadows.onEnemyTurnStart(enemy)
 end
 
 function Shadows.onEnemyTurnEnd(enemy)
-    if summon_state then
+    local first_enemy = Game and Game.battle and Game.battle.enemies and Game.battle.enemies[1]
+    local tick_summon = not first_enemy or first_enemy == enemy
+    if summon_state and tick_summon then
         summon_state.turns = summon_state.turns - 1
         if summon_state.turns <= 0 then
             Shadows.dismissMahoraga()
