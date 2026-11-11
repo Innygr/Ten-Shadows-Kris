@@ -15,8 +15,10 @@ function character:init()
     self:addSpell("sleep_mist")
     self:addSpell("ice_shock")
     self:addSpell("ts_ice_wave")
-    -- SnowGrave is a route/boss-gated custom addition, never equipment-gated.
-    self:addSpell("ts_snowgrave")
+    -- SnowGrave is only listed once the Weird Route has been enabled.
+    if Game:getFlag("weird_route", false) then
+        self:addSpell("ts_snowgrave")
+    end
     self.health = 260
     self.stats = {health = 260, attack = 7, defense = 1, magic = 11}
     self.max_stats = {health = 260}
