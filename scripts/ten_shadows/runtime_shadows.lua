@@ -56,6 +56,8 @@ local function chill(target, amount)
     return false
 end
 
+Shadows.addChill = chill
+
 local function healParty(amount)
     if not Game or not Game.battle then return end
     for _, member in ipairs(Game.battle.party) do
