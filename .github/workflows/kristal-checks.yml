@@ -62,6 +62,9 @@ jobs:
       - name: Test runtime spell effects
         run: lua5.1 tests/runtime_spells_test.lua
 
+      - name: Test combat balance and equipment blacklist
+        run: lua5.1 tests/combat_balance_test.lua
+
       - name: Verify runtime scaffold paths
         run: |
           test -f mod.lua
