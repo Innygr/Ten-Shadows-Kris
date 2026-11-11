@@ -123,6 +123,9 @@ jobs:
           grep -q 'self.has_act = true' scripts/data/party/kris.lua
           grep -q 'magic = 10' scripts/data/party/kris.lua
           grep -q 'runtime_shadows' scripts/battle/enemies/runtime_dummy.lua
+          test -f scripts/data/party/mahoraga.lua
+          grep -q 'function Shadows.summonMahoraga' scripts/ten_shadows/runtime_shadows.lua
+          grep -q 'WITH THIS TREASURE' scripts/ten_shadows/runtime_shadows.lua
           if grep -Eq 'registerActFor\("(susie|ralsei|noelle|berdly)"' scripts/battle/enemies/runtime_dummy.lua; then exit 1; fi
           grep -q 'function Mod:onBattleEnemySelect' mod.lua
           grep -q 'TEN SHADOWS' mod.lua
