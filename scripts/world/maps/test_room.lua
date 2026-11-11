@@ -4,7 +4,7 @@ return {
     class = "", orientation = "orthogonal", renderorder = "right-down",
     width = 16, height = 12, tilewidth = 40, tileheight = 40,
     infinite = false, backgroundcolor = {23, 27, 43, 255},
-    nextlayerid = 4, nextobjectid = 6,
+    nextlayerid = 5, nextobjectid = 7,
     properties = {name = "Ten Shadows Test Chamber"},
     tilesets = {},
     layers = {
@@ -34,6 +34,15 @@ return {
             properties = {},
             objects = {
                 {id=5, name="spawn", class="", shape="point", x=320, y=360, width=0, height=0, rotation=0, visible=true, properties={}}
+            }
+        }        ,
+        {
+            type = "objectgroup", id = 4, name = "objects", class = "objects",
+            draworder = "topdown", visible = true, opacity = 1,
+            offsetx = 0, offsety = 0, parallaxx = 1, parallaxy = 1,
+            properties = {},
+            objects = {
+                {id=6, name="Test Chamber Savepoint", class="savepoint", x=320, y=280, width=0, height=0, rotation=0, visible=true, properties={marker="spawn", heals=true}}
             }
         }
     }
