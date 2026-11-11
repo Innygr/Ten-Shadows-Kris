@@ -99,6 +99,19 @@ jobs:
           source = open("mod.lua", encoding="utf-8").read()
           assert 'Game:setPartyMembers("kris", "susie", "ralsei", "noelle", "berdly", "vessel")' in source
           assert 'Game:setPartyMembers("kris", "susie", "ralsei")' not in source
+
+          # Regression guard: the battle constructor must rebuild all six party
+          # members and iterate the complete roster rather than Kristal's default 3.
+          assert 'Game:getPartyMember("kris")' in source
+          assert 'Game:getPartyMember("susie")' in source
+          assert 'Game:getPartyMember("ralsei")' in source
+          assert 'Game:getPartyMember("noelle")' in source
+          assert 'Game:getPartyMember("berdly")' in source
+          assert 'Game:getPartyMember("vessel")' in source
+          assert 'for i = 1, #Game.party do' in source
+          assert 'math.min(3, #Game.party)' not in source
+          assert 'ui.action_boxes' in source and 'selecting > 3' in source
+
           expected_gear = {
               "kris": "shadow_cloak",
               "susie": "ironhide_vest",
@@ -107,10 +120,22 @@ jobs:
               "berdly": "aero_cape",
               "vessel": "soul_anchor",
           }
+          expected_weapons = {
+              "kris": "ten_shadow_blade",
+              "susie": "roaring_axe",
+              "ralsei": "verdant_staff",
+              "noelle": "glacier_ring",
+              "berdly": "storm_halberd",
+              "vessel": "soul_rapier",
+          }
           for member, gear in expected_gear.items():
               party_source = open(f"scripts/data/party/{member}.lua", encoding="utf-8").read()
               assert f'self:setArmor(1, "{gear}")' in party_source, (member, gear)
               assert f'self.can_equip = {{{member} = true}}' in open(f"scripts/data/items/armor/{gear}.lua", encoding="utf-8").read()
+          for member, weapon in expected_weapons.items():
+              party_source = open(f"scripts/data/party/{member}.lua", encoding="utf-8").read()
+              assert f'self:setWeapon("{weapon}")' in party_source, (member, weapon)
+              assert Path(f"scripts/data/items/weapons/{weapon}.lua").is_file(), weapon
           PY
           for spell in ts_rush ts_brighten ts_heal ts_revivesong ts_ice_shock ts_ice_wave ts_tornado ts_snowgrave scythemare; do test -f "scripts/data/spells/$spell.lua"; done
           grep -q 'registerAct("Inspect"' scripts/battle/enemies/runtime_dummy.lua
