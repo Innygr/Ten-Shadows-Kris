@@ -81,6 +81,10 @@ function RuntimeDummy:onAct(battler, name)
         return
     end
 
+    local shadow_effect = modRequire("scripts/ten_shadows/runtime_shadows")
+    local shadow_message = shadow_effect.use(name, battler, self)
+    if shadow_message then return shadow_message end
+
     local message = ACT_TEXT[name]
     if message then
         return message
