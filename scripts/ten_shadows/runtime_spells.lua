@@ -9,14 +9,8 @@ function RuntimeSpells.damage(user, target, amount)
 end
 
 function RuntimeSpells.addChill(target, amount)
-    target.ten_shadows_chill = (target.ten_shadows_chill or 0) + amount
-    if target.ten_shadows_chill >= 3 then
-        target.ten_shadows_chill = target.ten_shadows_chill - 3
-        target.ten_shadows_frozen_turns = math.max(target.ten_shadows_frozen_turns or 0, 1)
-        target.ten_shadows_exposed_turns = math.max(target.ten_shadows_exposed_turns or 0, 1)
-        return true
-    end
-    return false
+    local Shadows = modRequire("scripts/ten_shadows/runtime_shadows")
+    return Shadows.addChill(target, amount)
 end
 
 function RuntimeSpells.disrupt(target)
