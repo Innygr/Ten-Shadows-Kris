@@ -110,18 +110,18 @@ jobs:
           source = open("mod.lua", encoding="utf-8").read()
           assert "local original_battle_transition_out = Battle.onTransitionOutState" in source
           assert "Shadows.onBattleEnd()" in source
-          assert 'Game:setPartyMembers("kris", "susie", "ralsei", "noelle", "berdly", "vessel")' in source
-          assert 'Game:setPartyMembers("kris", "susie", "ralsei")' not in source
+          assert 'local roster = {"kris", "susie", "ralsei", "noelle", "berdly", "vessel"}' in source
+          assert 'Game:setPartyMembers(unpack(roster))' in source
+          assert 'assert(#Game.party == 6 and Game.party[6].id == "vessel"' in source
+          assert 'for _, id in ipairs(roster) do' in source
+          assert 'assert(Game:getPartyMember(id)' in source
 
-          # Regression guard: the battle constructor must rebuild all six party
-          # members and iterate the complete roster rather than Kristal's default 3.
-          assert 'Game:getPartyMember("kris")' in source
-          assert 'Game:getPartyMember("susie")' in source
-          assert 'Game:getPartyMember("ralsei")' in source
-          assert 'Game:getPartyMember("noelle")' in source
-          assert 'Game:getPartyMember("berdly")' in source
-          assert 'Game:getPartyMember("vessel")' in source
+          # Regression guard: battle creation iterates the validated complete roster.
           assert 'for i = 1, #Game.party do' in source
+          assert 'Game:setPartyMembers(unpack(roster))' in source
+          assert 'Vessel missing from the battle roster' in source
+          assert 'local original_update_selected_boxes = DarkMenu.updateSelectedBoxes' in source
+          assert 'local page_offset = selected > 3 and 3 or 0' in source
           assert 'math.min(3, #Game.party)' not in source
           assert 'ui.action_boxes' in source and 'syncSixPartyActionBoxes' in source
           assert 'local page_offset = selecting > 3 and 3 or 0' in source
@@ -161,7 +161,10 @@ jobs:
             grep -Fq "{\"$shadow\"," scripts/battle/enemies/runtime_dummy.lua
           done
           grep -q 'CHIMERA SHADOW GARDEN' scripts/battle/enemies/runtime_dummy.lua
-          grep -q 'Game:setPartyMembers("kris", "susie", "ralsei", "noelle", "berdly", "vessel")' mod.lua
+          grep -q 'local roster = {"kris", "susie", "ralsei", "noelle", "berdly", "vessel"}' mod.lua
+          grep -q 'Game:setPartyMembers(unpack(roster))' mod.lua
+          grep -q 'local original_update_selected_boxes = DarkMenu.updateSelectedBoxes' mod.lua
+          grep -q 'self.menu_icon = "player/heart"' scripts/data/party/vessel.lua
           grep -q 'runtime_test_bullet' scripts/battle/waves/runtime_smoke.lua
           grep -q 'self.has_act = false' scripts/data/party/susie.lua
           grep -q 'self.has_act = false' scripts/data/party/ralsei.lua
