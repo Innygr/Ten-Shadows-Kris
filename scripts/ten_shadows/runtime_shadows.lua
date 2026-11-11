@@ -108,4 +108,32 @@ function Shadows.use(name, user, target)
     return nil
 end
 
+-- Call from an EnemyBattler's turn hooks to make disruption/freeze suppress its next wave.
+function Shadows.onEnemyTurnStart(enemy)
+    local disrupted = enemy.ten_shadows_disrupted == true
+    local frozen = (enemy.ten_shadows_frozen_turns or 0) > 0
+    enemy.ten_shadows_disrupted = false
+    if frozen then
+        enemy.ten_shadows_frozen_turns = enemy.ten_shadows_frozen_turns - 1
+    end
+    if disrupted or frozen then
+        if enemy.waves and not enemy.ten_shadows_saved_waves then
+            enemy.ten_shadows_saved_waves = enemy.waves
+            enemy.waves = {}
+        end
+        return true
+    end
+    return false
+end
+
+function Shadows.onEnemyTurnEnd(enemy)
+    if enemy.ten_shadows_saved_waves then
+        enemy.waves = enemy.ten_shadows_saved_waves
+        enemy.ten_shadows_saved_waves = nil
+    end
+    if (enemy.ten_shadows_exposed_turns or 0) > 0 then
+        enemy.ten_shadows_exposed_turns = enemy.ten_shadows_exposed_turns - 1
+    end
+end
+
 return Shadows
