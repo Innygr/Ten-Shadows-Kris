@@ -44,7 +44,7 @@ assert(target.ten_shadows_adapted == true, "Mahoraga must apply adaptation")
 
 Shadows.use("RABBIT ESCAPE", user, target)
 assert(allies[1].healed == 8 and allies[2].healed == 8, "Rabbit Escape must heal all active allies")
-assert(tension == 13, "Rabbit Escape must grant 8 TP")
+assert(tension == 18, "Rabbit Escape must grant 8 TP after two NUE uses")
 Shadows.use("ROUND DEER", user, target)
 assert(allies[1].healed == 26 and allies[2].healed == 26, "Round Deer must heal all active allies")
 
