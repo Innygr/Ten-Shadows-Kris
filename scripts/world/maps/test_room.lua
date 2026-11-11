@@ -3,7 +3,7 @@ return {
     version = "1.10", luaversion = "5.1", tiledversion = "1.10.2",
     class = "", orientation = "orthogonal", renderorder = "right-down",
     width = 16, height = 12, tilewidth = 40, tileheight = 40,
-    infinite = false, backgroundcolor = "#171b2b",
+    infinite = false, backgroundcolor = {23, 27, 43, 255},
     nextlayerid = 4, nextobjectid = 6,
     properties = {name = "Ten Shadows Test Chamber"},
     tilesets = {},
