@@ -1,16 +1,29 @@
+local PARTY_ROSTER = {"kris", "susie", "ralsei", "noelle", "berdly", "vessel"}
+local installSixPartySupport
+
 function Mod:init()
     Mod.flavor_text = modRequire("scripts/ten_shadows/flavor_text")
+
+    -- Game:load builds the map and can start the first encounter before
+    -- POSTINIT. Override saved rosters before the engine reads them.
+    local original_game_load = Game.load
+    Game.load = function(game, data, index, fade)
+        if data then
+            data.party = {}
+            for i, id in ipairs(PARTY_ROSTER) do data.party[i] = id end
+        end
+        return original_game_load(game, data, index, fade)
+    end
+
+    -- Install battle/UI hooks before Game:load creates the initial encounter.
+    installSixPartySupport()
 end
 
-function Mod:postInit()
-    -- All six characters are present in the encounter party.
-    local roster = {"kris", "susie", "ralsei", "noelle", "berdly", "vessel"}
+installSixPartySupport = function()
+    local roster = PARTY_ROSTER
     for _, id in ipairs(roster) do
-        assert(Game:getPartyMember(id), "Ten Shadows Kris: party member '" .. id .. "' was not registered")
+        assert(Registry.getPartyMember(id), "Ten Shadows Kris: party member '" .. id .. "' was not registered")
     end
-    Game:setPartyMembers(unpack(roster))
-    assert(#Game.party == 6 and Game.party[6].id == "vessel",
-        "Ten Shadows Kris: expected all six party members, including Vessel")
 
     -- Kristal's overworld health bar is laid out for at most three visible
     -- boxes. Keep all six in Game.party, but page the health-bar boxes while
@@ -167,6 +180,15 @@ function Mod:postInit()
             return result
         end
     end
+end
+
+function Mod:postInit()
+    for _, id in ipairs(PARTY_ROSTER) do
+        assert(Game:getPartyMember(id), "Ten Shadows Kris: party member '" .. id .. "' was not registered")
+    end
+    Game:setPartyMembers(unpack(PARTY_ROSTER))
+    assert(#Game.party == 6 and Game.party[6].id == "vessel",
+        "Ten Shadows Kris: expected all six party members, including Vessel")
 end
 
 local SHADOWS = {
