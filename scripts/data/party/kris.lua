@@ -11,9 +11,9 @@ function character:init()
     self.has_spells = false
     self.has_xact = true
     self.xact_name = "K-Action"
-    self.health = 48
-    self.stats = {health = 48, attack = 17, defense = 2, magic = 0}
-    self.max_stats = {health = 48}
+    self.health = 240
+    self.stats = {health = 240, attack = 17, defense = 2, magic = 0}
+    self.max_stats = {health = 240}
     self.color = {0, 1, 1}
     self.menu_icon = "party/kris/head"
     self.head_icons = "party/kris/icon"
