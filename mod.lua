@@ -186,9 +186,8 @@ function Mod:postInit()
     for _, id in ipairs(PARTY_ROSTER) do
         assert(Game:getPartyMember(id), "Ten Shadows Kris: party member '" .. id .. "' was not registered")
     end
-    Game:setPartyMembers(unpack(PARTY_ROSTER))
     assert(#Game.party == 6 and Game.party[6].id == "vessel",
-        "Ten Shadows Kris: expected all six party members, including Vessel")
+        "Ten Shadows Kris: saved party did not load all six members, including Vessel")
 end
 
 local SHADOWS = {
