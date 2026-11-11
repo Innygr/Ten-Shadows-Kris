@@ -10,4 +10,9 @@ function RuntimeSmokeTest:init()
     self:addEnemy("runtime_dummy")
 end
 
+function RuntimeSmokeTest:onBattleEnd()
+    local Shadows = modRequire("scripts/ten_shadows/runtime_shadows")
+    Shadows.onBattleEnd()
+end
+
 return RuntimeSmokeTest
