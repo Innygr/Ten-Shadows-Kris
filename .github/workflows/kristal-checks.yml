@@ -96,6 +96,15 @@ jobs:
           import json
           from pathlib import Path
 
+          room_source = Path("scripts/world/maps/test_room.lua").read_text(encoding="utf-8")
+          assert 'name="savepoint"' in room_source, "Test room must use Kristal's native savepoint event name"
+          assert 'class="savepoint"' not in room_source, "Savepoint is selected by object name, not the Tiled class field"
+          assert 'marker="spawn"' in room_source and 'heals=true' in room_source
+          assert 'text1="* The shadows gather quietly around you."' in room_source
+          smoke_source = Path("scripts/battle/encounters/runtime_smoke_test.lua").read_text(encoding="utf-8")
+          assert "function RuntimeSmokeTest:onBattleEnd()" in smoke_source
+          assert "Shadows.onBattleEnd()" in smoke_source, "Encounter must restore temporary Mahoraga on battle end"
+
           manifest = json.load(open("mod.json", encoding="utf-8"))
           assert manifest["party"] == ["kris", "susie", "ralsei", "noelle", "berdly", "vessel"], manifest["party"]
           source = open("mod.lua", encoding="utf-8").read()
