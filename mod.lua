@@ -4,9 +4,8 @@ function Mod:init()
 end
 
 function Mod:postInit()
-    -- mod.json supplies the default party for new saves. Saved games retain
-    -- their saved party, so force the full roster here for this runtime test.
-    -- Game:load has created Game.world by this point, and battle battlers are
-    -- created later from Game.party when an encounter begins.
-    Game:setPartyMembers("kris", "susie", "ralsei", "noelle", "berdly")
+    -- Keep existing saves aligned with the current three-member test roster.
+    -- Noelle and Berdly remain defined for later recruitment, but are not
+    -- starting party members in this build.
+    Game:setPartyMembers("kris", "susie", "ralsei")
 end
