@@ -4,10 +4,10 @@ function spell:init()
     super.init(self)
     self.name = "BRIGHTEN"
     self.effect = "PARTY DEF +1"
-    self.description = "Susie and Ralsei strengthen the party's defenses."
+    self.description = "Kris calls on the party to strengthen their defenses."
     self.cost = 4
     self.target = "none"
-    self.tags = {"support"}
+    self.tags = {"support", "team"}
 end
 
 function spell:onCast(user, target)
