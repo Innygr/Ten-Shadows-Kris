@@ -13,7 +13,6 @@ function character:init()
     self.xact_name = "R-Action"
     self:addSpell("pacify")
     self:addSpell("heal_prayer")
-    self:addSpell("revivesong")
     self:addSpell("ts_revivesong")
     self.health = 250
     self.stats = {health = 250, attack = 10, defense = 2, magic = 14}
