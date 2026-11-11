@@ -174,7 +174,7 @@ jobs:
           grep -q 'installSixPartySupport()' mod.lua
           grep -q 'Game:setPartyMembers(unpack(roster))' mod.lua
           grep -q 'local original_update_selected_boxes = DarkMenu.updateSelectedBoxes' mod.lua
-          grep -q 'self.menu_icon = "player/heart"' scripts/data/party/vessel.lua
+          grep -q 'self.menu_icon = "party/kris/head"' scripts/data/party/vessel.lua
           grep -q 'runtime_test_bullet' scripts/battle/waves/runtime_smoke.lua
           grep -q 'self.has_act = false' scripts/data/party/susie.lua
           grep -q 'self.has_act = false' scripts/data/party/ralsei.lua
