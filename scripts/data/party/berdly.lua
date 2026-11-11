@@ -7,6 +7,7 @@ function character:init()
     -- the project's custom late-game party implementation.
     -- Temporary actor fallback until dedicated Berdly sprites are supplied.
     self:setActor("kris")
+    self:setWeapon("storm_halberd")
     self:setArmor(1, "aero_cape")
     self.level = Game.chapter
     self.title = "TECH SUPPORT"
