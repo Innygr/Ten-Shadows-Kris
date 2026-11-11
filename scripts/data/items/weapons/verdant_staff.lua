@@ -3,7 +3,7 @@ function item:init()
     super.init(self)
     self.name = "Verdant Staff"
     self.type = "weapon"
-    self.icon = "ui/menu/icon/staff"
+    self.icon = "ui/menu/icon/sword"
     self.description = "A gentle staff that strengthens restorative magic."
     self.effect = ""
     self.shop = self.description
