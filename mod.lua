@@ -125,8 +125,10 @@ installSixPartySupport = function()
             local row = (index - 1) % 3
             local battler = Game.battle.party[index]
             local ox, oy = battler.chara:getBattleOffset()
-            local x = 28 + (column * 54) + (battler.actor:getWidth() / 2 + ox) * 2
-            local y = 30 + (row * 68) + (battler.actor:getHeight() + oy) * 2
+            -- Preserve Kristal's native three-row vertical spacing and move
+            -- the second column inward from the enemy side of the arena.
+            local x = 80 + (column * 110) + (battler.actor:getWidth() / 2 + ox) * 2
+            local y = 50 + (row * 80) + (battler.actor:getHeight() + oy) * 2
             return x, y
         end
 
