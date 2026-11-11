@@ -41,6 +41,8 @@ function RuntimeDummy:init()
 
     self:registerAct("Inspect", "Read the runtime status")
     self:registerActFor("kris", "Signal", "Test a character-specific ACT")
+    -- Brighten spends only the active trio's turns; reserve recruits and Vessel are excluded.
+    self:registerActFor("kris", "BRIGHTEN", "Kris strengthens the party", {"kris", "susie", "ralsei"}, 4)
 
     -- Kris: Ten Shadows roster and domain.
     local shadows = {
@@ -66,6 +68,12 @@ function RuntimeDummy:init()
 end
 
 function RuntimeDummy:onAct(battler, name)
+    if name == "BRIGHTEN" then
+        -- The ACT registration consumes Kris, Susie, and Ralsei's turns.
+        Game.battle:powerAct("ts_brighten", battler, "kris")
+        return
+    end
+
     local message = ACT_TEXT[name]
     if message then
         return message
