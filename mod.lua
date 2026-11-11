@@ -106,26 +106,44 @@ function Mod:postInit()
             end
         end
 
+        -- The active action row must be positioned before it is drawn. Do not
+        -- animate this page change: the input system switches characters
+        -- immediately, so a tween can leave the selected character off-screen
+        -- while ACTIONSELECT is already accepting input.
+        local function syncSixPartyActionBoxes(ui)
+            if not Game.battle or #ui.action_boxes ~= 6 then return end
+            local selecting = Game.battle.current_selecting or 1
+            local page_offset = selecting > 3 and 3 or 0
+            for index, box in ipairs(ui.action_boxes) do
+                box.x = (index - page_offset - 1) * 213
+                box.visible = true
+            end
+            ui._six_party_page = page_offset
+        end
+
         local original_battle_ui_update = BattleUI.update
         BattleUI.update = function(ui, ...)
             original_battle_ui_update(ui, ...)
-            if #Game.battle.party == 6 then
-                local selecting = Game.battle.current_selecting or 1
-                local page = selecting > 3 and 1 or 0
-                local target_x = -page * 639
-                local current_x = ui._six_party_scroll_x or 0
-                local difference = target_x - current_x
-                if math.abs(difference) < 2 then
-                    current_x = target_x
-                else
-                    current_x = current_x + Utils.clamp(difference, -42 * DTMULT, 42 * DTMULT)
-                end
-                ui._six_party_scroll_x = current_x
+            syncSixPartyActionBoxes(ui)
+        end
 
-                for index, box in ipairs(ui.action_boxes) do
-                    box.x = (index - 1) * 213 + current_x
-                end
+        -- Also synchronize during drawing. This covers state changes that
+        -- happen after the UI's update tick (for example, nextParty()).
+        local original_battle_ui_draw = BattleUI.draw
+        BattleUI.draw = function(ui, ...)
+            syncSixPartyActionBoxes(ui)
+            return original_battle_ui_draw(ui, ...)
+        end
+
+        -- Keep the page correct as soon as the engine enters a new character's
+        -- action-selection state, rather than waiting for the next UI update.
+        local original_action_select_state = Battle.onActionSelectState
+        Battle.onActionSelectState = function(battle, ...)
+            local result = original_action_select_state(battle, ...)
+            if battle.battle_ui then
+                syncSixPartyActionBoxes(battle.battle_ui)
             end
+            return result
         end
     end
 end
