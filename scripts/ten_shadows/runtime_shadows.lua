@@ -98,8 +98,7 @@ function Shadows.summonMahoraga()
     }
     Game.party[index] = mahoraga
     battler.chara = mahoraga
-    mahoraga.health = mahoraga:getStat("health") or mahoraga.health
-    mahoraga:heal(math.max(0, (mahoraga:getStat("health") or 520) - mahoraga:getHealth()))
+    mahoraga.health = 520
     return true
 end
 
