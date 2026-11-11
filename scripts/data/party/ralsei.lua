@@ -11,17 +11,20 @@ function character:init()
     self.has_spells = true
     self.has_xact = true
     self.xact_name = "R-Action"
-    self:addSpell("ts_heal")
+    self:addSpell("pacify")
+    self:addSpell("heal_prayer")
+    self:addSpell("revivesong")
     self:addSpell("ts_revivesong")
-    self.health = 210
-    self.stats = {health = 210, attack = 10, defense = 2, magic = 9}
-    self.max_stats = {health = 210}
+    self.health = 250
+    self.stats = {health = 250, attack = 10, defense = 2, magic = 14}
+    self.max_stats = {health = 250}
     self.color = {0, 1, 0}
     self.menu_icon = "party/ralsei/head"
     self.head_icons = "party/ralsei/icon"
     self.name_sprite = "party/ralsei/name"
-    self.attack_sprite = "effects/attack/cut"
+    self.attack_sprite = "effects/attack/slap_r"
     self.attack_sound = "laz_c"
+    self.attack_pitch = 1.15
 end
 
 return character
