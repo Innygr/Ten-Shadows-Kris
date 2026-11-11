@@ -1,5 +1,7 @@
 -- Runtime effects for Kris's Ten Shadows ACT submenu.
 local Shadows = {}
+local summon_state = nil
+local SUMMON_TURNS = 3
 
 local DAMAGE_SCALE = {
     NUE = 1.5,
@@ -73,6 +75,47 @@ local function addTP(amount)
     end
 end
 
+function Shadows.summonMahoraga()
+    if summon_state then return false, "Mahoraga is already summoned." end
+    if not Game or not Game.battle or not Game.party then return false, "No active battle." end
+
+    local index
+    for i, member in ipairs(Game.party) do
+        if member.id == "kris" then index = i break end
+    end
+    if not index then return false, "Kris is not in the active party." end
+
+    local mahoraga = Game.getPartyMember and Game:getPartyMember("mahoraga")
+    if not mahoraga then return false, "Mahoraga party data is unavailable." end
+    local battler = Game.battle.party[index]
+    if not battler then return false, "Kris's battle slot is unavailable." end
+
+    summon_state = {
+        index = index,
+        kris = Game.party[index],
+        battler = battler,
+        turns = SUMMON_TURNS,
+    }
+    Game.party[index] = mahoraga
+    battler.chara = mahoraga
+    mahoraga.health = mahoraga:getStat("health") or mahoraga.health
+    mahoraga:heal(math.max(0, (mahoraga:getStat("health") or 520) - mahoraga:getHealth()))
+    return true
+end
+
+function Shadows.dismissMahoraga()
+    if not summon_state or not Game or not Game.party then return false end
+    local state = summon_state
+    Game.party[state.index] = state.kris
+    if state.battler then state.battler.chara = state.kris end
+    summon_state = nil
+    return true
+end
+
+function Shadows.isMahoragaSummoned()
+    return summon_state ~= nil
+end
+
 function Shadows.use(name, user, target)
     local dealt = 0
     if name == "TOAD" then
@@ -110,11 +153,18 @@ function Shadows.use(name, user, target)
         return frozen and ("* TIGER FUNERAL deals "..dealt.." damage and freezes the target!")
             or ("* TIGER FUNERAL deals "..dealt.." damage and builds CHILL.")
     elseif name == "MAHORAGA" then
+        if Shadows.isMahoragaSummoned() then
+            return "* MAHORAGA is already on the field."
+        end
         dealt = damage(user, target, DAMAGE_SCALE[name])
         expose(target, 2)
         disrupt(target)
         target.ten_shadows_adapted = true
-        return "* MAHORAGA deals "..dealt.." damage. The wheel turns; the target is exposed and disrupted."
+        local summoned, reason = Shadows.summonMahoraga()
+        if not summoned then
+            return "* The wheel turns, but Mahoraga could not manifest: "..tostring(reason)
+        end
+        return "* WITH THIS TREASURE... MAHORAGA IS SUMMONED! Kris is withdrawn for 3 turns."
     end
     return nil
 end
@@ -139,6 +189,12 @@ function Shadows.onEnemyTurnStart(enemy)
 end
 
 function Shadows.onEnemyTurnEnd(enemy)
+    if summon_state then
+        summon_state.turns = summon_state.turns - 1
+        if summon_state.turns <= 0 then
+            Shadows.dismissMahoraga()
+        end
+    end
     if enemy.ten_shadows_saved_waves then
         enemy.waves = enemy.ten_shadows_saved_waves
         enemy.ten_shadows_saved_waves = nil
