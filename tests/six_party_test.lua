@@ -28,6 +28,12 @@ assert(source:find("for i = 1, #Game.party do", 1, true),
     "battle construction must create a battler for every party member")
 assert(source:find("local page_offset = selecting > 3 and 3 or 0", 1, true),
     "battle action boxes must page to the active member")
+assert(source:find("#ui.action_boxes == 6", 1, true),
+    "battle UI must fail clearly if it does not create all six action boxes")
+assert(source:find("six-member battle is missing action boxes", 1, true),
+    "battle UI paging must validate the six action-box invariant")
+assert(source:find("overworld health bar is missing party action boxes", 1, true),
+    "overworld selector must validate all six health-bar boxes")
 assert(source:find("local page_offset = selected > 3 and 3 or 0", 1, true),
     "overworld party selection must page to the selected member")
 
