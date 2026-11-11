@@ -78,6 +78,14 @@ jobs:
           test -f tests/soul_mode_attacks_test.lua
           grep -q 'SOUL_MODE_ATTACKS' scripts/ten_shadows/combat_state.lua
           for member in kris susie ralsei noelle berdly; do test -f "scripts/data/party/$member.lua"; done
+          python3 - <<'PY'
+          import json
+          manifest = json.load(open("mod.json", encoding="utf-8"))
+          assert manifest["party"] == ["kris", "susie", "ralsei"], manifest["party"]
+          source = open("mod.lua", encoding="utf-8").read()
+          assert 'Game:setPartyMembers("kris", "susie", "ralsei")' in source
+          assert 'Game:setPartyMembers("kris", "susie", "ralsei", "noelle", "berdly")' not in source
+          PY
           for spell in ts_rush ts_brighten ts_heal ts_revivesong ts_ice_shock ts_ice_wave ts_tornado; do test -f "scripts/data/spells/$spell.lua"; done
           grep -q 'registerAct("Inspect"' scripts/battle/enemies/runtime_dummy.lua
           grep -q 'registerActFor("kris", "Signal"' scripts/battle/enemies/runtime_dummy.lua
@@ -86,9 +94,13 @@ jobs:
             grep -Fq "{\"$shadow\"," scripts/battle/enemies/runtime_dummy.lua
           done
           grep -q 'CHIMERA SHADOW GARDEN' scripts/battle/enemies/runtime_dummy.lua
-          grep -q 'Game:setPartyMembers("kris", "susie", "ralsei", "noelle", "berdly")' mod.lua
+          grep -q 'Game:setPartyMembers("kris", "susie", "ralsei")' mod.lua
           grep -q 'runtime_test_bullet' scripts/battle/waves/runtime_smoke.lua
-          echo "Runtime scaffold, mod-registered five-member party, spells, domain, and Ten Shadows checks passed"
+          grep -q 'self.has_act = false' scripts/data/party/susie.lua
+          grep -q 'self.has_act = false' scripts/data/party/ralsei.lua
+          grep -q 'self.has_act = true' scripts/data/party/kris.lua
+          if grep -Eq 'registerActFor\("(susie|ralsei|noelle|berdly)"' scripts/battle/enemies/runtime_dummy.lua; then exit 1; fi
+          echo "Runtime scaffold, three-member party, Kris-only ACT menu, spells, domain, and Ten Shadows checks passed"
 
       - name: Stage clean Kristal mod folder
         run: |
