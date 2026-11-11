@@ -115,6 +115,13 @@ function Shadows.isMahoragaSummoned()
     return summon_state ~= nil
 end
 
+-- Encounters call this when the battle is ending. Never leave the temporary
+-- shikigami occupying Kris's party slot after a victory, defeat, or escape.
+function Shadows.onBattleEnd()
+    if not summon_state then return false end
+    return Shadows.dismissMahoraga()
+end
+
 function Shadows.use(name, user, target)
     local dealt = 0
     if name == "TOAD" then
