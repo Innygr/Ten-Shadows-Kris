@@ -5,7 +5,8 @@ function character:init()
     self.name = "Berdly"
     -- The game does not provide a standard playable Berdly profile; this is
     -- the project's custom late-game party implementation.
-    self:setActor("berdly")
+    -- Temporary actor fallback until dedicated Berdly sprites are supplied.
+    self:setActor("kris")
     self.level = Game.chapter
     self.title = "TECH SUPPORT"
     self.soul_priority = 0
