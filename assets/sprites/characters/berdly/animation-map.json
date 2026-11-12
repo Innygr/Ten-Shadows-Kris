@@ -85,11 +85,11 @@
     },
     {
       "source_group": "Berdly Halbird",
-      "category": "battle",
-      "suggested_kristal_animation": "battle/halbird",
-      "note": "Weapon/halberd pose or action; exact use needs in-game inspection.",
+      "category": "reference-only",
+      "suggested_kristal_animation": null,
+      "note": "Reference-only character pose; intentionally not mapped into a playable action.",
       "frame_data_status": "not-mapped",
-      "actor_variant": "berdly"
+      "actor_variant": null
     },
     {
       "source_group": "Berdly Laugh",
