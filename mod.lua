@@ -163,17 +163,15 @@ installSixPartySupport = function()
             if #Game.battle.party ~= 6 then
                 return original_party_position(encounter, index)
             end
-            -- Keep the six battlers in the same party-side region used by
-            -- Kristal's native three-member formation: two columns, three rows.
+            -- Keep the six battlers in a centered, compact formation rather
+            -- than anchoring the entire group against the upper-left edge.
             -- The engine adds each actor's battle offset after this anchor.
             local column = math.floor((index - 1) / 3)
             local row = (index - 1) % 3
             local battler = Game.battle.party[index]
             local ox, oy = battler.chara:getBattleOffset()
-            -- Preserve Kristal's native three-row vertical spacing and move
-            -- the second column inward from the enemy side of the arena.
-            local x = 80 + (column * 110) + (battler.actor:getWidth() / 2 + ox) * 2
-            local y = 50 + (row * 80) + (battler.actor:getHeight() + oy) * 2
+            local x = 130 + (column * 100) + (battler.actor:getWidth() / 2 + ox) * 2
+            local y = 65 + (row * 75) + (battler.actor:getHeight() + oy) * 2
             return x, y
         end
 
