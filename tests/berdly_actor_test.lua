@@ -109,3 +109,11 @@ assert(kris_lw.offsets["walk/down"][1] == 0,
     "Changing Berdly's Light World offsets must not alter Kris")
 
 print("Berdly Dark World and Light World actor identities remain independent")
+
+local berdly_party_source = read("scripts/data/party/berdly.lua")
+assert(berdly_party_source:find('self:setActor("berdly")', 1, true),
+    "Berdly party member must use the dedicated Dark World actor")
+assert(berdly_party_source:find('self:setLightActor("berdly_lw")', 1, true),
+    "Berdly party member must use the dedicated Light World actor")
+
+print("Berdly party member selects dedicated Dark World and Light World actors")
