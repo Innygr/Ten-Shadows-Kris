@@ -1,3 +1,10 @@
+local function read(path)
+    local file = assert(io.open(path, "r"))
+    local value = file:read("*a")
+    file:close()
+    return value
+end
+
 -- Regression test for Berdly's independent actor configuration.
 local kris_lw = {
     id = "kris_lw",
