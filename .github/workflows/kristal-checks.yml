@@ -92,6 +92,9 @@ jobs:
           test -f tests/berdly_actor_test.lua
           test -f tests/berdly_sprite_map_test.lua
           test -f assets/sprites/characters/berdly/animation-map.json
+          test -f assets/sprites/party/README.md
+          test -f assets/sprites/party/berdly/dark/README.md
+          test -f assets/sprites/party/berdly/light/README.md
           grep -q 'SOUL_MODE_ATTACKS' scripts/ten_shadows/combat_state.lua
           for member in kris susie ralsei noelle berdly vessel; do test -f "scripts/data/party/$member.lua"; done
           test -f scripts/data/actors/vessel.lua
@@ -121,6 +124,9 @@ jobs:
           assert all('actor_variant' in group for group in berdly_map['groups'])
           assert Path('scripts/data/actors/berdly_lw.lua').is_file()
           assert set(berdly_map['integration']['planned_actor_variants']) == {'berdly', 'berdly_lw'}
+          assert berdly_map['integration']['planned_actor_paths'] == {'berdly': 'party/berdly/dark', 'berdly_lw': 'party/berdly/light'}
+          assert 'party/berdly/dark' in Path('scripts/data/actors/berdly.lua').read_text(encoding='utf-8')
+          assert 'party/berdly/light' in Path('scripts/data/actors/berdly_lw.lua').read_text(encoding='utf-8')
           assert all(group['actor_variant'] == 'berdly_lw' for group in berdly_map['groups'] if group['source_group'].startswith('Berdly Walk ') and '(Dark World)' not in group['source_group'])
           assert all(group['actor_variant'] == 'berdly' for group in berdly_map['groups'] if '(Dark World)' in group['source_group'])
 
