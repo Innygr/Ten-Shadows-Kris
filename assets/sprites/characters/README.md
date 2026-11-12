@@ -4,7 +4,7 @@ This folder is for the project's browser-preview/static sprite metadata workflow
 
 ## Berdly integration
 
-Berdly now has separate Kristal actor registry entries for both world styles: `scripts/data/actors/berdly.lua` and `scripts/data/actors/berdly_lw.lua`. They currently deep-copy Kris's Dark World and Light World actor configurations as compatibility fallbacks. Their nested animation, mirror, and offset tables are independent, so Berdly-specific overrides cannot mutate Kris's actor.
+Berdly now has separate Kristal actor registry entries for both world styles: `scripts/data/actors/berdly.lua` and `scripts/data/actors/berdly_lw.lua`. The playable party member binds the second with `setLightActor("berdly_lw")`, so Kristal's `Game:isLight()` actor selection can choose the right variant. They currently deep-copy Kris's Dark World and Light World actor configurations as compatibility fallbacks. Their nested animation, mirror, and offset tables are independent, so Berdly-specific overrides cannot mutate Kris's actor.
 
 The Spriters Resource reference is a visual planning guide, not an asset bundled in this repository. It lists 23 Berdly animation groups. The core groups relevant to a playable party member include:
 
