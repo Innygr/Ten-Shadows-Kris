@@ -14,20 +14,15 @@
   },
   "integration": {
     "actor_id": "berdly",
-    "current_state": "berdly and berdly_lw have separate actor IDs with deep-copied Kris dark/light fallback configuration",
+    "current_state": "One dedicated Dark World actor (berdly) with a deep-copied Kris fallback configuration; this project has no Light World actor state.",
     "required_before_runtime_import": [
       "Use original or otherwise authorized runtime-ready Berdly artwork.",
       "Record exact frame rectangles and frame counts from the authorized source.",
       "Verify frame duration, loop behavior, origin, and offsets in Kristal.",
       "Implement any missing battle states with original art or explicit fallback behavior."
     ],
-    "planned_actor_variants": [
-      "berdly",
-      "berdly_lw"
-    ],
     "planned_actor_paths": {
-      "berdly": "party/berdly/dark",
-      "berdly_lw": "party/berdly/light"
+      "berdly": "party/berdly"
     }
   },
   "groups": [
@@ -99,25 +94,25 @@
       "source_group": "Berdly Laugh",
       "category": "cutscene",
       "suggested_kristal_animation": "laugh",
-      "note": "Expression animation for dialogue or cutscenes.",
+      "note": "Can be used by a Dark World cutscene if the scene requires this gesture.",
       "frame_data_status": "not-mapped",
-      "actor_variant": "berdly_lw"
+      "actor_variant": "berdly"
     },
     {
       "source_group": "Berdly Pointing Up",
       "category": "cutscene",
       "suggested_kristal_animation": "pointing_up",
-      "note": "Gesture animation for dialogue or cutscenes.",
+      "note": "Can be used by a Dark World cutscene if the scene requires this gesture.",
       "frame_data_status": "not-mapped",
-      "actor_variant": "berdly_lw"
+      "actor_variant": "berdly"
     },
     {
       "source_group": "Berdly Walk Down",
-      "category": "overworld",
-      "suggested_kristal_animation": "walk/down",
-      "note": "Light World down-facing walk.",
+      "category": "reference-only",
+      "suggested_kristal_animation": null,
+      "note": "Standard walk source variant; reference-only in this Dark World-only project.",
       "frame_data_status": "not-mapped",
-      "actor_variant": "berdly_lw"
+      "actor_variant": null
     },
     {
       "source_group": "Berdly Walk Down (Dark World)",
@@ -129,19 +124,19 @@
     },
     {
       "source_group": "Berdly Walk Down Book",
-      "category": "overworld",
-      "suggested_kristal_animation": "walk_book/down",
-      "note": "Book-carrying down-facing variant.",
+      "category": "reference-only",
+      "suggested_kristal_animation": null,
+      "note": "Non-Dark-World source variant; retained as reference only because this project has no Light World state.",
       "frame_data_status": "not-mapped",
-      "actor_variant": "berdly_lw"
+      "actor_variant": null
     },
     {
       "source_group": "Berdly Walk Left",
-      "category": "overworld",
-      "suggested_kristal_animation": "walk/left",
-      "note": "Light World left-facing walk.",
+      "category": "reference-only",
+      "suggested_kristal_animation": null,
+      "note": "Standard walk source variant; reference-only in this Dark World-only project.",
       "frame_data_status": "not-mapped",
-      "actor_variant": "berdly_lw"
+      "actor_variant": null
     },
     {
       "source_group": "Berdly Walk Left (Dark World)",
@@ -153,19 +148,19 @@
     },
     {
       "source_group": "Berdly Walk Left Book",
-      "category": "overworld",
-      "suggested_kristal_animation": "walk_book/left",
-      "note": "Book-carrying left-facing variant.",
+      "category": "reference-only",
+      "suggested_kristal_animation": null,
+      "note": "Non-Dark-World source variant; retained as reference only because this project has no Light World state.",
       "frame_data_status": "not-mapped",
-      "actor_variant": "berdly_lw"
+      "actor_variant": null
     },
     {
       "source_group": "Berdly Walk Right",
-      "category": "overworld",
-      "suggested_kristal_animation": "walk/right",
-      "note": "Light World right-facing walk.",
+      "category": "reference-only",
+      "suggested_kristal_animation": null,
+      "note": "Standard walk source variant; reference-only in this Dark World-only project.",
       "frame_data_status": "not-mapped",
-      "actor_variant": "berdly_lw"
+      "actor_variant": null
     },
     {
       "source_group": "Berdly Walk Right (Dark World)",
@@ -177,19 +172,19 @@
     },
     {
       "source_group": "Berdly Walk Right Book",
-      "category": "overworld",
-      "suggested_kristal_animation": "walk_book/right",
-      "note": "Book-carrying right-facing variant.",
+      "category": "reference-only",
+      "suggested_kristal_animation": null,
+      "note": "Non-Dark-World source variant; retained as reference only because this project has no Light World state.",
       "frame_data_status": "not-mapped",
-      "actor_variant": "berdly_lw"
+      "actor_variant": null
     },
     {
       "source_group": "Berdly Walk Up",
-      "category": "overworld",
-      "suggested_kristal_animation": "walk/up",
-      "note": "Light World up-facing walk.",
+      "category": "reference-only",
+      "suggested_kristal_animation": null,
+      "note": "Standard walk source variant; reference-only in this Dark World-only project.",
       "frame_data_status": "not-mapped",
-      "actor_variant": "berdly_lw"
+      "actor_variant": null
     },
     {
       "source_group": "Berdly Walk Up (Dark World)",
@@ -201,11 +196,11 @@
     },
     {
       "source_group": "Berdly Walk Up Book",
-      "category": "overworld",
-      "suggested_kristal_animation": "walk_book/up",
-      "note": "Book-carrying up-facing variant.",
+      "category": "reference-only",
+      "suggested_kristal_animation": null,
+      "note": "Non-Dark-World source variant; retained as reference only because this project has no Light World state.",
       "frame_data_status": "not-mapped",
-      "actor_variant": "berdly_lw"
+      "actor_variant": null
     },
     {
       "source_group": "Noelle Choking Berdly",
