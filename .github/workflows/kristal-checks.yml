@@ -86,6 +86,9 @@ jobs:
           grep -q 'SOUL_MODE_ATTACKS' scripts/ten_shadows/combat_state.lua
           for member in kris susie ralsei noelle berdly vessel; do test -f "scripts/data/party/$member.lua"; done
           test -f scripts/data/actors/vessel.lua
+          test -f scripts/data/actors/berdly.lua
+          grep -q 'Class(Actor, "berdly")' scripts/data/actors/berdly.lua
+          grep -q 'self:setActor("berdly")' scripts/data/party/berdly.lua
           grep -q 'Registry.getActor("kris")' scripts/data/actors/vessel.lua
           grep -q 'vessel_gray_red_outline' scripts/data/actors/vessel.lua
           grep -q 'self:setActor("vessel")' scripts/data/party/vessel.lua
