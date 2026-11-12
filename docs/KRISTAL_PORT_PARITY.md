@@ -18,7 +18,7 @@ and has been tested in Kristal.
 - scripts/ten_shadows/flavor_text.lua: Lua-native flavor text registry with multiple variants per key, conditional entries, fallback text, and repeat avoidance. Registry logic is tested independently; battle dialogue is not wired to it yet.\n- scripts/ten_shadows/combat_state.lua: Lua-native party, TP, boss phase/status,
   summon, ACT/spell, domain, and encounter-scheduling rules. Not yet connected to the
   Kristal Encounter/Enemy/Wave/UI implementation.
-- The manifest selects five custom party IDs: Kris, Susie, Ralsei, Noelle, and Berdly.
+- The manifest selects six party IDs: Kris, Susie, Ralsei, Noelle, Berdly, and Vessel.
   Their PartyMember definitions are in Kristal's required `data/party/` registry directory;
   custom spells are in `data/spells/`. Noelle uses the built-in Noelle actor; Berdly currently
   uses a temporary Kris actor placeholder. Custom Knight/Titan boss sprite assets are not committed yet.
@@ -30,21 +30,21 @@ and has been tested in Kristal.
 - [x] Kristal project manifest with project ID, engine version, chapter, initial encounter, and party.
 - [x] Mod initialization hook.
 - [x] Encounter registration path, enemy class, and a short no-projectile test wave.
-- [ ] Launch the project in Kristal v0.10.0-192-geaf9e0ef and confirm it reaches the battle.
-- [ ] Confirm the test wave ends cleanly and the battle can return to the menu without errors.
+- [ ] Launch the project in Kristal v0.10.0-192-geaf9e0ef and confirm all six party members appear in the battle.
+- [ ] Confirm the six-member test wave ends cleanly and the battle can return to the menu without errors.
 - [ ] Replace the temporary encounter with the shared Knight + Titan enemy and real battle flow.
-- [x] Add custom PartyMember definitions for all five party IDs in `data/party/` and set the manifest party roster.
-- [ ] Add dedicated Berdly and Knight/Titan sprites, then verify party turn order and downed-member handling in Kristal.
+- [x] Add custom PartyMember definitions for all six party IDs in `scripts/data/party/` and set the manifest party roster.
+- [ ] Add dedicated Berdly and Knight/Titan sprites, then verify Kris → Susie → Ralsei → Noelle → Berdly → Vessel turn order and downed-member handling in Kristal.
 - [ ] Add a real overworld start/map and route progression after the battle runtime is stable.
 
 ## Feature parity checklist
 
 ### Battle flow and party
 
-- [x] Core data: Kris, Susie, Ralsei, Noelle, Berdly; HP caps and role labels.
+- [x] Core data: Kris, Susie, Ralsei, Noelle, Berdly, and Vessel; HP caps and role labels.
 - [x] Core data: per-character basic attack damage.
 - [x] Core rules: party member lookup, living-party filtering, action lists.
-- [ ] Kristal integration: five-character battle party and correct turn order/death skipping.
+- [x] Kristal foundation: six-member battle roster, battler creation, and paged action/overworld party selectors.\n- [ ] Kristal runtime: verify all six members' turn order and downed-member skipping in-game.
 - [ ] Kristal integration: FIGHT / ACT / ITEM / DEFEND / SPARE menu flow.
 - [ ] Kristal integration: party HUD, HP bars, turn labels, dialogue, and battle-state feedback.
 - [ ] Kristal integration: win/loss flow, retry behaviour, and encounter cleanup.
