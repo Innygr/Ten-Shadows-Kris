@@ -62,16 +62,19 @@ pushes, pull requests, and manual dispatch. It currently:
 - Checks out Kristal v0.10.0, integrates the mod as the target mod, and creates
   `Ten-Shadows-Kris.love` from the engine source.
 
-The workflow publishes two separate artifacts:
+The workflow publishes three clearly named artifacts:
 
-- **Ten-Shadows-Kris-test** — the mod folder to install into an existing Kristal setup.
-- **Ten-Shadows-Kris-love** — a standalone LÖVE archive containing the Kristal v0.10.0
-  engine with Ten Shadows Kris integrated and configured to start automatically.
+- **Ten-Shadows-Kris-standalone-Love-11.5** — recommended. A downloadable ZIP containing
+  `Ten-Shadows-Kris.love` and launch instructions. Extract the ZIP and launch the inner
+  `.love` file with LÖVE 11.5.
+- **Ten-Shadows-Kris-love-file** — the standalone `.love` file alone. GitHub wraps the
+  downloaded Actions artifact in a ZIP; extract it before launching the inner file.
+- **Ten-Shadows-Kris-mod-only-Kristal-v0.10.0** — mod-only package for an existing Kristal
+  installation. It is not a runnable LÖVE game.
 
-Download either artifact from the successful workflow run's **Actions → Artifacts** section.
-The standalone `.love` archive requires LÖVE 11.5; it is not a platform-specific executable.
-The test ZIP is intended for Kristal's normal project/mods location.
-
+The standalone build includes the engine's `assets/fonts/main.ttf`. CI now extracts that
+font from the generated `.love` archive and checks that it is non-empty and has a plausible
+file size, in addition to checking that the archive contains the expected path.
 The packaging steps deliberately exclude the browser prototype (`*.html`, root-level
 prototype JavaScript), Markdown documentation, and repository metadata from the game packages.
 Those files remain useful in the source repository but are not runtime game content.
@@ -90,10 +93,11 @@ find . -type f -name '*.lua' -not -path './.git/*' -print0 |
 
 ## First launch checklist
 
-1. Download the `Ten-Shadows-Kris-test` artifact and extract its project folder into
-   Kristal's projects/mods location, or launch the standalone `.love` archive with LÖVE 11.5.
-2. For the mod ZIP, launch the target Kristal build and select Ten Shadows Kris. For the
-   standalone archive, the integrated mod should start automatically.
+1. For the standalone route, download and extract `Ten-Shadows-Kris-standalone-Love-11.5`,
+   then launch the inner `Ten-Shadows-Kris.love` file with LÖVE 11.5.
+2. For the mod-only route, install `Ten-Shadows-Kris-mod-only-Kristal-v0.10.0` into an
+   existing Kristal v0.10.0 installation, then launch Kristal and select Ten Shadows Kris.
+   Never open the mod-only ZIP or folder directly with LÖVE.
 3. Create a new file. The manifest should route into the runtime smoke-test encounter.
 4. Confirm the placeholder enemy, battle UI, and ACT menu load.
 5. Open Kris's ACT list and confirm all ten shadows plus Chimera Shadow Garden appear with their TP costs.
@@ -106,6 +110,14 @@ find . -type f -name '*.lua' -not -path './.git/*' -print0 |
 The repository work environment does not contain the user's Kristal/LÖVE runtime, so this
 launch checklist remains unverified here. Do not mark runtime checks complete based only on
 static inspection or successful GitHub commits.
+
+## Missing main.ttf troubleshooting
+
+The `Could not open file assets/fonts/main.ttf` error occurs before the mod's battle code runs.
+For the standalone route, make sure the downloaded Actions artifact ZIP was extracted and that
+the inner `Ten-Shadows-Kris.love` file—not the outer ZIP—was opened. For the mod-only route,
+check that the existing Kristal installation contains `assets/fonts/main.ttf`; that font is
+an engine asset, not a file supplied by the mod folder.
 
 ## Current intentional limitations
 
