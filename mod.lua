@@ -170,8 +170,10 @@ installSixPartySupport = function()
             local row = (index - 1) % 3
             local battler = Game.battle.party[index]
             local ox, oy = battler.chara:getBattleOffset()
-            local x = 130 + (column * 100) + (battler.actor:getWidth() / 2 + ox) * 2
-            local y = 65 + (row * 75) + (battler.actor:getHeight() + oy) * 2
+            local x = (SCREEN_WIDTH * 0.20) + (column * SCREEN_WIDTH * 0.15625)
+                + (battler.actor:getWidth() / 2 + ox) * 2
+            local y = (SCREEN_HEIGHT * 0.135) + (row * SCREEN_HEIGHT * 0.15625)
+                + (battler.actor:getHeight() + oy) * 2
             return x, y
         end
 
