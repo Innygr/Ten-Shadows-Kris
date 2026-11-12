@@ -4,6 +4,51 @@ local installSixPartySupport
 function Mod:init()
     Mod.flavor_text = modRequire("scripts/ten_shadows/flavor_text")
 
+    -- Kristal 0.10.0's deep Utils.equal recursively compares nested tables
+    -- without tracking visited pairs. Arena shapes are normally simple
+    -- polygons, but a cyclic table reaching that comparison can overflow the
+    -- Lua stack during Stage updates. Preserve its equality semantics while
+    -- making recursive comparisons cycle-safe.
+    if not Mod._cycle_safe_equal then
+        Mod._cycle_safe_equal = true
+        Utils.equal = function(a, b, deep)
+            local function compare(left, right, visited)
+                if type(left) ~= type(right) then
+                    return false
+                end
+                if type(left) ~= "table" then
+                    return left == right
+                end
+
+                visited[left] = visited[left] or {}
+                if visited[left][right] then
+                    return true
+                end
+                visited[left][right] = true
+
+                for key, value in pairs(left) do
+                    if right[key] == nil then
+                        return false
+                    elseif deep then
+                        if not compare(value, right[key], visited) then
+                            return false
+                        end
+                    elseif value ~= right[key] then
+                        return false
+                    end
+                end
+                for key in pairs(right) do
+                    if left[key] == nil then
+                        return false
+                    end
+                end
+                return true
+            end
+
+            return compare(a, b, {})
+        end
+    end
+
     -- Game:load builds the map and can start the first encounter before
     -- POSTINIT. Override saved rosters before the engine reads them.
     local original_game_load = Game.load
@@ -252,7 +297,28 @@ installSixPartySupport = function()
             if not Game.battle or #Game.battle.party ~= 6 then return end
             assert(#ui.action_boxes == 6,
                 "Ten Shadows Kris: six-member battle is missing action boxes")
-            local selecting = Game.battle.current_selecting or 1
+            local battle = Game.battle
+            local selecting = battle.current_selecting or 1
+
+            -- During action resolution, follow the character whose action is
+            -- currently running. This keeps the relevant attack animation and
+            -- its action box on the visible page instead of snapping back to
+            -- Kris when current_selecting becomes zero.
+            if battle:getState() == "ACTIONS" or battle:getState() == "ATTACKING" then
+                local acting_index = battle.processing_action and battle.processing_action.character_id
+                if not acting_index then
+                    for _, action in ipairs(battle.current_actions or {}) do
+                        if action.action == "ATTACK" or action.action == "AUTOATTACK" then
+                            acting_index = action.character_id
+                            break
+                        end
+                    end
+                end
+                if acting_index then
+                    selecting = acting_index
+                end
+            end
+
             local page_offset = selecting > 3 and 3 or 0
             for index, box in ipairs(ui.action_boxes) do
                 box.x = (index - page_offset - 1) * 213
