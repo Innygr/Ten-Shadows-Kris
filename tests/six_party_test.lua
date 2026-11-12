@@ -8,6 +8,7 @@ end
 local manifest = read("mod.json")
 local source = read("mod.lua")
 local vessel = read("scripts/data/party/vessel.lua")
+local berdly = read("scripts/data/party/berdly.lua")
 
 local expected = {"kris", "susie", "ralsei", "noelle", "berdly", "vessel"}
 for _, id in ipairs(expected) do
@@ -36,6 +37,11 @@ assert(source:find("overworld health bar is missing party action boxes", 1, true
     "overworld selector must validate all six health-bar boxes")
 assert(source:find("local page_offset = selected > 3 and 3 or 0", 1, true),
     "overworld party selection must page to the selected member")
+
+assert(berdly:find('self:setActor("berdly")', 1, true),
+    "Berdly must use his dedicated Dark World actor")
+assert(berdly:find('self:setLightActor("berdly_lw")', 1, true),
+    "Berdly must use his dedicated Light World actor")
 
 assert(vessel:find('self:setActor("vessel")', 1, true),
     "Vessel must use its own registered actor")
