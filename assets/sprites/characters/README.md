@@ -4,7 +4,7 @@ Party character sprite sheets and individual character frames. Use transparent P
 
 ## Berdly integration
 
-Berdly has a dedicated Kristal actor registry entry at `scripts/data/actors/berdly.lua`. It currently deep-copies Kris's actor configuration as a compatibility fallback. The copied animation and offset tables are independent, so future Berdly overrides cannot mutate Kris's actor.
+Berdly now has separate Kristal actor registry entries for both world styles: `scripts/data/actors/berdly.lua` and `scripts/data/actors/berdly_lw.lua`. They currently deep-copy Kris's Dark World and Light World actor configurations as compatibility fallbacks. Their nested animation, mirror, and offset tables are independent, so Berdly-specific overrides cannot mutate Kris's actor.
 
 The Spriters Resource reference is a visual planning guide, not an asset bundled in this repository. It lists 23 Berdly animation groups. The core groups relevant to a playable party member include:
 
@@ -29,4 +29,4 @@ For the final implementation, use original or otherwise authorized runtime-ready
 
 ## Animation map
 
-The 23 source animation-group names and their proposed Kristal roles are tracked in [`berdly/animation-map.json`](berdly/animation-map.json). The file intentionally does not contain frame rectangles or sprite pixels: those must be recorded from original or otherwise authorized runtime-ready artwork, not guessed from a page thumbnail. CI validates the map's coverage and preserves the explicit `not-mapped` status until that work is completed.
+The 23 source animation-group names, their world variant, and their proposed Kristal roles are tracked in [`berdly/animation-map.json`](berdly/animation-map.json). Light World walk groups target `berdly_lw`; Dark World walk and battle groups target `berdly`. The file intentionally does not contain frame rectangles or sprite pixels: those must be recorded from original or otherwise authorized runtime-ready artwork, not guessed from a page thumbnail. CI validates the map's coverage and preserves the explicit `not-mapped` status until that work is completed.
