@@ -1,5 +1,6 @@
 -- Light World Berdly actor. Until original runtime-ready Berdly artwork is
 -- available, this variant safely reuses Kris's Light World sprite configuration.
+-- Switch its path to party/berdly/light only after compatible frames exist there.
 -- Its nested tables are copied so Berdly-specific work cannot mutate Kris.
 local actor, super = Class(Actor, "berdly_lw")
 
