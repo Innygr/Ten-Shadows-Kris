@@ -15,13 +15,14 @@ and has been tested in Kristal.
   provide a minimal boot-to-battle smoke-test path. This is not the real boss encounter.
 - scripts/objects/soul_ejection.lua: detached SOUL movement/drawing controller. Not yet
   connected to Kris's overworld controls, collapse/restore sequence, or character dialogue.
-- scripts/ten_shadows/flavor_text.lua: Lua-native flavor text registry with multiple variants per key, conditional entries, fallback text, and repeat avoidance. Registry logic is tested independently; battle dialogue is not wired to it yet.\n- scripts/ten_shadows/combat_state.lua: Lua-native party, TP, boss phase/status,
+- scripts/ten_shadows/flavor_text.lua: Lua-native flavor text registry with multiple variants per key, conditional entries, fallback text, and repeat avoidance. Registry logic is tested independently; battle dialogue is not wired to it yet.
+- scripts/ten_shadows/combat_state.lua: Lua-native party, TP, boss phase/status,
   summon, ACT/spell, domain, and encounter-scheduling rules. Not yet connected to the
   Kristal Encounter/Enemy/Wave/UI implementation.
 - The manifest selects six party IDs: Kris, Susie, Ralsei, Noelle, Berdly, and Vessel.
-  Their PartyMember definitions are in Kristal's required `data/party/` registry directory;
-  custom spells are in `data/spells/`. Noelle uses the built-in Noelle actor; Berdly currently
-  uses a temporary Kris actor placeholder. Custom Knight/Titan boss sprite assets are not committed yet.
+  Their PartyMember definitions are in `scripts/data/party/`;
+  custom spells are in `scripts/data/spells/`. Noelle uses the built-in Noelle actor; Berdly currently
+  uses a temporary Kris actor placeholder. Vessel has a dedicated gray/red-outline actor based on Kris. Custom Knight/Titan boss sprite assets are not committed yet.
 - A smoke-test scaffold is not considered runtime-verified until it has been launched with the
   project's target Kristal build.
 
@@ -44,7 +45,8 @@ and has been tested in Kristal.
 - [x] Core data: Kris, Susie, Ralsei, Noelle, Berdly, and Vessel; HP caps and role labels.
 - [x] Core data: per-character basic attack damage.
 - [x] Core rules: party member lookup, living-party filtering, action lists.
-- [x] Kristal foundation: six-member battle roster, battler creation, and paged action/overworld party selectors.\n- [ ] Kristal runtime: verify all six members' turn order and downed-member skipping in-game.
+- [x] Kristal foundation: six-member battle roster, battler creation, and paged action/overworld party selectors.
+- [ ] Kristal runtime: verify all six members' turn order and downed-member skipping in-game.
 - [ ] Kristal integration: FIGHT / ACT / ITEM / DEFEND / SPARE menu flow.
 - [ ] Kristal integration: party HUD, HP bars, turn labels, dialogue, and battle-state feedback.
 - [ ] Kristal integration: win/loss flow, retry behaviour, and encounter cleanup.
@@ -130,7 +132,8 @@ and has been tested in Kristal.
 ### Route state, dialogue, visuals, and assets
 
 - [ ] Port the Weird Route: Ice counters/flags/history without inventing route activation conditions.
-- [x] Port the flavor-text registry to Lua, including multiple variants per key, conditional selection, fallback text, and avoiding an immediate repeat when alternatives exist.\n- [ ] Connect flavor text selection to Kristal battle dialogue and story-state conditions.
+- [x] Port the flavor-text registry to Lua, including multiple variants per key, conditional selection, fallback text, and avoiding an immediate repeat when alternatives exist.
+- [ ] Connect flavor text selection to Kristal battle dialogue and story-state conditions.
 - [ ] Port opening/battle flavor text and the Odd Radio / mayo armor entries where those items exist.
 - [ ] Port sprite-sheet animation handling and sprite-asset manifest fallback behaviour.
 - [ ] Port the battle scene composition: party lineup, Knight foreground, Titan looming behind,
