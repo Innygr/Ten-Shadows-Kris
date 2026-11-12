@@ -96,6 +96,7 @@ jobs:
           for member in kris susie ralsei noelle berdly vessel; do test -f "scripts/data/party/$member.lua"; done
           test -f scripts/data/actors/vessel.lua
           test -f scripts/data/actors/berdly.lua
+          test -f scripts/data/actors/berdly_lw.lua
           grep -q 'Class(Actor, "berdly")' scripts/data/actors/berdly.lua
           grep -q 'self:setActor("berdly")' scripts/data/party/berdly.lua
           grep -q 'Registry.getActor("kris")' scripts/data/actors/vessel.lua
@@ -117,6 +118,11 @@ jobs:
           assert len(berdly_map['groups']) == 23
           assert berdly_map['source']['animation_groups_listed'] == 23
           assert all(group['frame_data_status'] == 'not-mapped' for group in berdly_map['groups'])
+          assert all('actor_variant' in group for group in berdly_map['groups'])
+          assert Path('scripts/data/actors/berdly_lw.lua').is_file()
+          assert set(berdly_map['integration']['planned_actor_variants']) == {'berdly', 'berdly_lw'}
+          assert all(group['actor_variant'] == 'berdly_lw' for group in berdly_map['groups'] if group['source_group'].startswith('Berdly Walk ') and '(Dark World)' not in group['source_group'])
+          assert all(group['actor_variant'] == 'berdly' for group in berdly_map['groups'] if '(Dark World)' in group['source_group'])
 
           room_source = Path("scripts/world/maps/test_room.lua").read_text(encoding="utf-8")
           assert 'name="savepoint"' in room_source, "Test room must use Kristal's native savepoint event name"
