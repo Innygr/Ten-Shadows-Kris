@@ -24,7 +24,11 @@
     "planned_actor_variants": [
       "berdly",
       "berdly_lw"
-    ]
+    ],
+    "planned_actor_paths": {
+      "berdly": "party/berdly/dark",
+      "berdly_lw": "party/berdly/light"
+    }
   },
   "groups": [
     {
