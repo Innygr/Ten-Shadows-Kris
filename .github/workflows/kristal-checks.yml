@@ -106,9 +106,9 @@ jobs:
           test -f scripts/data/actors/vessel.lua
           grep -q 'function Actions.install()' scripts/ten_shadows/berdly_actions.lua
           grep -q 'EnemyBattler.onAct = function' scripts/ten_shadows/berdly_actions.lua
-          grep -q 'function RuntimeDummy:getXAction(battler)' scripts/battle/enemies/runtime_dummy.lua
-          grep -q 'return "B-Action"' scripts/battle/enemies/runtime_dummy.lua
-          grep -q 'self.ten_shadows_exposed_turns' scripts/battle/enemies/runtime_dummy.lua
+          grep -q 'function Actions.getXAction(battler)' scripts/ten_shadows/berdly_actions.lua
+          grep -q 'return "B-Action"' scripts/ten_shadows/berdly_actions.lua
+          grep -q 'enemy.ten_shadows_exposed_turns' scripts/ten_shadows/berdly_actions.lua
           test -f scripts/data/actors/berdly.lua
           test -f scripts/data/actors/berdly_lw.lua
           grep -q 'Class(Actor, "berdly")' scripts/data/actors/berdly.lua
