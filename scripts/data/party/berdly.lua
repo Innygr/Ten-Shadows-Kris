@@ -8,6 +8,7 @@ function character:init()
     -- Dedicated actor identity; animations still borrow Kris until Berdly frames are mapped.
     self:setActor("berdly")
     self:setLightActor("berdly_lw")
+    self:setLightActor("berdly_lw")
     self:setWeapon("storm_halberd")
     self:setArmor(1, "aero_cape")
     self.level = Game.chapter
