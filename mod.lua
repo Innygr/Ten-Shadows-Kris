@@ -145,11 +145,49 @@ installSixPartySupport = function()
             for _, action in ipairs(battle.current_actions or {}) do
                 if not (battle.processed_action or {})[action] then pending = pending + 1 end
             end
+            local queued_summary = {}
+            for index, action in pairs(battle.character_actions or {}) do
+                if action then
+                    queued_summary[#queued_summary + 1] = tostring(index) .. ":" .. tostring(action.action)
+                end
+            end
+            table.sort(queued_summary)
+            local current_summary = {}
+            for index, action in ipairs(battle.current_actions or {}) do
+                current_summary[#current_summary + 1] = tostring(index) .. ":" .. tostring(action.action)
+                    .. (battle.processed_action and battle.processed_action[action] and "(done)" or "")
+            end
             print(string.format(
-                "[Ten Shadows Kris] %s | state=%s selecting=%s queued=%d processing=%s pending=%d",
+                "[Ten Shadows Kris] %s | state=%s selecting=%s queued=%d{%s} current=%d{%s} index=%s processing=%s pending=%d",
                 stage, tostring(battle:getState()), tostring(battle.current_selecting),
-                queued, tostring(battle.processing_action and battle.processing_action.action or "none"), pending
+                queued, table.concat(queued_summary, ","), #(battle.current_actions or {}),
+                table.concat(current_summary, ","), tostring(battle.current_action_index),
+                tostring(battle.processing_action and battle.processing_action.action or "none"), pending
             ))
+        end
+
+        local original_process_character_actions = Battle.processCharacterActions
+        Battle.processCharacterActions = function(battle, ...)
+            traceSixPartyBattle("processCharacterActions:before", battle)
+            local result = original_process_character_actions(battle, ...)
+            traceSixPartyBattle("processCharacterActions:after", battle)
+            return result
+        end
+
+        local original_try_process_next_action = Battle.tryProcessNextAction
+        Battle.tryProcessNextAction = function(battle, ...)
+            traceSixPartyBattle("tryProcessNextAction:before", battle)
+            local result = original_try_process_next_action(battle, ...)
+            traceSixPartyBattle("tryProcessNextAction:after", battle)
+            return result
+        end
+
+        local original_process_action = Battle.processAction
+        Battle.processAction = function(battle, action, ...)
+            traceSixPartyBattle("processAction:before:" .. tostring(action and action.action or "nil"), battle)
+            local result = original_process_action(battle, action, ...)
+            traceSixPartyBattle("processAction:after:" .. tostring(action and action.action or "nil") .. ":" .. tostring(result), battle)
+            return result
         end
 
         local original_next_party = Battle.nextParty
