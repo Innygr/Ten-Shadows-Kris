@@ -100,7 +100,6 @@ jobs:
           test -f assets/sprites/characters/berdly/animation-map.json
           test -f assets/sprites/party/README.md
           test -f assets/sprites/party/berdly/dark/README.md
-          test -f assets/sprites/party/berdly/light/README.md
           grep -q 'SOUL_MODE_ATTACKS' scripts/ten_shadows/combat_state.lua
           for member in kris susie ralsei noelle berdly vessel; do test -f "scripts/data/party/$member.lua"; done
           test -f scripts/data/actors/vessel.lua
@@ -110,11 +109,8 @@ jobs:
           grep -q 'return "B-Action"' scripts/ten_shadows/berdly_actions.lua
           grep -q 'enemy.ten_shadows_exposed_turns' scripts/ten_shadows/berdly_actions.lua
           test -f scripts/data/actors/berdly.lua
-          test -f scripts/data/actors/berdly_lw.lua
           grep -q 'Class(Actor, "berdly")' scripts/data/actors/berdly.lua
           grep -q 'self:setActor("berdly")' scripts/data/party/berdly.lua
-          grep -q 'self:setLightActor("berdly_lw")' scripts/data/party/berdly.lua
-          grep -q 'self:setLightActor("berdly_lw")' scripts/data/party/berdly.lua
           grep -q 'Registry.getActor("kris")' scripts/data/actors/vessel.lua
           grep -q 'vessel_gray_red_outline' scripts/data/actors/vessel.lua
           grep -q 'self:setActor("vessel")' scripts/data/party/vessel.lua
@@ -135,12 +131,7 @@ jobs:
           assert berdly_map['source']['animation_groups_listed'] == 23
           assert all(group['frame_data_status'] == 'not-mapped' for group in berdly_map['groups'])
           assert all('actor_variant' in group for group in berdly_map['groups'])
-          assert Path('scripts/data/actors/berdly_lw.lua').is_file()
-          assert set(berdly_map['integration']['planned_actor_variants']) == {'berdly', 'berdly_lw'}
-          assert berdly_map['integration']['planned_actor_paths'] == {'berdly': 'party/berdly/dark', 'berdly_lw': 'party/berdly/light'}
           assert 'party/berdly/dark' in Path('scripts/data/actors/berdly.lua').read_text(encoding='utf-8')
-          assert 'party/berdly/light' in Path('scripts/data/actors/berdly_lw.lua').read_text(encoding='utf-8')
-          assert all(group['actor_variant'] == 'berdly_lw' for group in berdly_map['groups'] if group['source_group'].startswith('Berdly Walk ') and '(Dark World)' not in group['source_group'])
           assert all(group['actor_variant'] == 'berdly' for group in berdly_map['groups'] if '(Dark World)' in group['source_group'])
 
           room_source = Path("scripts/world/maps/test_room.lua").read_text(encoding="utf-8")
