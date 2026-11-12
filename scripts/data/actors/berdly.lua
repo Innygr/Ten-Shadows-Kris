@@ -1,6 +1,8 @@
 -- Berdly currently borrows Kris's animation definitions as a safe fallback.
 -- Keep a separate Actor registry entry so Berdly can receive his own sprite
 -- mappings without changing Kris or Vessel.
+-- Switch the actor path to party/berdly/dark only after compatible runtime
+-- frames are present under assets/sprites/party/berdly/dark/.
 local actor, super = Class(Actor, "berdly")
 
 local function copyActorValue(value, seen)
