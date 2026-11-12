@@ -74,6 +74,14 @@ function RuntimeDummy:init()
     -- The Vessel's SOUL MODE menu is supplied by Mod:onBattleEnemySelect.
 end
 
+-- Berdly's X-Action is a tactical scan rather than the generic team action.
+function RuntimeDummy:getXAction(battler)
+    if battler and battler.chara and battler.chara.id == "berdly" then
+        return "B-Action"
+    end
+    return super.getXAction(self, battler)
+end
+
 function RuntimeDummy:onTurnStart()
     super.onTurnStart(self)
     local Shadows = modRequire("scripts/ten_shadows/runtime_shadows")
@@ -87,6 +95,14 @@ function RuntimeDummy:onTurnEnd()
 end
 
 function RuntimeDummy:onAct(battler, name)
+    if name == "B-Action" then
+        self.ten_shadows_exposed_turns = math.max(self.ten_shadows_exposed_turns or 0, 1)
+        if Game and Game.giveTension then
+            Game:giveTension(8)
+        end
+        return "* Berdly runs a tactical scan. The target's guard is exposed. (+8 TP)"
+    end
+
     if name == "BRIGHTEN" then
         -- The ACT registration consumes Kris, Susie, and Ralsei's turns.
         Game.battle:powerAct("ts_brighten", battler, "kris")
