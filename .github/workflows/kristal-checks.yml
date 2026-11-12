@@ -210,7 +210,7 @@ jobs:
       - name: Upload Kristal mod package
         uses: actions/upload-artifact@v5
         with:
-          name: Ten-Shadows-Kris-mod
+          name: Ten-Shadows-Kris-mod-only-Kristal-v0.10.0
           path: Ten-Shadows-Kris-mod.zip
           if-no-files-found: error
 
@@ -288,6 +288,14 @@ jobs:
           unzip -p Ten-Shadows-Kris.love VERSION | grep -Eq '^[v]?[0-9]+([.][0-9]+){0,2}([+-].*)?$'
           unzip -Z1 Ten-Shadows-Kris.love | grep -qx 'main.lua'
           unzip -Z1 Ten-Shadows-Kris.love | grep -qx 'assets/fonts/main.ttf'
+          unzip -p Ten-Shadows-Kris.love assets/fonts/main.ttf > /tmp/ten-shadows-main.ttf
+          test -s /tmp/ten-shadows-main.ttf
+          font_bytes=$(wc -c < /tmp/ten-shadows-main.ttf)
+          if [ "$font_bytes" -lt 10000 ]; then
+            echo "Bundled main.ttf is unexpectedly small ($font_bytes bytes)"
+            exit 1
+          fi
+          echo "Bundled main.ttf verified ($font_bytes bytes)"
           unzip -Z1 Ten-Shadows-Kris.love | grep -qx 'mods/ten_shadows_kris/mod.json'
 
           if unzip -Z1 Ten-Shadows-Kris.love | grep -Eq '(^|/)\.git/|\.html$'; then
@@ -318,13 +326,13 @@ jobs:
       - name: Upload standalone download bundle
         uses: actions/upload-artifact@v5
         with:
-          name: Ten-Shadows-Kris-standalone
+          name: Ten-Shadows-Kris-standalone-Love-11.5
           path: Ten-Shadows-Kris-standalone.zip
           if-no-files-found: error
 
       - name: Upload standalone .love archive
         uses: actions/upload-artifact@v5
         with:
-          name: Ten-Shadows-Kris-love
+          name: Ten-Shadows-Kris-love-file
           path: Ten-Shadows-Kris.love
           if-no-files-found: error
