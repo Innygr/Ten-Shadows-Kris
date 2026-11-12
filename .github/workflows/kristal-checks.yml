@@ -102,6 +102,7 @@ jobs:
           test -f scripts/data/actors/berdly_lw.lua
           grep -q 'Class(Actor, "berdly")' scripts/data/actors/berdly.lua
           grep -q 'self:setActor("berdly")' scripts/data/party/berdly.lua
+          grep -q 'self:setLightActor("berdly_lw")' scripts/data/party/berdly.lua
           grep -q 'Registry.getActor("kris")' scripts/data/actors/vessel.lua
           grep -q 'vessel_gray_red_outline' scripts/data/actors/vessel.lua
           grep -q 'self:setActor("vessel")' scripts/data/party/vessel.lua
