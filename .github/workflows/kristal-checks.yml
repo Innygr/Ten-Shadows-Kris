@@ -80,6 +80,9 @@ jobs:
       - name: Test Berdly sprite-map coverage
         run: lua5.1 tests/berdly_sprite_map_test.lua
 
+      - name: Test Berdly B-Action
+        run: lua5.1 tests/berdly_xaction_test.lua
+
       - name: Verify runtime scaffold paths
         run: |
           test -f mod.lua
@@ -91,6 +94,7 @@ jobs:
           test -f tests/six_party_test.lua
           test -f tests/berdly_actor_test.lua
           test -f tests/berdly_sprite_map_test.lua
+          test -f tests/berdly_xaction_test.lua
           test -f assets/sprites/characters/berdly/animation-map.json
           test -f assets/sprites/party/README.md
           test -f assets/sprites/party/berdly/dark/README.md
@@ -98,6 +102,9 @@ jobs:
           grep -q 'SOUL_MODE_ATTACKS' scripts/ten_shadows/combat_state.lua
           for member in kris susie ralsei noelle berdly vessel; do test -f "scripts/data/party/$member.lua"; done
           test -f scripts/data/actors/vessel.lua
+          grep -q 'function RuntimeDummy:getXAction(battler)' scripts/battle/enemies/runtime_dummy.lua
+          grep -q 'return "B-Action"' scripts/battle/enemies/runtime_dummy.lua
+          grep -q 'self.ten_shadows_exposed_turns' scripts/battle/enemies/runtime_dummy.lua
           test -f scripts/data/actors/berdly.lua
           test -f scripts/data/actors/berdly_lw.lua
           grep -q 'Class(Actor, "berdly")' scripts/data/actors/berdly.lua
