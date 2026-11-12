@@ -4,6 +4,10 @@ local installSixPartySupport
 function Mod:init()
     Mod.flavor_text = modRequire("scripts/ten_shadows/flavor_text")
 
+    local BerdlyActions = modRequire("scripts/ten_shadows/berdly_actions")
+    local berdly_actions_installed, berdly_actions_error = BerdlyActions.install()
+    assert(berdly_actions_installed, "Ten Shadows Kris: could not install Berdly B-Action: " .. tostring(berdly_actions_error))
+
     -- Kristal 0.10.0's deep Utils.equal recursively compares nested tables
     -- without tracking visited pairs. Arena shapes are normally simple
     -- polygons, but a cyclic table reaching that comparison can overflow the
