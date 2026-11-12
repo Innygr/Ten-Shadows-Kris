@@ -95,6 +95,8 @@ jobs:
           test -f tests/berdly_actor_test.lua
           test -f tests/berdly_sprite_map_test.lua
           test -f tests/berdly_xaction_test.lua
+          test -f scripts/ten_shadows/berdly_actions.lua
+          grep -q 'BerdlyActions.install()' mod.lua
           test -f assets/sprites/characters/berdly/animation-map.json
           test -f assets/sprites/party/README.md
           test -f assets/sprites/party/berdly/dark/README.md
@@ -102,6 +104,8 @@ jobs:
           grep -q 'SOUL_MODE_ATTACKS' scripts/ten_shadows/combat_state.lua
           for member in kris susie ralsei noelle berdly vessel; do test -f "scripts/data/party/$member.lua"; done
           test -f scripts/data/actors/vessel.lua
+          grep -q 'function Actions.install()' scripts/ten_shadows/berdly_actions.lua
+          grep -q 'EnemyBattler.onAct = function' scripts/ten_shadows/berdly_actions.lua
           grep -q 'function RuntimeDummy:getXAction(battler)' scripts/battle/enemies/runtime_dummy.lua
           grep -q 'return "B-Action"' scripts/battle/enemies/runtime_dummy.lua
           grep -q 'self.ten_shadows_exposed_turns' scripts/battle/enemies/runtime_dummy.lua
