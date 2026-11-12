@@ -42,6 +42,12 @@ assert(manifest:find('"frame_data_status": "not-mapped"', 1, true),
     "Frame data must remain explicitly unmapped until exact authorized frame metadata is available")
 assert(manifest:find('"actor_id": "berdly"', 1, true),
     "Animation map must target the dedicated Berdly actor")
+assert(manifest:find('"planned_actor_variants": [\n      "berdly",\n      "berdly_lw"', 1, true),
+    "Animation map must document separate Dark World and Light World actor variants")
+assert(manifest:find('"actor_variant": "berdly_lw"', 1, true),
+    "Light World and book variants must target the Light World actor")
+assert(manifest:find('"actor_variant": "berdly"', 1, true),
+    "Dark World and battle variants must target the Dark World actor")
 assert(not manifest:find('"frame_rectangles"', 1, true),
     "Do not invent frame rectangles without inspecting the actual authorized source frames")
 
