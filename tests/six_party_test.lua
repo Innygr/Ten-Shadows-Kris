@@ -52,5 +52,5 @@ assert(source:find('action.action == "ATTACK" or action.action == "AUTOATTACK"',
 print("Six-member party registration, save migration, battler creation, UI paging, and Vessel identity checks passed")
 
 assert(source:find("local column = math.floor((index - 1) / 3)", 1, true), "six-member battle formation must use two columns and three rows")
-assert(source:find("local x = 130 + (column * 100)", 1, true), "party formation must be centered away from the upper-left corner")
-assert(source:find("local y = 65 + (row * 75)", 1, true), "party formation must be vertically balanced")
+assert(source:find("SCREEN_WIDTH * 0.20", 1, true), "party formation must scale horizontally with the battle viewport")
+assert(source:find("SCREEN_HEIGHT * 0.135", 1, true), "party formation must scale vertically with the battle viewport")
