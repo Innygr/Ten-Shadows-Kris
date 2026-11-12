@@ -77,6 +77,9 @@ jobs:
       - name: Test Berdly actor configuration isolation
         run: lua5.1 tests/berdly_actor_test.lua
 
+      - name: Test Berdly sprite-map coverage
+        run: lua5.1 tests/berdly_sprite_map_test.lua
+
       - name: Verify runtime scaffold paths
         run: |
           test -f mod.lua
@@ -87,6 +90,8 @@ jobs:
           test -f tests/soul_mode_attacks_test.lua
           test -f tests/six_party_test.lua
           test -f tests/berdly_actor_test.lua
+          test -f tests/berdly_sprite_map_test.lua
+          test -f assets/sprites/characters/berdly/animation-map.json
           grep -q 'SOUL_MODE_ATTACKS' scripts/ten_shadows/combat_state.lua
           for member in kris susie ralsei noelle berdly vessel; do test -f "scripts/data/party/$member.lua"; done
           test -f scripts/data/actors/vessel.lua
@@ -106,6 +111,12 @@ jobs:
           python3 - <<'PY'
           import json
           from pathlib import Path
+
+          berdly_map = json.loads(Path('assets/sprites/characters/berdly/animation-map.json').read_text(encoding='utf-8'))
+          assert berdly_map['character'] == 'berdly'
+          assert len(berdly_map['groups']) == 23
+          assert berdly_map['source']['animation_groups_listed'] == 23
+          assert all(group['frame_data_status'] == 'not-mapped' for group in berdly_map['groups'])
 
           room_source = Path("scripts/world/maps/test_room.lua").read_text(encoding="utf-8")
           assert 'name="savepoint"' in room_source, "Test room must use Kristal's native savepoint event name"
