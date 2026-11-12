@@ -42,6 +42,13 @@ assert(vessel:find('self:setActor("vessel")', 1, true),
 assert(vessel:find('self.menu_icon = "party/kris/head"', 1, true),
     "Vessel must have a gray Kris head icon")
 
+assert(source:find("visited[left][right]", 1, true),
+    "deep equality must track visited table pairs to avoid recursive stack overflow")
+assert(source:find('battle:getState() == "ATTACKING"', 1, true),
+    "battle action boxes must follow the active attacker page")
+assert(source:find('action.action == "ATTACK" or action.action == "AUTOATTACK"', 1, true),
+    "attack resolution must identify the party member using the attack")
+
 print("Six-member party registration, save migration, battler creation, UI paging, and Vessel identity checks passed")
 
 assert(source:find("local column = math.floor((index - 1) / 3)", 1, true), "six-member battle formation must use two columns and three rows")
