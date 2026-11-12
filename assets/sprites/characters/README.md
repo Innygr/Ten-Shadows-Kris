@@ -1,6 +1,6 @@
-# Character sprites
+# Character sprite metadata and previews
 
-Party character sprite sheets and individual character frames. Use transparent PNG, native pixel dimensions, and document frame rectangles/animation names in the asset manifest.
+This folder is for the project's browser-preview/static sprite metadata workflow. It is not Kristal's runtime Actor sprite root. Kristal actor images belong under `assets/sprites/party/<actor path>/`; Berdly's planned runtime folders are documented in [`../party/README.md`](../party/README.md). Use transparent PNG, native pixel dimensions, and document frame rectangles/animation names in the asset manifest.
 
 ## Berdly integration
 
