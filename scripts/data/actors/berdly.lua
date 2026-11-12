@@ -1,18 +1,37 @@
 -- Berdly currently borrows Kris's animation definitions as a safe fallback.
--- This gives Berdly a distinct Actor registry entry so his real sprite sheet can
--- be mapped independently without changing Kris's actor or Vessel's shader.
--- Replace the inherited sprite/animation paths when licensed runtime-ready
--- Berdly frames are added under assets/sprites/characters/berdly/.
+-- Keep a separate Actor registry entry so Berdly can receive his own sprite
+-- mappings without changing Kris or Vessel.
 local actor, super = Class(Actor, "berdly")
+
+local function copyActorValue(value, seen)
+    if type(value) ~= "table" then
+        return value
+    end
+
+    seen = seen or {}
+    if seen[value] then
+        return seen[value]
+    end
+
+    local copied = {}
+    seen[value] = copied
+    for key, child in pairs(value) do
+        copied[copyActorValue(key, seen)] = copyActorValue(child, seen)
+    end
+    return copied
+end
 
 function actor:init()
     super.init(self)
 
     local kris = Registry.getActor("kris")
     if kris then
+        -- Actor settings include nested animation/offset tables. Deep-copy
+        -- them so a future Berdly override cannot mutate Kris's shared data.
+        local copied_tables = {}
         for key, value in pairs(kris) do
             if key ~= "id" then
-                self[key] = value
+                self[key] = copyActorValue(value, copied_tables)
             end
         end
     end
