@@ -54,3 +54,25 @@ print("Six-member party registration, save migration, battler creation, UI pagin
 assert(source:find("local column = math.floor((index - 1) / 3)", 1, true), "six-member battle formation must use two columns and three rows")
 assert(source:find("SCREEN_WIDTH * 0.20", 1, true), "party formation must scale horizontally with the battle viewport")
 assert(source:find("SCREEN_HEIGHT * 0.135", 1, true), "party formation must scale vertically with the battle viewport")
+
+-- Sanity-check the viewport-relative layout at Kristal's standard 640x480
+-- battle resolution using representative 32x32 party actors.
+local test_width, test_height = 640, 480
+local positions = {}
+for index = 1, 6 do
+    local column = math.floor((index - 1) / 3)
+    local row = (index - 1) % 3
+    local x = (test_width * 0.20) + (column * test_width * 0.15625) + 32
+    local y = (test_height * 0.135) + (row * test_height * 0.15625) + 64
+    positions[index] = {x, y}
+    assert(x > 80 and x < test_width * 0.55,
+        "party member " .. index .. " must stay in the party-side battle area")
+    assert(y > 80 and y < test_height - 40,
+        "party member " .. index .. " must stay clear of the top and bottom corners")
+end
+for i = 1, #positions do
+    for j = i + 1, #positions do
+        assert(positions[i][1] ~= positions[j][1] or positions[i][2] ~= positions[j][2],
+            "party battlers must not share the same target position")
+    end
+end
