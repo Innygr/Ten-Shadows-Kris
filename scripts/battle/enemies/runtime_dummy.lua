@@ -96,7 +96,7 @@ end
 
 function RuntimeDummy:onAct(battler, name)
     if name == "B-Action" then
-        self.ten_shadows_exposed_turns = math.max(self.ten_shadows_exposed_turns or 0, 1)
+        self.ten_shadows_exposed_turns = math.max(self.ten_shadows_exposed_turns or 0, 2)
         if Game and Game.giveTension then
             Game:giveTension(8)
         end
