@@ -5,8 +5,8 @@ function character:init()
     self.name = "Berdly"
     -- The game does not provide a standard playable Berdly profile; this is
     -- the project's custom late-game party implementation.
-    -- Temporary actor fallback until dedicated Berdly sprites are supplied.
-    self:setActor("kris")
+    -- Dedicated actor identity; animations still borrow Kris until Berdly frames are mapped.
+    self:setActor("berdly")
     self:setWeapon("storm_halberd")
     self:setArmor(1, "aero_cape")
     self.level = Game.chapter
