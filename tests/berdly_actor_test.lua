@@ -5,26 +5,13 @@ local function read(path)
     return value
 end
 
--- Regression test for Berdly's independent actor configuration.
-local kris_lw = {
-    id = "kris_lw",
-    name = "Kris",
-    width = 19,
-    height = 37,
-    path = "party/kris/light",
-    default = "walk",
-    color = {0, 1, 1},
-    animations = {},
-    mirror_sprites = { ["walk/down"] = "walk/up" },
-    offsets = { ["walk/down"] = {0, 0} },
-}
-
+-- Berdly is a Dark World-only playable character in this project.
 local kris = {
     id = "kris",
     name = "Kris",
     width = 19,
     height = 37,
-    path = "party/kris/dark",
+    path = "party/kris",
     default = "walk",
     color = {0, 1, 1},
     animations = {
@@ -59,7 +46,6 @@ end
 Registry = {
     getActor = function(id)
         if id == "kris" then return kris end
-        if id == "kris_lw" then return kris_lw end
         return nil
     end,
 }
@@ -93,37 +79,10 @@ local sprite = {}
 berdly:onSpriteInit(sprite)
 assert(sprite.kris_callback_called, "Berdly must preserve Kris sprite initialization behavior")
 
-print("Berdly actor identity, fallback configuration, deep-copy isolation, and sprite callback checks passed")
+local party_source = read("scripts/data/party/berdly.lua")
+assert(party_source:find('self:setActor("berdly")', 1, true),
+    "Berdly party member must use the dedicated actor")
+assert(not party_source:find("setLightActor", 1, true),
+    "This project has no Light World actor state; Berdly must not assign one")
 
-local berdly_lw = assert(dofile("scripts/data/actors/berdly_lw.lua"))
-berdly_lw:init()
-
-assert(berdly_lw.id == "berdly_lw", "Light World Berdly must have its own actor ID")
-assert(berdly_lw.name == "Berdly", "Light World Berdly must have its own display name")
-assert(berdly_lw.path == kris_lw.path and berdly_lw.default == kris_lw.default,
-    "Light World fallback must use the valid Light World actor sprite path")
-assert(berdly_lw.width == kris_lw.width and berdly_lw.height == kris_lw.height,
-    "Light World Berdly fallback must preserve actor dimensions")
-assert(berdly_lw.mirror_sprites ~= kris_lw.mirror_sprites,
-    "Light World Berdly must not share mirror mappings with Kris")
-assert(berdly_lw.offsets ~= kris_lw.offsets,
-    "Light World Berdly must not share offset mappings with Kris")
-berdly_lw.mirror_sprites["walk/down"] = "berdly_custom/up"
-berdly_lw.offsets["walk/down"][1] = 99
-assert(kris_lw.mirror_sprites["walk/down"] == "walk/up",
-    "Changing Berdly's Light World mirror mapping must not alter Kris")
-assert(kris_lw.offsets["walk/down"][1] == 0,
-    "Changing Berdly's Light World offsets must not alter Kris")
-
-print("Berdly Dark World and Light World actor identities remain independent")
-
-local berdly_party_source = read("scripts/data/party/berdly.lua")
-assert(berdly_party_source:find('self:setActor("berdly")', 1, true),
-    "Berdly party member must use the dedicated Dark World actor")
-assert(berdly_party_source:find('self:setLightActor("berdly_lw")', 1, true),
-    "Berdly party member must use the dedicated Light World actor")
-local _, light_actor_assignments = berdly_party_source:gsub('self:setLightActor%("berdly_lw"%)', "")
-assert(light_actor_assignments == 1,
-    "Berdly party member must set its Light World actor exactly once")
-
-print("Berdly party member selects dedicated Dark World and Light World actors")
+print("Berdly actor identity, fallback configuration, deep-copy isolation, and Dark World-only party wiring passed")
