@@ -1,0 +1,188 @@
+{
+  "schema_version": 1,
+  "character": "berdly",
+  "source": {
+    "title": "Berdly - Deltarune",
+    "site": "The Spriters Resource",
+    "asset_url": "https://www.spriters-resource.com/pc_computer/deltarune/asset/110751/",
+    "asset_dimensions_px": [
+      726,
+      3247
+    ],
+    "animation_groups_listed": 23,
+    "note": "Reference metadata only. No source sprite pixels or inferred frame rectangles are stored in this repository."
+  },
+  "integration": {
+    "actor_id": "berdly",
+    "current_state": "Kris actor configuration fallback with independent copied tables",
+    "required_before_runtime_import": [
+      "Use original or otherwise authorized runtime-ready Berdly artwork.",
+      "Record exact frame rectangles and frame counts from the authorized source.",
+      "Verify frame duration, loop behavior, origin, and offsets in Kristal.",
+      "Implement any missing battle states with original art or explicit fallback behavior."
+    ]
+  },
+  "groups": [
+    {
+      "source_group": "Berdly (Unused)",
+      "category": "reference-only",
+      "suggested_kristal_animation": null,
+      "note": "Unused source material; do not wire into the playable actor without a scene requirement.",
+      "frame_data_status": "not-mapped"
+    },
+    {
+      "source_group": "Berdly Attack",
+      "category": "battle",
+      "suggested_kristal_animation": "battle/attack",
+      "note": "Primary attack animation.",
+      "frame_data_status": "not-mapped"
+    },
+    {
+      "source_group": "Berdly Attack Unhappy",
+      "category": "battle",
+      "suggested_kristal_animation": "battle/attack_unhappy",
+      "note": "Alternate attack expression; requires a custom actor animation key.",
+      "frame_data_status": "not-mapped"
+    },
+    {
+      "source_group": "Berdly Battle Idle",
+      "category": "battle",
+      "suggested_kristal_animation": "battle/idle",
+      "note": "Default battle stance.",
+      "frame_data_status": "not-mapped"
+    },
+    {
+      "source_group": "Berdly Battle Idle Right",
+      "category": "battle",
+      "suggested_kristal_animation": "battle/idle_right",
+      "note": "Alternate battle-facing stance; verify orientation before assigning offsets.",
+      "frame_data_status": "not-mapped"
+    },
+    {
+      "source_group": "Berdly Battle Idle Unhappy",
+      "category": "battle",
+      "suggested_kristal_animation": "battle/idle_unhappy",
+      "note": "Alternate idle expression; requires a custom actor animation key.",
+      "frame_data_status": "not-mapped"
+    },
+    {
+      "source_group": "Berdly Fly",
+      "category": "special",
+      "suggested_kristal_animation": "fly",
+      "note": "Flight movement for scenes or a custom action; not a replacement for walking.",
+      "frame_data_status": "not-mapped"
+    },
+    {
+      "source_group": "Berdly Halbird",
+      "category": "battle",
+      "suggested_kristal_animation": "battle/halbird",
+      "note": "Weapon/halberd pose or action; exact use needs in-game inspection.",
+      "frame_data_status": "not-mapped"
+    },
+    {
+      "source_group": "Berdly Laugh",
+      "category": "cutscene",
+      "suggested_kristal_animation": "laugh",
+      "note": "Expression animation for dialogue or cutscenes.",
+      "frame_data_status": "not-mapped"
+    },
+    {
+      "source_group": "Berdly Pointing Up",
+      "category": "cutscene",
+      "suggested_kristal_animation": "pointing_up",
+      "note": "Gesture animation for dialogue or cutscenes.",
+      "frame_data_status": "not-mapped"
+    },
+    {
+      "source_group": "Berdly Walk Down",
+      "category": "overworld",
+      "suggested_kristal_animation": "walk/down_lw",
+      "note": "Light World down-facing walk.",
+      "frame_data_status": "not-mapped"
+    },
+    {
+      "source_group": "Berdly Walk Down (Dark World)",
+      "category": "overworld",
+      "suggested_kristal_animation": "walk/down",
+      "note": "Dark World down-facing walk.",
+      "frame_data_status": "not-mapped"
+    },
+    {
+      "source_group": "Berdly Walk Down Book",
+      "category": "overworld",
+      "suggested_kristal_animation": "walk_book/down",
+      "note": "Book-carrying down-facing variant.",
+      "frame_data_status": "not-mapped"
+    },
+    {
+      "source_group": "Berdly Walk Left",
+      "category": "overworld",
+      "suggested_kristal_animation": "walk/left_lw",
+      "note": "Light World left-facing walk.",
+      "frame_data_status": "not-mapped"
+    },
+    {
+      "source_group": "Berdly Walk Left (Dark World)",
+      "category": "overworld",
+      "suggested_kristal_animation": "walk/left",
+      "note": "Dark World left-facing walk.",
+      "frame_data_status": "not-mapped"
+    },
+    {
+      "source_group": "Berdly Walk Left Book",
+      "category": "overworld",
+      "suggested_kristal_animation": "walk_book/left",
+      "note": "Book-carrying left-facing variant.",
+      "frame_data_status": "not-mapped"
+    },
+    {
+      "source_group": "Berdly Walk Right",
+      "category": "overworld",
+      "suggested_kristal_animation": "walk/right_lw",
+      "note": "Light World right-facing walk.",
+      "frame_data_status": "not-mapped"
+    },
+    {
+      "source_group": "Berdly Walk Right (Dark World)",
+      "category": "overworld",
+      "suggested_kristal_animation": "walk/right",
+      "note": "Dark World right-facing walk.",
+      "frame_data_status": "not-mapped"
+    },
+    {
+      "source_group": "Berdly Walk Right Book",
+      "category": "overworld",
+      "suggested_kristal_animation": "walk_book/right",
+      "note": "Book-carrying right-facing variant.",
+      "frame_data_status": "not-mapped"
+    },
+    {
+      "source_group": "Berdly Walk Up",
+      "category": "overworld",
+      "suggested_kristal_animation": "walk/up_lw",
+      "note": "Light World up-facing walk.",
+      "frame_data_status": "not-mapped"
+    },
+    {
+      "source_group": "Berdly Walk Up (Dark World)",
+      "category": "overworld",
+      "suggested_kristal_animation": "walk/up",
+      "note": "Dark World up-facing walk.",
+      "frame_data_status": "not-mapped"
+    },
+    {
+      "source_group": "Berdly Walk Up Book",
+      "category": "overworld",
+      "suggested_kristal_animation": "walk_book/up",
+      "note": "Book-carrying up-facing variant.",
+      "frame_data_status": "not-mapped"
+    },
+    {
+      "source_group": "Noelle Choking Berdly",
+      "category": "scene-only",
+      "suggested_kristal_animation": null,
+      "note": "Scene-specific composite; not a standalone Berdly actor animation.",
+      "frame_data_status": "not-mapped"
+    }
+  ]
+}
