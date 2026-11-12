@@ -33,8 +33,8 @@ assert(RuntimeDummy.getXAction({}, kris_battler) == "Standard",
 
 local target = {ten_shadows_exposed_turns = 0}
 local message = RuntimeDummy.onAct(target, berdly_battler, "B-Action")
-assert(target.ten_shadows_exposed_turns == 1,
-    "B-Action must expose the target for the next player damage window")
+assert(target.ten_shadows_exposed_turns == 2,
+    "B-Action must keep the target exposed through the following player round")
 assert(tension == 8, "B-Action must grant exactly 8 TP")
 assert(message:find("tactical scan", 1, true),
     "B-Action must return battle text rather than softlocking the action")
