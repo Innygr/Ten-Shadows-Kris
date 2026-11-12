@@ -39,6 +39,14 @@ assert(tension == 8, "B-Action must grant exactly 8 TP")
 assert(message:find("tactical scan", 1, true),
     "B-Action must return battle text rather than softlocking the action")
 
+local Shadows = dofile("scripts/ten_shadows/runtime_shadows.lua")
+Shadows.onEnemyTurnEnd(target)
+assert(target.ten_shadows_exposed_turns == 1,
+    "B-Action exposure must survive the current enemy turn for the next party round")
+Shadows.onEnemyTurnEnd(target)
+assert(target.ten_shadows_exposed_turns == 0,
+    "B-Action exposure must expire after the following enemy turn")
+
 local other_target = {}
 local standard_message = RuntimeDummy.onAct(other_target, kris_battler, "Standard")
 assert(standard_message:find("standard X-ACT handler works", 1, true),
