@@ -40,8 +40,8 @@ assert(source:find("local page_offset = selected > 3 and 3 or 0", 1, true),
 
 assert(berdly:find('self:setActor("berdly")', 1, true),
     "Berdly must use his dedicated Dark World actor")
-assert(berdly:find('self:setLightActor("berdly_lw")', 1, true),
-    "Berdly must use his dedicated Light World actor")
+assert(not berdly:find("setLightActor", 1, true),
+    "This project has no Light World actor state")
 
 assert(vessel:find('self:setActor("vessel")', 1, true),
     "Vessel must use its own registered actor")
