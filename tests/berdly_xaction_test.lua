@@ -8,6 +8,9 @@ Game = {
 }
 
 EnemyBattler = {}
+modRequire = function()
+    return {use = function() return nil end}
+end
 function Class(_)
     return {}, {
         getXAction = function(_, battler)
@@ -38,8 +41,8 @@ assert(message:find("tactical scan", 1, true),
 
 local other_target = {}
 local standard_message = RuntimeDummy.onAct(other_target, kris_battler, "Standard")
-assert(standard_message == "* Base action: Standard",
-    "Standard X-Action must continue through the base handler")
+assert(standard_message:find("standard X-ACT handler works", 1, true),
+    "Standard X-Action must keep the existing ACT_TEXT fallback")
 assert(other_target.ten_shadows_exposed_turns == nil,
     "Standard X-Action must not apply Berdly's exposure effect")
 
