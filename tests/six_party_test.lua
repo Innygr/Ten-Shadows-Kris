@@ -76,3 +76,9 @@ for i = 1, #positions do
             "party battlers must not share the same target position")
     end
 end
+
+local berdly_party = read("scripts/data/party/berdly.lua")
+local berdly_actor = read("scripts/data/actors/berdly.lua")
+assert(berdly_party:find('self:setActor("berdly")', 1, true), "Berdly must use his dedicated actor registry entry")
+assert(berdly_actor:find('Class(Actor, "berdly")', 1, true), "Berdly actor must be registered independently from Kris")
+assert(berdly_actor:find('Registry.getActor("kris")', 1, true), "Berdly fallback must preserve working animation definitions until dedicated frames exist")
