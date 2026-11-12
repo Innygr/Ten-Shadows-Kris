@@ -26,3 +26,7 @@ The Spriters Resource reference is a visual planning guide, not an asset bundled
 The reference also has light-world and book-carrying walk variants, plus unused and scene-specific material. Those should be mapped only when the relevant scenes need them.
 
 For the final implementation, use original or otherwise authorized runtime-ready artwork. Do not commit extracted copyrighted game sprites. Record each frame rectangle, frame rate, origin, and loop behavior here and in the manifest. The required battle states that are not represented by a matching source group will need original animation work or a carefully chosen non-animated fallback.
+
+## Animation map
+
+The 23 source animation-group names and their proposed Kristal roles are tracked in [`berdly/animation-map.json`](berdly/animation-map.json). The file intentionally does not contain frame rectangles or sprite pixels: those must be recorded from original or otherwise authorized runtime-ready artwork, not guessed from a page thumbnail. CI validates the map's coverage and preserves the explicit `not-mapped` status until that work is completed.
