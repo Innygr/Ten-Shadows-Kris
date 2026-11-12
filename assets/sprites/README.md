@@ -2,7 +2,7 @@
 
 All game sprite assets live under this directory. Keep source artwork separate from runtime-ready exports.
 
-- `characters/` — Kris and party sprites.
+- `characters/` — Kris and party sprites, including future runtime-ready Berdly frames.
 - `enemies/` — Knight and other enemy sprites.
 - `shikigami/` — Ten Shadows summons.
 - `effects/` — attacks, shadows, particles, and status effects.
