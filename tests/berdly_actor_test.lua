@@ -122,7 +122,7 @@ assert(berdly_party_source:find('self:setActor("berdly")', 1, true),
     "Berdly party member must use the dedicated Dark World actor")
 assert(berdly_party_source:find('self:setLightActor("berdly_lw")', 1, true),
     "Berdly party member must use the dedicated Light World actor")
-local _, light_actor_assignments = berdly_party_source:gsub('self:setLightActor("berdly_lw")', "")
+local _, light_actor_assignments = berdly_party_source:gsub('self:setLightActor%("berdly_lw"%)', "")
 assert(light_actor_assignments == 1,
     "Berdly party member must set its Light World actor exactly once")
 
