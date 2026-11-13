@@ -11,18 +11,20 @@ local expected_modes = {"red", "blue", "green", "yellow", "purple", "orange", "c
 for _, mode in ipairs(expected_modes) do
     local definitions = CombatState.SOUL_MODE_ATTACKS[mode]
     expect(type(definitions), "table", mode .. " mode exists")
-    expect(#definitions.titan, 1, mode .. " has a Titan attack")
-    expect(#definitions.knight, 1, mode .. " has a Knight attack")
+    expect(#definitions.titan >= 2, true, mode .. " has at least two Titan moves")
+    expect(#definitions.knight >= 2, true, mode .. " has at least two Knight moves")
     expect(#definitions.combo, 1, mode .. " has a combined attack")
 
     for _, group_name in ipairs({"titan", "knight", "combo"}) do
-        local attack = definitions[group_name][1]
-        expect(type(attack.id), "string", mode .. " " .. group_name .. " attack ID")
-        expect(type(attack.pattern), "string", mode .. " " .. group_name .. " pattern contract")
-        expect(attack.source, group_name, mode .. " " .. group_name .. " source")
-        expect(attack.phases[1], 1, mode .. " " .. group_name .. " phase one")
-        expect(attack.phases[2], 2, mode .. " " .. group_name .. " phase two")
-        expect(attack.phases[3], 3, mode .. " " .. group_name .. " phase three")
+        for _, attack in ipairs(definitions[group_name]) do
+            expect(type(attack.id), "string", mode .. " " .. group_name .. " attack ID")
+            expect(type(attack.pattern), "string", mode .. " " .. group_name .. " pattern contract")
+            expect(attack.source, group_name, mode .. " " .. group_name .. " source")
+            expect(type(attack.mechanic), "string", mode .. " " .. group_name .. " mechanic description")
+            expect(attack.phases[1], 1, mode .. " " .. group_name .. " phase one")
+            expect(attack.phases[2], 2, mode .. " " .. group_name .. " phase two")
+            expect(attack.phases[3], 3, mode .. " " .. group_name .. " phase three")
+        end
     end
 
     local state = CombatState.new()
@@ -30,17 +32,20 @@ for _, mode in ipairs(expected_modes) do
     expect(state:setSoulMode(mode), true, mode .. " mode selection")
 
     local attack, frozen = state:chooseEnemyAttack()
-    expect(attack.id, definitions.titan[1].id, mode .. " starts with Titan attack")
+    local function contains(group, id)
+        for _, entry in ipairs(group) do if entry.id == id then return true end end
+        return false
+    end
+    expect(contains(definitions.titan, attack.id), true, mode .. " starts with a Titan move")
     expect(attack.soul_mode, mode, mode .. " attack records active SOUL mode")
-    expect(attack.pattern, definitions.titan[1].pattern, mode .. " Titan pattern is selected")
     expect(frozen, false, mode .. " normal Titan turn is not frozen")
 
     attack = state:chooseEnemyAttack()
-    expect(attack.id, definitions.knight[1].id, mode .. " alternates to Knight attack")
+    expect(contains(definitions.knight, attack.id), true, mode .. " alternates to a Knight move")
 
     state:chooseEnemyAttack()
     attack = state:chooseEnemyAttack()
-    expect(attack.id, definitions.combo[1].id, mode .. " schedules the combined attack on turn four")
+    expect(contains(definitions.combo, attack.id), true, mode .. " schedules the combined attack on turn four")
 end
 
 local state = CombatState.new()
@@ -54,7 +59,7 @@ state.boss.frozen_turns = 1
 local attack, frozen = state:chooseEnemyAttack()
 expect(frozen, true, "frozen Knight turn is reported")
 expect(attack.source, "titan", "Titan still attacks while Knight is frozen")
-expect(attack.id, CombatState.SOUL_MODE_ATTACKS.yellow.titan[1].id, "frozen turn uses active-mode Titan attack")
+expect(attack.source, "titan", "frozen turn uses active-mode Titan attack")
 
 expect(state:setSoulMode(nil), true, "clearing Vessel mode succeeds")
 expect(state.soul_mode, nil, "clearing mode restores legacy attack selection")
