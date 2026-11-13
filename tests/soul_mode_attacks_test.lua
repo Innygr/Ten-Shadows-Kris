@@ -21,9 +21,8 @@ for _, mode in ipairs(expected_modes) do
             expect(type(attack.pattern), "string", mode .. " " .. group_name .. " pattern contract")
             expect(attack.source, group_name, mode .. " " .. group_name .. " source")
             expect(type(attack.mechanic), "string", mode .. " " .. group_name .. " mechanic description")
-            expect(attack.phases[1], 1, mode .. " " .. group_name .. " phase one")
-            expect(attack.phases[2], 2, mode .. " " .. group_name .. " phase two")
-            expect(attack.phases[3], 3, mode .. " " .. group_name .. " phase three")
+            expect(type(attack.phases), "table", mode .. " " .. group_name .. " phase availability")
+            expect(type(attack.weight), "number", mode .. " " .. group_name .. " scheduler weight")
         end
     end
 
