@@ -61,7 +61,8 @@ function KnightTitanAssault:onStart()
                 shot.direction,
                 shot.speed,
                 shot.kind,
-                shot.warning
+                shot.warning,
+                shot.mechanic
             )
         end
 

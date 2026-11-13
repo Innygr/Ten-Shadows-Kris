@@ -6,7 +6,7 @@ local COLORS = {
     combo = {1.0, 0.78, 0.24},
 }
 
-function ShadowProjectile:init(x, y, direction, speed, kind, warning)
+function ShadowProjectile:init(x, y, direction, speed, kind, warning, mechanic)
     super.init(self, x, y)
 
     self.width = 12
@@ -18,6 +18,8 @@ function ShadowProjectile:init(x, y, direction, speed, kind, warning)
     self.rotation = direction
     self.damage = 2
     self.kind = COLORS[kind] and kind or "titan"
+    self.mechanic = mechanic
+    self.is_execution_slash = type(mechanic) == "table" and mechanic.kind == "execution_slash"
     self.armed = true
     self.telegraph = nil
 
@@ -83,6 +85,11 @@ function ShadowProjectile:draw()
         love.graphics.polygon("fill", 0, -6, 4, 0, 0, 6, -4, 0)
         love.graphics.setColor(1, 0.86, 0.88, 1)
         love.graphics.line(-3, 0, 3, 0)
+        if self.is_execution_slash then
+            love.graphics.setLineWidth(3)
+            love.graphics.line(-10, -2, 10, 2)
+            love.graphics.line(-10, 2, 10, -2)
+        end
     elseif self.kind == "combo" then
         love.graphics.polygon("fill", 0, -6, 5, 0, 0, 6, -5, 0)
         love.graphics.setColor(1, 1, 0.88, 1)

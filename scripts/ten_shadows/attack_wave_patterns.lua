@@ -106,7 +106,7 @@ local function atan2(y, x)
     return 0
 end
 
-local function add(shots, kind, x, y, direction, speed, warning)
+local function add(shots, kind, x, y, direction, speed, warning, mechanic)
     shots[#shots + 1] = {
         kind = kind,
         x = x,
@@ -114,6 +114,7 @@ local function add(shots, kind, x, y, direction, speed, warning)
         direction = direction,
         speed = speed,
         warning = warning,
+        mechanic = mechanic,
     }
 end
 
@@ -140,7 +141,21 @@ function AttackWavePatterns.build(attack, phase, volley, arena, target, domain_a
     local pace = 2.8 + (phase - 1) * 0.42 + (volley - 1) * 0.10
     local shots = {}
 
-    if family == "radial" then
+    if attack and attack.id == "cyan_knights_execution" and volley == 3 then
+        local from_right = phase % 2 == 0
+        local x = from_right and (arena.right + 10) or (arena.left - 10)
+        local y = math.max(arena.top + 14, math.min(arena.bottom - 14, target.y))
+        local dx = target.x - x
+        local dy = target.y - y
+        local distance = math.sqrt(dx * dx + dy * dy)
+        add(shots, "knight", x, y, atan2(dy, dx), pace + 0.65, {
+            kind = "target",
+            duration = 0.55,
+            length = distance,
+        }, {
+            kind = "execution_slash",
+        })
+    elseif family == "radial" then
         local count = 8 + phase * 2
         local rotation = (volley - 1) * 0.16
         for i = 1, count do
