@@ -143,7 +143,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--to", dest="target", choices=("fsharp", "fpp", "lua"), default="lua")
     parser.add_argument("-o", "--output", type=Path)
     args = parser.parse_args(argv)
-    language = args.source_language or ("fsharp" if args.source.suffix.lower() == ".fs" else "fpp")
+    language = args.source_language or ("fsharp" if args.source.suffix.lower() == ".f#" else "fpp")
     try:
         text = args.source.read_text(encoding="utf-8")
         if language == "fsharp":
@@ -151,7 +151,7 @@ def main(argv: list[str] | None = None) -> int:
             suffix = ".fpp" if args.target == "fpp" else ".lua"
         else:
             if args.target == "fsharp":
-                translated, suffix = fpp_to_fsharp(text), ".fs"
+                translated, suffix = fpp_to_fsharp(text), ".f#"
             elif args.target == "lua":
                 translated, suffix = transpile_fpp(text), ".lua"
             else:
