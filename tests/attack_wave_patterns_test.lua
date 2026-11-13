@@ -70,7 +70,7 @@ local radial_shots, radial_family = Patterns.build(
     {id = "red_titan_pulse_barrage", pattern = "radial-pulse-barrage", source = "titan"},
     1, 1, arena, target, false
 )
-assert(radial_family == "radial" and #radial_shots == 10, "radial patterns must fan out in all directions")
+assert(radial_family == "radial" and #radial_shots == 12, "Red heartbeat radial patterns must fan out in twelve directions")
 
 local aimed_shots, aimed_family = Patterns.build(
     {id = "test_aimed", pattern = "aimed-projectile-volley", source = "knight"},
