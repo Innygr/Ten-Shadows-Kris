@@ -48,7 +48,7 @@ def transpile(source: str) -> str:
         if kind == "identifier":
             if value == "sinon":
                 trim_trailing_whitespace()
-                output.append("\\n" + ("    " * len(blocks)) + "else")
+                output.append("\n" + ("    " * len(blocks)) + "else")
             else:
                 output.append(KEYWORDS.get(value, value))
             if value in ("fonction", "si", "sinon", "tant_que", "pour"):
