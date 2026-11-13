@@ -27,24 +27,6 @@ def load_transpiler(path: Path):
     return module
 
 
-def build(source_dir: Path, output_dir: Path, translator_path: Path) -> int:
-    transpiler = load_transpiler(translator_path)
-    sources = sorted(source_dir.rglob("*.fpp"))
-    for source in sources:
-        relative = source.relative_to(source_dir).with_suffix(".lua")
-        destination = output_dir / relative
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        try:
-            generated = transpiler.transpile(source.read_text(encoding="utf-8"))
-        except Exception as error:
-            raise SystemExit(f"F++ translation failed for {source}: {error}") from error
-        destination.write_text(generated, encoding="utf-8")
-        print(f"F++ -> Lua: {source} -> {destination}")
-    if not sources:
-        print(f"F++ translator found: {translator_path} (no mod .fpp files yet)")
-    return 0
-
-
 def main() -> int:
     parser = argparse.ArgumentParser(description="Build F++ mod sources for Kristal.")
     parser.add_argument("--source-dir", type=Path, default=Path("scripts"))
