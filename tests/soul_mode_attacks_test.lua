@@ -136,7 +136,7 @@ for _, mode in ipairs(expected_modes) do
     end
     expect(soul.ten_shadows_mode, mode, mode .. " Soul is tagged with active mode")
     expect(type(soul.color), "table", mode .. " Soul has a distinct colour")
-end)
+end
 
 -- Clearing the mode returns the default Kristal SOUL and leaves no stale tag.
 mode_state:setSoulMode(nil)
