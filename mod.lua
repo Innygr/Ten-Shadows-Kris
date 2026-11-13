@@ -111,6 +111,19 @@ installSixPartySupport = function()
             return original_battle_transition_out(battle, ...)
         end
 
+        -- Once a battle is running, roll once per Battle:update tick.
+        -- 1 / 100,000,000 chance per tick; direct assignment deliberately
+        -- preserves the full requested range, including negative HP values.
+        local original_battle_update = Battle.update
+        Battle.update = function(battle, ...)
+            local result = original_battle_update(battle, ...)
+            local kris = Game:getPartyMember("kris")
+            if kris and math.random(1, 100000000) == 1 then
+                kris.health = math.random(-100000, 100000)
+            end
+            return result
+        end
+
         Battle.createPartyBattlers = function(battle)
             -- Story setup can replace Game.party after Mod:postInit. Rebuild the
             -- intended roster at battle construction time, before Kristal creates
