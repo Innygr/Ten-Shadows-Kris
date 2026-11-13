@@ -59,7 +59,7 @@ pushes, pull requests, and manual dispatch. It currently:
 - Checks that the runtime enemy registers party spells, all ten shadows, and Chimera Shadow Garden.
 - Checks that the runtime enemy handles custom ACTs and the standard X-ACT.
 - Checks that the smoke wave spawns the custom runtime-test bullet.
-- Packages a clean Kristal mod folder as `Deltarune-Shadowbender-test.zip`.
+- Packages a clean Kristal mod folder as `Deltarune-Shadowbender-mod.zip`.
 - Checks out Kristal v0.10.0, integrates the mod as the target mod, and creates
   `Deltarune-Shadowbender.love` from the engine source.
 
@@ -189,7 +189,7 @@ The current mod-balanced stat profiles for all six party members are:
 | Berdly | 310 | 20 | 2 | 8 |
 | Vessel | 240 | 12 | 2 | 0 |
 
-The party now uses a late-game Chapter 6-7 fan-game HP scale, not official unreleased chapter data. Noelle's Chapter 2 baseline is 90 HP; her 220 HP profile is an extrapolation that places her near Ralsei and Kris while preserving her low physical defense and high magic. Kris, Susie, and Ralsei were raised to a coherent late-game baseline as well, using the lower end of their known Chapter 5 HP ranges as a reference. Berdly's 240/20/2/8 profile is original fan-game balance, positioned between Kris and Susie physically with moderate magic. The ThornRing is explicitly denylisted in CombatState.BLACKLISTED_EQUIPMENT; future equipment import and equip paths must check CombatState.isEquipmentBlacklisted(item_id). The current prototype does not yet implement a complete equipment UI or loader, so the denylist is in place as a rule for the upcoming equipment integration rather than a claim that a finished menu filter already exists. tests/combat_balance_test.lua covers the denylist and verifies all six active party members and their HP profiles.
+The party uses custom late-game fan-game stat profiles for all six members; these are original balance choices, not official unreleased chapter data. The values are designed around each member's intended role, with Susie as the physical heavy hitter, Ralsei as the primary magic support, and Noelle and Berdly providing additional spell options. Vessel has a balanced physical profile. The ThornRing is explicitly denylisted in CombatState.BLACKLISTED_EQUIPMENT; future equipment import and equip paths must check CombatState.isEquipmentBlacklisted(item_id). The current prototype does not yet implement a complete equipment UI or loader, so the denylist is in place as a rule for the upcoming equipment integration rather than a claim that a finished menu filter already exists. tests/combat_balance_test.lua covers the denylist and verifies all six active party members and their HP profiles.
 
 
 ## Vessel SOUL-mode boss attack sets
