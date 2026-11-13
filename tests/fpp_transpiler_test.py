@@ -23,6 +23,15 @@ class TranspilerTests(unittest.TestCase):
 end'''
         self.assertEqual(transpile(source), expected)
 
+    def test_if_condition_with_comparison_uses_block(self):
+        source = '''si chaos > 50 {
+    afficher("chaos")
+}'''
+        expected = '''if chaos > 50 then
+    print("chaos")
+end'''
+        self.assertEqual(transpile(source), expected)
+
     def test_does_not_translate_strings_or_comments(self):
         source = '''-- afficher("not code")
 afficher("si sinon fonction")'''
