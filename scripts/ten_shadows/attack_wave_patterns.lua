@@ -141,7 +141,115 @@ function AttackWavePatterns.build(attack, phase, volley, arena, target, domain_a
     local pace = 2.8 + (phase - 1) * 0.42 + (volley - 1) * 0.10
     local shots = {}
 
-    if attack and attack.id == "cyan_knights_execution" and volley == 3 then
+    if attack and attack.id == "red_titan_pulse_barrage" then
+        -- A heartbeat pulse: a dense radial ring with alternating shot speeds.
+        -- Later phases add a second, offset ring so the safe gaps keep rotating.
+        local count = 10 + phase * 2
+        local rotation = (volley - 1) * 0.13 + (phase - 1) * 0.04
+        local warning_length = math.min(width, height) * 0.30
+        for i = 1, count do
+            local angle = rotation + (math.pi * 2 * (i - 1) / count)
+            local speed = pace + (i % 2 == 0 and 0.24 or -0.08)
+            add(shots, "titan", center_x, center_y, angle, speed, {
+                kind = "target",
+                duration = 0.24,
+                length = warning_length,
+            })
+        end
+        if phase >= 2 then
+            for i = 1, 6 do
+                local angle = rotation + math.pi / 6 + (math.pi * 2 * (i - 1) / 6)
+                add(shots, "titan", center_x, center_y, angle, pace - 0.32, {
+                    kind = "target",
+                    duration = 0.20,
+                    length = warning_length * 0.72,
+                })
+            end
+        end
+    elseif attack and attack.id == "red_titan_orbit_break" then
+        -- Tangential shots begin on a rotating ring. One missing segment is the
+        -- moving escape gap; its position changes every volley.
+        local count = 8 + phase * 2
+        local gap = (volley * 2 + phase) % count
+        local radius = math.min(width, height) * 0.31
+        local rotation = (volley - 1) * 0.18
+        for i = 0, count - 1 do
+            if i ~= gap then
+                local angle = rotation + math.pi * 2 * i / count
+                local x = center_x + math.cos(angle) * radius
+                local y = center_y + math.sin(angle) * radius
+                local direction = angle + math.pi / 2
+                add(shots, "titan", x, y, direction, pace + 0.16, {
+                    kind = "target",
+                    duration = 0.28,
+                    length = 22,
+                })
+            end
+        end
+    elseif attack and attack.id == "red_knight_crosscut" then
+        -- Two opposing diagonal rows cross through the centre of the arena.
+        for lane = -2, 2 do
+            local offset = lane * height * 0.13
+            local left_y = center_y + offset
+            local right_y = center_y - offset
+            local tilt = lane * 0.035
+            add(shots, "knight", arena.left - 10, left_y, tilt, pace + 0.22, {
+                kind = "target",
+                duration = 0.34,
+                length = width + 20,
+            })
+            add(shots, "knight", arena.right + 10, right_y, math.pi - tilt, pace + 0.22, {
+                kind = "target",
+                duration = 0.34,
+                length = width + 20,
+            })
+        end
+    elseif attack and attack.id == "red_knight_afterimage" then
+        -- The afterimages aim at the position occupied one volley ago, not the
+        -- SOUL's current position. The Wave supplies target.previous.
+        local previous = target and target.previous or target
+        local aim_x = previous and previous.x or center_x
+        local aim_y = previous and previous.y or center_y
+        local from_right = volley % 2 == 0
+        local x = from_right and (arena.right + 10) or (arena.left - 10)
+        for spread = -1, 1 do
+            local y = math.max(arena.top + 8, math.min(arena.bottom - 8, aim_y + spread * 16))
+            local destination_y = math.max(arena.top + 8, math.min(arena.bottom - 8, aim_y + spread * 8))
+            local dx = aim_x - x
+            local dy = destination_y - y
+            local distance = math.sqrt(dx * dx + dy * dy)
+            add(shots, "knight", x, y, atan2(dy, dx), pace + 0.30, {
+                kind = "target",
+                duration = 0.40,
+                length = distance,
+            })
+        end
+    elseif attack and attack.id == "red_knight_titan_crash" then
+        -- The Titan pushes an upper wall from the left while the Knight cuts
+        -- through the lower half from the right; a final combined shot tracks
+        -- the active SOUL between the two lines.
+        for lane = -1, 2 do
+            local upper_y = center_y - height * 0.24 + lane * 17
+            local lower_y = center_y + height * 0.24 - lane * 17
+            add(shots, "titan", arena.left - 10, upper_y, 0, pace + 0.18, {
+                kind = "lane",
+                duration = 0.32,
+                length = width + 20,
+            })
+            add(shots, "knight", arena.right + 10, lower_y, math.pi, pace + 0.24, {
+                kind = "lane",
+                duration = 0.32,
+                length = width + 20,
+            })
+        end
+        local dx = target.x - center_x
+        local dy = target.y - center_y
+        add(shots, "combo", center_x, center_y, atan2(dy, dx), pace + 0.48, {
+            kind = "target",
+            duration = 0.36,
+            length = math.sqrt(dx * dx + dy * dy),
+        })
+    elseif attack and attack.id == "cyan_knights_execution" and volley == 3 then
         local from_right = phase % 2 == 0
         local x = from_right and (arena.right + 10) or (arena.left - 10)
         local y = math.max(arena.top + 14, math.min(arena.bottom - 14, target.y))

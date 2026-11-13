@@ -39,11 +39,16 @@ function KnightTitanAssault:onStart()
     local phase = state and state.boss.phase or 1
     local arena = Game.battle.arena
     local volley = 0
+    local previous_target = nil
 
     self.timer:every(0.82, function()
         volley = volley + 1
         local soul = Game.battle.soul
         local target = soul and {x = soul.x, y = soul.y} or nil
+        if target then
+            target.previous = previous_target
+            previous_target = {x = target.x, y = target.y}
+        end
         local shots = Patterns.build(
             attack,
             phase,

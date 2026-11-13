@@ -121,6 +121,7 @@ and has been tested in Kristal.
 - [x] Kristal integration: Vessel's seven SOUL-mode menu choices call state:setSoulMode(mode) on the Knight + Titan enemy.
 - [x] Kristal foundation: all 21 SOUL-mode attack definitions route through the shared wave-pattern planner.
 - [ ] Kristal integration: implement bespoke mechanics for the 21 mode-specific Knight/Titan/combined Wave patterns using each definition's pattern key.
+- The five Red SOUL attacks now have dedicated pulse, orbit-gap, crosscut, afterimage, and combined redline geometry in the Kristal Wave planner; the other 16 SOUL-mode attacks still use shared families pending their bespoke mechanics.
 - [ ] Kristal integration: playtest each SOUL mode and verify arena movement, hitboxes, timing, and difficulty scaling in the actual Kristal runtime.
 
 ### SOUL control and ejection
