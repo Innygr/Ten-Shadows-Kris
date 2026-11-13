@@ -22,7 +22,12 @@ function RoaringKnightTitan:init()
     self.mercy = 0
 
     self.ten_shadows_phase = 1
-    self.waves = {"runtime_smoke"}
+    self.waves = {"knight_titan_assault"}
+
+    local CombatState = modRequire("scripts/ten_shadows/combat_state")
+    self.ten_shadows_state = CombatState.new()
+    self.ten_shadows_state.boss.hp = self.health
+    self.ten_shadows_state.boss.max_hp = self.max_health
     self.dialogue = {
         "* The Knight raises its blade.",
         "* The Titan watches from behind the armour.",
@@ -41,11 +46,19 @@ end
 function RoaringKnightTitan:onHurt(damage, battler)
     super.onHurt(self, damage, battler)
 
+    if self.ten_shadows_state then
+        self.ten_shadows_state.boss.hp = self.health
+    end
+
     local BossPhase = modRequire("scripts/ten_shadows/boss_phase")
     local next_phase, phase_text = BossPhase.advance(self.health, self.ten_shadows_phase)
     if next_phase ~= self.ten_shadows_phase then
         self.ten_shadows_phase = next_phase
         self.check = BossPhase.checkText(next_phase)
+        if self.ten_shadows_state then
+            self.ten_shadows_state.boss.phase = next_phase
+            self.ten_shadows_state.boss.hp = self.health
+        end
         self.dialogue_override = phase_text
         self.text = {phase_text}
     end
