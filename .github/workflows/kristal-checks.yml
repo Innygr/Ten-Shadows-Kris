@@ -49,6 +49,7 @@ jobs:
           python3 tests/fpp_transpiler_test.py
           python3 tests/fpp_build_test.py
           lua5.1 tests/boss_phase_test.lua
+          lua5.1 tests/knight_titan_scheduler_test.lua
           python3 tools/toaster.py examples/hello.fpp -o /tmp/fpp-hello.lua
           luac5.1 -p /tmp/fpp-hello.lua
 
@@ -99,6 +100,8 @@ jobs:
           test -f mod.lua
           test -f scripts/battle/encounters/runtime_smoke_test.lua
           test -f scripts/battle/encounters/knight_titan_preview.lua
+          test -f scripts/battle/waves/knight_titan_assault.lua
+          test -f tests/knight_titan_scheduler_test.lua
           test -f scripts/battle/enemies/roaring_knight_titan.lua
           test -f scripts/ten_shadows/boss_phase.lua
           test -f tests/boss_phase_test.lua
