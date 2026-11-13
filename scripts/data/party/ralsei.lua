@@ -6,6 +6,7 @@ function character:init()
     self:setActor("ralsei")
     self:setWeapon("verdant_staff")
     self:setArmor(1, "healing_sash")
+    self:setArmor(2, "starweave_sash")
     self.level = Game.chapter
     self.title = "SUPPORT"
     self.soul_priority = -1
