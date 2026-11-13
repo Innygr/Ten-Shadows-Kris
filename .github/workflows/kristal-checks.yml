@@ -102,6 +102,9 @@ jobs:
       - name: Test Berdly actor configuration isolation
         run: lua5.1 tests/berdly_actor_test.lua
 
+      - name: Test Vessel sprite configuration
+        run: lua5.1 tests/vessel_actor_test.lua
+
       - name: Test Berdly sprite-map coverage
         run: lua5.1 tests/berdly_sprite_map_test.lua
 
@@ -159,6 +162,9 @@ jobs:
           grep -q 'BossPhase.advance' scripts/battle/enemies/roaring_knight_titan.lua
           for member in kris susie ralsei noelle berdly vessel; do test -f "scripts/data/party/$member.lua"; done
           test -f scripts/data/actors/vessel.lua
+          grep -q 'sprite.scale_y = 1.15' scripts/data/actors/vessel.lua
+          grep -q 'function copyActorValue(value, seen)' scripts/data/actors/vessel.lua
+          test -f tests/vessel_actor_test.lua
           grep -q 'function Actions.install()' scripts/ten_shadows/berdly_actions.lua
           grep -q 'EnemyBattler.onAct = function' scripts/ten_shadows/berdly_actions.lua
           grep -q 'function Actions.getXAction(battler)' scripts/ten_shadows/berdly_actions.lua

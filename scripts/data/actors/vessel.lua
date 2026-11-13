@@ -1,4 +1,4 @@
--- Vessel uses Kris's complete actor/animation set, but renders it as a distinct SOUL form.
+-- Vessel uses a private copy of Kris's actor configuration, but renders it as a distinct SOUL form.
 local actor, super = Class(Actor, "vessel")
 
 local VESSEL_SHADER = [[
@@ -27,16 +27,35 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
 }
 ]]
 
+local function copyActorValue(value, seen)
+    if type(value) ~= "table" then
+        return value
+    end
+
+    seen = seen or {}
+    if seen[value] then
+        return seen[value]
+    end
+
+    local copied = {}
+    seen[value] = copied
+    for key, child in pairs(value) do
+        copied[copyActorValue(key, seen)] = copyActorValue(child, seen)
+    end
+    return copied
+end
+
 function actor:init()
     super.init(self)
 
-    -- Clone Kris's actor data so every animation and sprite name remains valid,
-    -- without mutating the shared Kris actor.
+    -- Keep all of Kris's sprites and animation definitions, but isolate nested
+    -- tables so Vessel-specific tuning can never mutate Kris's actor.
     local kris = Registry.getActor("kris")
     if kris then
+        local copied_tables = {}
         for key, value in pairs(kris) do
             if key ~= "id" then
-                self[key] = value
+                self[key] = copyActorValue(value, copied_tables)
             end
         end
     end
@@ -50,6 +69,11 @@ function actor:onSpriteInit(sprite)
     if kris and kris.onSpriteInit then
         kris:onSpriteInit(sprite)
     end
+
+    -- Vessel keeps Kris's sprite proportions except for the requested 1.15x
+    -- vertical stretch. Set an absolute scale so repeated init calls do not stack.
+    sprite.scale_y = 1.15
+
     if not sprite:getFX("vessel_gray_red_outline") then
         sprite:addFX(ShaderFX(VESSEL_SHADER, {}, false, 0), "vessel_gray_red_outline")
     end
