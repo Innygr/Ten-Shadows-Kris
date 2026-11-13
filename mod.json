@@ -19,11 +19,51 @@
     "items": [
       "darkburger",
       "darkburger",
-      "darkburger"
+      "darkburger",
+      "darkburger",
+      "dark_candy",
+      "dark_candy",
+      "dark_candy",
+      "dark_candy",
+      "dark_candy",
+      "dark_candy",
+      "dark_candy",
+      "dark_candy"
     ],
     "key_items": [
       "cell_phone"
+    ],
+    "storage": [
+      "dark_candy",
+      "dark_candy",
+      "dark_candy",
+      "dark_candy",
+      "dark_candy",
+      "dark_candy",
+      "dark_candy",
+      "dark_candy",
+      "dark_candy",
+      "dark_candy",
+      "dark_candy",
+      "dark_candy",
+      "dark_candy",
+      "dark_candy",
+      "dark_candy",
+      "dark_candy",
+      "dark_candy",
+      "dark_candy",
+      "dark_candy",
+      "dark_candy",
+      "dark_candy",
+      "dark_candy",
+      "dark_candy",
+      "dark_candy"
     ]
+  },
+  "config": {
+    "kristal": {
+      "storageSlots": 24
+    }
   },
   "dev": true
 }
