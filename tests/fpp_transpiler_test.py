@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
-from fpp import FppError, transpile
+from toaster import FppError, transpile
 
 class TranspilerTests(unittest.TestCase):
     def test_keywords_and_blocks(self):
