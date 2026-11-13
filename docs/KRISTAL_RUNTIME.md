@@ -252,3 +252,12 @@ The party uses custom late-game fan-game stat profiles for all six members; thes
 The shared combat state now contains a scheduler-ready attack set for each Vessel mode: Red, Blue, Green, Yellow, Purple, Orange, and Cyan. Every mode has a distinct Knight move, a distinct Titan move, and a synchronized Knight + Titan move. Selecting a mode with state:setSoulMode("yellow") (replace yellow with the active mode) makes the scheduler alternate the mode-specific Titan and Knight attacks, with the combined move on the normal combo cadence. If the Knight is frozen, the Titan-specific move is still selected. Passing nil to setSoulMode returns to the original 37-entry attack scheduler.
 
 Each attack definition exposes an ID, source, phase availability, pattern key, and short mechanic description. The pattern key is the contract for the future Kristal Wave implementation; these definitions do not yet create the visible bullet patterns. The actual shared Knight + Titan enemy and its Wave classes are still outstanding, so this pass is core scheduling/data logic, not an in-game playable SOUL-mode implementation. tests/soul_mode_attacks_test.lua checks all seven modes, attack-source alternation, combo timing, invalid-mode rejection, and frozen-Knight behaviour.
+
+
+## SOUL-mode attack gating
+
+SOUL-mode attack definitions are only eligible when the active arena Soul carries the same
+`ten_shadows_mode` as the Vessel's selected mode. The preview encounter creates a matching
+colour-coded Soul, and the Wave passes the live Soul tag to the scheduler. A missing or
+mismatched tag always falls back to the standard Knight/Titan attack pool; a mode selected in
+the menu by itself cannot trigger another type's attacks.

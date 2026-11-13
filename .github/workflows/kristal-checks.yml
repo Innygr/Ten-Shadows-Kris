@@ -395,6 +395,9 @@ jobs:
         run: |
           cd kristal-engine
 
+          # main.lua requires this module during the first stage of engine boot.
+          test -s src/engine/music.lua
+
           # Kristal reads this root-level file at startup to initialize SemVer.
           test -s VERSION
           grep -Eq '^[v]?[0-9]+([.][0-9]+){0,2}([+-].*)?$' VERSION
@@ -407,6 +410,10 @@ jobs:
           unzip -Z1 Deltarune-Shadowbender.love | grep -qx 'VERSION'
           unzip -p Deltarune-Shadowbender.love VERSION | grep -Eq '^[v]?[0-9]+([.][0-9]+){0,2}([+-].*)?$'
           unzip -Z1 Deltarune-Shadowbender.love | grep -qx 'main.lua'
+          unzip -Z1 Deltarune-Shadowbender.love | grep -qx 'src/engine/music.lua'
+          unzip -p Deltarune-Shadowbender.love src/engine/music.lua > /tmp/kristal-music.lua
+          test -s /tmp/kristal-music.lua
+          echo "Kristal Music module verified ($(wc -c < /tmp/kristal-music.lua) bytes)"
           unzip -Z1 Deltarune-Shadowbender.love | grep -qx 'icon.png'
           unzip -p Deltarune-Shadowbender.love conf.lua | grep -Fq 't.window.icon = nil'
           unzip -Z1 Deltarune-Shadowbender.love | grep -qx 'assets/fonts/main.ttf'

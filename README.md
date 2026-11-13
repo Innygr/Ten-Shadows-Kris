@@ -1,5 +1,7 @@
 # Deltarune: Shadowbender
 
+[![Kristal project checks and builds](https://github.com/Innygr/Ten-Shadows-Kris/actions/workflows/kristal-checks.yml/badge.svg)](https://github.com/Innygr/Ten-Shadows-Kris/actions/workflows/kristal-checks.yml)
+
 A Deltarune fangame prototype and Kristal project, officially titled **Deltarune: Shadowbender**.
 
 ## Engine priority
@@ -31,9 +33,10 @@ architecture contract.
 
 GitHub Actions publishes three artifacts after the checks pass:
 
-- `Deltarune-Shadowbender-standalone-Love-11.5`: recommended. Download and extract this ZIP,
-  then open the inner `Deltarune-Shadowbender.love` file with **LÖVE 11.5**. This is the complete
-  game and includes the Kristal v0.10.0 engine plus `assets/fonts/main.ttf`.
+- `Deltarune-Shadowbender-standalone-Love-11.5`: recommended. Download and extract the
+  GitHub Actions artifact; it contains `Deltarune-Shadowbender-standalone.zip`. Extract that
+  second ZIP, then open `Deltarune-Shadowbender.love` with **LÖVE 11.5**. This is the complete
+  game and includes Kristal v0.10.0, the engine source, and `assets/fonts/main.ttf`.
 - `Deltarune-Shadowbender-love-file`: the standalone `.love` file by itself. GitHub still wraps
   downloaded Actions artifacts in a ZIP, so extract the downloaded ZIP before opening the
   inner `.love` file.
@@ -65,3 +68,18 @@ present; reinstall or repair that Kristal engine rather than copying the mod fol
 Multiplayer is part of the architecture baseline from the start, but is not implemented yet.
 Single-player must remain fully playable offline. The host-authoritative session model and
 transport boundary are documented before networking code is introduced.
+
+
+### Troubleshooting: `src.engine.music` not found
+
+The standalone archive must contain `src/engine/music.lua` at its root. The CI build checks
+that exact path before publishing. Run the inner `.love` file from the standalone bundle with
+LÖVE 11.5; do not launch `main.lua` from a partial source folder or open the mod-only package.
+If the same error appears with the freshly downloaded standalone file, verify it with:
+
+```bash
+unzip -l Deltarune-Shadowbender.love | grep 'src/engine/music.lua'
+```
+
+The result should show exactly `src/engine/music.lua`. A missing result means the wrong or
+incomplete archive is being launched.
