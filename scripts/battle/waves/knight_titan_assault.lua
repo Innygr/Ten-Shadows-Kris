@@ -66,8 +66,9 @@ function KnightTitanAssault:onStart()
             end
         else
             local y = MathUtils.random(arena.top + 10, arena.bottom - 10)
-            spawnSweep(self, arena, y, attack_id == "tracking_swords" or attack_id == "tracking_swords_d1"
-                or attack_id == "tracking_swords_d2" and 4 or 3, 3.4, volley % 2 == 1)
+            local count = (attack_id == "tracking_swords" or attack_id == "tracking_swords_d1"
+                or attack_id == "tracking_swords_d2") and 4 or 3
+            spawnSweep(self, arena, y, count, 3.4, volley % 2 == 1)
         end
 
         if volley >= 6 then
