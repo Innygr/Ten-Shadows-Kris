@@ -13,6 +13,20 @@ assert(profile.name == "Rowan" and profile.gender == "nonbinary" and profile.ign
 assert(Identity.hasSavedProfile(), "Saving an identity must mark the profile as existing")
 Identity.update({name = "A longer-than-twelve-character-name", presentation = "feminine"})
 assert(Identity.get().name == "A longer-tha" and Identity.get().presentation == "feminine")
+local pronouns = Identity.getPronouns()
+assert(pronouns.subject == "they" and pronouns.object == "them"
+    and pronouns.determiner == "their" and pronouns.possessive == "theirs"
+    and pronouns.reflexive == "themself", "They/them forms should be resolved consistently")
+Identity.update({pronouns = "xe/xem"})
+pronouns = Identity.getPronouns()
+assert(pronouns.subject == "xe" and pronouns.object == "xem"
+    and pronouns.determiner == "xyr" and pronouns.possessive == "xyrs"
+    and pronouns.reflexive == "xemself", "Xe/xem forms should be resolved consistently")
+Identity.update({name = "Rowan", pronouns = "she/her"})
+assert(Identity.format("{vessel_name} said {vessel_subject} would bring {vessel_determiner} own supplies, and {vessel_reflexive} did.") ==
+    "Rowan said she would bring her own supplies, and herself did.",
+    "Identity placeholders should resolve to the saved Vessel identity")
+
 assert(Identity.parseDeltaruneSave("CREATOR NAME\nVESSEL NAME\n0\n") == "VESSEL NAME",
     "Deltarune import must use the Vessel name on line 2, not the creator name")
 assert(Identity.parseDeltaruneSave("CREATOR ONLY\n") == nil)

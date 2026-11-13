@@ -2,6 +2,8 @@
 local actor, super = Class(Actor, "vessel")
 
 local VESSEL_SHADER = [[
+extern number vessel_presentation;
+
 vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
     vec4 pixel = Texel(texture, texture_coords);
     if (pixel.a < 0.01) {
@@ -22,7 +24,17 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
     }
 
     float gray = dot(pixel.rgb, vec3(0.299, 0.587, 0.114));
-    vec3 steel = vec3(gray * 0.88, gray * 0.90, gray * 0.94);
+    vec3 steel;
+    if (vessel_presentation < 0.5) {
+        // Balanced, neutral steel.
+        steel = vec3(gray * 0.88, gray * 0.90, gray * 0.94);
+    } else if (vessel_presentation < 1.5) {
+        // Masculine presentation: a slightly cooler graphite finish.
+        steel = vec3(gray * 0.84, gray * 0.88, gray * 0.95);
+    } else {
+        // Feminine presentation: a slightly warmer silver finish.
+        steel = vec3(gray * 0.95, gray * 0.91, gray * 0.90);
+    }
     return vec4(steel, pixel.a) * color;
 }
 ]]
@@ -82,7 +94,13 @@ function actor:onSpriteInit(sprite)
     sprite.scale_y = 1.15
 
     if not sprite:getFX("vessel_gray_red_outline") then
-        sprite:addFX(ShaderFX(VESSEL_SHADER, {}, false, 0), "vessel_gray_red_outline")
+        local presentation_values = {androgynous = 0, masculine = 1, feminine = 2}
+        sprite:addFX(ShaderFX(VESSEL_SHADER, {
+            vessel_presentation = function()
+                local identity = Mod and Mod.vessel_identity and Mod.vessel_identity.get() or {}
+                return presentation_values[identity.presentation] or 0
+            end,
+        }, false, 0), "vessel_gray_red_outline")
     end
 end
 

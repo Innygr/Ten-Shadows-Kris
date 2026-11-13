@@ -70,6 +70,15 @@ assert(kris.animations["battle/idle"][1] == "battle/idle",
 assert(kris.offsets["battle/idle"][1] == -5,
     "Vessel offset edits must not mutate Kris")
 
+local current_presentation = "androgynous"
+Mod = {
+    vessel_identity = {
+        get = function()
+            return {presentation = current_presentation}
+        end,
+    },
+}
+
 local fx = {}
 local sprite = {
     scale_y = 1,
@@ -80,6 +89,16 @@ vessel:onSpriteInit(sprite)
 assert(sprite.kris_callback_called, "Vessel must preserve Kris sprite initialization")
 assert(sprite.scale_y == 1.15, "Vessel sprite must be stretched vertically by exactly 1.15x")
 assert(sprite.vessel_gray_red_outline, "Vessel must install its grayscale/red-outline shader")
+assert(type(sprite.vessel_gray_red_outline.uniforms.vessel_presentation) == "function",
+    "Vessel shader must read the saved visual presentation dynamically")
+assert(sprite.vessel_gray_red_outline.uniforms.vessel_presentation() == 0,
+    "Androgynous presentation must select the neutral steel palette")
+current_presentation = "masculine"
+assert(sprite.vessel_gray_red_outline.uniforms.vessel_presentation() == 1,
+    "Masculine presentation must select its shader palette")
+current_presentation = "feminine"
+assert(sprite.vessel_gray_red_outline.uniforms.vessel_presentation() == 2,
+    "Feminine presentation must select its shader palette")
 assert(sprite.vessel_gray_red_outline.shader:find("dot(pixel.rgb", 1, true),
     "Vessel shader must convert the sprite to grayscale")
 assert(sprite.vessel_gray_red_outline.shader:find("0.95, 0.035, 0.08", 1, true),

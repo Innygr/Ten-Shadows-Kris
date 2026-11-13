@@ -85,3 +85,14 @@ unzip -l Deltarune-Shadowbender.love | grep 'src/engine/music.lua'
 
 The result should show exactly `src/engine/music.lua`. A missing result means the wrong or
 incomplete archive is being launched.
+
+## Vessel identity
+
+On a new save, the game offers a Vessel identity setup screen. The name, gender,
+pronouns, and visual presentation are saved independently of the Deltarune save.
+The optional import reads the Vessel name from line 2 of a detected Deltarune
+text save; it never edits that save. Existing saves can edit these values in
+**Settings → Vessel Identity**. Dialogue/flavor text can use
+`{vessel_name}`, `{vessel_subject}`, `{vessel_object}`,
+`{vessel_determiner}`, `{vessel_possessive}`, and
+`{vessel_reflexive}` placeholders.

@@ -56,4 +56,16 @@ expect(
     "fallback for unknown key"
 )
 
+-- Vessel identity placeholders are expanded only when an identity provider is active.
+Mod = {
+    vessel_identity = {
+        format = function(text)
+            return text:gsub("{vessel_name}", "Rowan"):gsub("{vessel_subject}", "they")
+        end
+    }
+}
+FlavorText.register("test.identity", {"{vessel_name} said {vessel_subject} were ready."})
+expect(FlavorText.get("test.identity"), "Rowan said they were ready.", "Vessel identity formatting")
+Mod = nil
+
 print("Flavor text tests passed.")

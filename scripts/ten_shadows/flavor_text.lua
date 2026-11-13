@@ -88,7 +88,11 @@ function FlavorText.get(id, state, options)
         error("Flavor text random selector returned an out-of-range index.", 2)
     end
 
-    return pool[pick].text
+    local text = pool[pick].text
+    if Mod and Mod.vessel_identity and Mod.vessel_identity.format then
+        return Mod.vessel_identity.format(text)
+    end
+    return text
 end
 
 function FlavorText.has(id)

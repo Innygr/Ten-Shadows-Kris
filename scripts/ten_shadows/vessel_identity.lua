@@ -59,6 +59,76 @@ function Identity.update(changes)
     return Identity.save(updated)
 end
 
+local COMMON_PRONOUNS = {
+    ["he/him"] = {subject = "he", object = "him", determiner = "his", possessive = "his", reflexive = "himself"},
+    ["she/her"] = {subject = "she", object = "her", determiner = "her", possessive = "hers", reflexive = "herself"},
+    ["they/them"] = {subject = "they", object = "them", determiner = "their", possessive = "theirs", reflexive = "themself"},
+    ["xe/xem"] = {subject = "xe", object = "xem", determiner = "xyr", possessive = "xyrs", reflexive = "xemself"},
+}
+
+function Identity.getPronouns()
+    local value = Identity.get().pronouns
+    local common = COMMON_PRONOUNS[value:lower()]
+    if common then
+        local result = {}
+        for key, pronoun in pairs(common) do result[key] = pronoun end
+        return result
+    end
+
+    local subject, object = value:match("^([^/%s]+)/([^/%s]+)$")
+    if not subject then
+        subject = value
+        object = value
+    end
+    local normalized = subject:lower()
+    local determiner
+    if normalized == "i" then
+        determiner = "my"
+    elseif normalized == "you" then
+        determiner = "your"
+    elseif normalized == "we" then
+        determiner = "our"
+    elseif normalized == "they" then
+        determiner = "their"
+    else
+        determiner = object .. "s"
+    end
+
+    local possessive = determiner
+    if normalized == "she" then possessive = "hers" end
+    if normalized == "they" then possessive = "theirs" end
+    local reflexive = object .. (normalized == "they" and "self" or "self")
+
+    return {
+        subject = subject,
+        object = object,
+        determiner = determiner,
+        possessive = possessive,
+        reflexive = reflexive,
+    }
+end
+
+-- Dialogue and flavor text can use {vessel_name}, {vessel_subject},
+-- {vessel_object}, {vessel_determiner}, {vessel_possessive}, and
+-- {vessel_reflexive}. Pronouns are player-editable and never assumed for Kris.
+function Identity.format(text)
+    if type(text) ~= "string" then return text end
+    local profile = Identity.get()
+    local pronouns = Identity.getPronouns()
+    local values = {
+        vessel_name = profile.name,
+        vessel_subject = pronouns.subject,
+        vessel_object = pronouns.object,
+        vessel_determiner = pronouns.determiner,
+        vessel_possessive = pronouns.possessive,
+        vessel_reflexive = pronouns.reflexive,
+    }
+    for key, value in pairs(values) do
+        text = text:gsub("{" .. key .. "}", function() return value end)
+    end
+    return text
+end
+
 -- Deltarune stores the creator name on line 1 and the discarded Vessel name
 -- on line 2. This mod imports line 2 because it belongs to the Vessel.
 function Identity.parseDeltaruneSave(contents)
