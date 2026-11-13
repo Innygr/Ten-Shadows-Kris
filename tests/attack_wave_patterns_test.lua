@@ -99,9 +99,10 @@ local orbit_shots = Patterns.build(
     1, 1, arena, target, false
 )
 assert(#orbit_shots == 9, "Red Orbit Break must leave one moving gap in its ten-point ring")
+local expected_orbit_radius = math.min(arena.right - arena.left, arena.bottom - arena.top) * 0.31
 for _, shot in ipairs(orbit_shots) do
     local radius = math.sqrt((shot.x - 320)^2 + (shot.y - 221)^2)
-    assert(math.abs(radius - 44.02) < 0.1, "Red Orbit Break shots must start on the ring")
+    assert(math.abs(radius - expected_orbit_radius) < 0.1, "Red Orbit Break shots must start on the ring")
 end
 
 local crosscut_shots, crosscut_family = Patterns.build(
