@@ -268,3 +268,11 @@ SOUL-mode attack definitions are only eligible when the active arena Soul carrie
 colour-coded Soul, and the Wave passes the live Soul tag to the scheduler. A missing or
 mismatched tag always falls back to the standard Knight/Titan attack pool; a mode selected in
 the menu by itself cannot trigger another type's attacks.
+
+
+## Assetless early-boot error screen
+
+The standalone build patches Kristal's error screen to use LÖVE's built-in fonts and plain
+graphics calls only. It does not load the main font, banana frames, Starwalker images, or any
+other file-backed artwork while reporting an early startup error. This prevents a missing
+engine asset from replacing the original traceback with a second error from the crash screen.

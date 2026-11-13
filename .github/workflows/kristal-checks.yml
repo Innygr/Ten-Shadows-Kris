@@ -330,16 +330,67 @@ jobs:
 
           path = Path("kristal-engine/src/kristal.lua")
           source = path.read_text(encoding="utf-8")
-          replacements = {
-              'love.graphics.newFont("assets/fonts/main.ttf", 32, "mono")': 'love.graphics.newFont(32, "mono")',
-              'love.graphics.newFont("assets/fonts/main.ttf", 16, "mono")': 'love.graphics.newFont(16, "mono")',
-          }
-          for old, new in replacements.items():
-              if source.count(old) != 1:
-                  raise SystemExit(f"Expected exactly one occurrence of {old!r}")
-              source = source.replace(old, new, 1)
+          start_marker = "function Kristal.errorHandler(msg, trace_level)"
+          end_marker = "\\nfunction Kristal.isLoading()"
+          start = source.index(start_marker)
+          end = source.index(end_marker, start)
+          handler = source[start:end]
+
+          def replace_once(text, old, new):
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"Expected one occurrence of {old!r}, found {count}")
+              return text.replace(old, new, 1)
+
+          # The first reset used to run before the handler checked whether
+          # LÖVE's graphics subsystem was available.
+          handler = replace_once(
+              handler,
+              "    Draw.reset()",
+              "    if not love or not love.graphics or not love.event or not love.window:\\n        return\\n    end\\n\\n    love.graphics.reset()",
+          )
+          # The crash UI uses LÖVE's built-in font, never a file-backed font.
+          handler = replace_once(
+              handler,
+              'love.graphics.newFont("assets/fonts/main.ttf", 32, "mono")',
+              "love.graphics.newFont(32)",
+          )
+          handler = replace_once(
+              handler,
+              'love.graphics.newFont("assets/fonts/main.ttf", 16, "mono")',
+              "love.graphics.newFont(16)",
+          )
+
+          # Remove the banana/Starwalker sprite loads entirely.
+          art_init_start = handler.index("    local starwalker, starwalkertext, banana_anim")
+          art_init_end = handler.index("    local critical = false", art_init_start)
+          handler = handler[:art_init_start] + handler[art_init_end:]
+          handler = handler.replace("    local starwalker_error = (love.math.random(100) <= 5) -- 5% chance for starwalker\\n", "")
+
+          # Replace the decorative image animation in the draw callback with
+          # nothing: the error screen is deliberately text-only.
+          draw_start = handler.index("    local function draw()")
+          art_start = handler.index("        if starwalker_error then", draw_start)
+          art_end = handler.index("        -- DT shouldnt exceed 30FPS", art_start)
+          handler = handler[:art_start] + handler[art_end:]
+          handler = handler.replace("        -- DT shouldnt exceed 30FPS\\n        DT = math.min(love.timer.getDelta(), 1 / 30)\\n\\n", "")
+
+          # Do not depend on the optional Draw utility for the crash screen.
+          handler = handler.replace("    Draw.reset()", "    love.graphics.reset()")
+          handler = handler.replace("        Draw.reset()", "        love.graphics.reset()")
+          handler = handler.replace("Draw.setColor(1, 1, 1, 1)", "love.graphics.setColor(1, 1, 1, 1)")
+          handler = handler.replace("Draw.setColor(0, 0, 0, 0.7)", "love.graphics.setColor(0, 0, 0, 0.7)")
+          handler = handler.replace("Draw.setColor(copy_color)", "love.graphics.setColor(copy_color[1], copy_color[2], copy_color[3], copy_color[4])")
+
+          forbidden = ("assets/", "newImage(", "Draw.", "starwalker", "banana_")
+          leftovers = [token for token in forbidden if token in handler]
+          if leftovers:
+              raise SystemExit(f"Crash handler still has asset dependencies: {leftovers}")
+          if "love.graphics.newFont(32)" not in handler or "love.graphics.newFont(16)" not in handler:
+              raise SystemExit("Crash handler is missing built-in font fallbacks")
+
+          source = source[:start] + handler + source[end:]
           path.write_text(source, encoding="utf-8")
-          PY
 
       - name: Verify and build F++ sources before Kristal integration
         run: python3 tools/build_fpp.py
