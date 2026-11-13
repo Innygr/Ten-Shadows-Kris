@@ -20,7 +20,7 @@ Kristal.
 Translate F# directly to Lua:
 
 ```sh
-python3 tools/fsharp_bridge.py examples/hello.fs --to lua -o /tmp/hello-fsharp.lua
+python3 tools/fsharp_bridge.py examples/hello.f# --to lua -o /tmp/hello-fsharp.lua
 luac5.1 -p /tmp/hello-fsharp.lua
 ```
 
@@ -31,7 +31,7 @@ python3 tools/fsharp_bridge.py examples/hello.fs --to fpp
 python3 tools/fsharp_bridge.py examples/hello.fpp --to fsharp
 ```
 
-The build helper also compiles both `.fpp` and `.fs` files under `scripts/`
+The build helper also compiles both `.fpp` and `.f#` files under `scripts/`
 to matching Lua modules. Both source languages share the same Lua runtime;
 the F# bridge deliberately reuses TOASTER rather than maintaining a second
 independent Lua backend.
