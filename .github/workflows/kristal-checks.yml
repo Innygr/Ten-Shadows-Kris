@@ -250,26 +250,26 @@ jobs:
 
       - name: Stage clean Kristal mod folder (not a standalone game)
         run: |
-          mkdir -p dist/Ten-Shadows-Kris
-          cp mod.json mod.lua dist/Ten-Shadows-Kris/
+          mkdir -p dist/Deltarune-Shadowbender
+          cp mod.json mod.lua dist/Deltarune-Shadowbender/
           for dir in assets data scripts libraries preview; do
             if [ -d "$dir" ]; then
-              mkdir -p "dist/Ten-Shadows-Kris/$dir"
+              mkdir -p "dist/Deltarune-Shadowbender/$dir"
               rsync -a --exclude='*.md' --exclude='*.html' --exclude='*.js' \
-                "$dir/" "dist/Ten-Shadows-Kris/$dir/"
+                "$dir/" "dist/Deltarune-Shadowbender/$dir/"
             fi
           done
 
       - name: Package Kristal mod for an existing engine
         run: |
           cd dist
-          zip -9 -r ../Ten-Shadows-Kris-mod.zip Ten-Shadows-Kris
+          zip -9 -r ../Deltarune-Shadowbender-mod.zip Deltarune-Shadowbender
 
       - name: Upload Kristal mod package
         uses: actions/upload-artifact@v5
         with:
-          name: Ten-Shadows-Kris-mod-only-Kristal-v0.10.0
-          path: Ten-Shadows-Kris-mod.zip
+          name: Deltarune-Shadowbender-mod-only-Kristal-v0.10.0
+          path: Deltarune-Shadowbender-mod.zip
           if-no-files-found: error
 
   build-love:
@@ -277,7 +277,7 @@ jobs:
     needs: static-checks
     runs-on: ubuntu-latest
     steps:
-      - name: Check out Ten Shadows Kris
+      - name: Check out Deltarune Shadowbender
         uses: actions/checkout@v5
 
       - name: Install packaging tools
@@ -367,21 +367,21 @@ jobs:
           test -s VERSION
           grep -Eq '^[v]?[0-9]+([.][0-9]+){0,2}([+-].*)?$' VERSION
 
-          zip -9 -r ../Ten-Shadows-Kris.love \
+          zip -9 -r ../Deltarune-Shadowbender.love \
             VERSION assets configs data data_templates lib mods src \
             conf.lua gamecontrollerdb.txt icon.png main.lua LICENSE
           cd ..
 
-          unzip -Z1 Ten-Shadows-Kris.love | grep -qx 'VERSION'
-          unzip -p Ten-Shadows-Kris.love VERSION | grep -Eq '^[v]?[0-9]+([.][0-9]+){0,2}([+-].*)?$'
-          unzip -Z1 Ten-Shadows-Kris.love | grep -qx 'main.lua'
-          unzip -Z1 Ten-Shadows-Kris.love | grep -qx 'assets/fonts/main.ttf'
-          unzip -Z1 Ten-Shadows-Kris.love | grep -qx 'assets/fonts/extra_mono.ttf'
-          unzip -Z1 Ten-Shadows-Kris.love | grep -qx 'assets/fonts/extra_mono.json'
-          unzip -p Ten-Shadows-Kris.love assets/fonts/extra_mono.ttf > /tmp/ten-shadows-extra-mono.ttf
+          unzip -Z1 Deltarune-Shadowbender.love | grep -qx 'VERSION'
+          unzip -p Deltarune-Shadowbender.love VERSION | grep -Eq '^[v]?[0-9]+([.][0-9]+){0,2}([+-].*)?$'
+          unzip -Z1 Deltarune-Shadowbender.love | grep -qx 'main.lua'
+          unzip -Z1 Deltarune-Shadowbender.love | grep -qx 'assets/fonts/main.ttf'
+          unzip -Z1 Deltarune-Shadowbender.love | grep -qx 'assets/fonts/extra_mono.ttf'
+          unzip -Z1 Deltarune-Shadowbender.love | grep -qx 'assets/fonts/extra_mono.json'
+          unzip -p Deltarune-Shadowbender.love assets/fonts/extra_mono.ttf > /tmp/ten-shadows-extra-mono.ttf
           test -s /tmp/ten-shadows-extra-mono.ttf
           echo "Extra font verified ($(wc -c < /tmp/ten-shadows-extra-mono.ttf) bytes)"
-          unzip -p Ten-Shadows-Kris.love assets/fonts/main.ttf > /tmp/ten-shadows-main.ttf
+          unzip -p Deltarune-Shadowbender.love assets/fonts/main.ttf > /tmp/ten-shadows-main.ttf
           test -s /tmp/ten-shadows-main.ttf
           font_bytes=$(wc -c < /tmp/ten-shadows-main.ttf)
           if [ "$font_bytes" -lt 10000 ]; then
@@ -389,9 +389,9 @@ jobs:
             exit 1
           fi
           echo "Bundled main.ttf verified ($font_bytes bytes)"
-          unzip -Z1 Ten-Shadows-Kris.love | grep -qx 'mods/ten_shadows_kris/mod.json'
+          unzip -Z1 Deltarune-Shadowbender.love | grep -qx 'mods/ten_shadows_kris/mod.json'
 
-          if unzip -Z1 Ten-Shadows-Kris.love | grep -Eq '(^|/)\.git/|\.html$'; then
+          if unzip -Z1 Deltarune-Shadowbender.love | grep -Eq '(^|/)\.git/|\.html$'; then
             echo "Unexpected development or HTML files found in .love archive"
             exit 1
           fi
@@ -400,32 +400,32 @@ jobs:
       - name: Create standalone download bundle
         run: |
           mkdir -p standalone-download
-          cp Ten-Shadows-Kris.love standalone-download/
+          cp Deltarune-Shadowbender.love standalone-download/
           cat > standalone-download/README.txt <<'EOF'
           TEN SHADOWS KRIS - STANDALONE BUILD
 
-          Launch Ten-Shadows-Kris.love with LÖVE 11.5.
+          Launch Deltarune-Shadowbender.love with LÖVE 11.5.
 
           This is the complete standalone game archive. It includes the matching
           Kristal v0.10.0 engine and this mod, including assets/fonts/main.ttf.
 
-          Do NOT launch the Ten-Shadows-Kris-mod package as a game. That package
+          Do NOT launch the Deltarune-Shadowbender-mod package as a game. That package
           contains only the mod folder and must be installed inside an existing
           Kristal v0.10.0 installation.
           EOF
           cd standalone-download
-          zip -9 -r ../Ten-Shadows-Kris-standalone.zip .
+          zip -9 -r ../Deltarune-Shadowbender-standalone.zip .
 
       - name: Upload standalone download bundle
         uses: actions/upload-artifact@v5
         with:
-          name: Ten-Shadows-Kris-standalone-Love-11.5
-          path: Ten-Shadows-Kris-standalone.zip
+          name: Deltarune-Shadowbender-standalone-Love-11.5
+          path: Deltarune-Shadowbender-standalone.zip
           if-no-files-found: error
 
       - name: Upload standalone .love archive
         uses: actions/upload-artifact@v5
         with:
-          name: Ten-Shadows-Kris-love-file
-          path: Ten-Shadows-Kris.love
+          name: Deltarune-Shadowbender-love-file
+          path: Deltarune-Shadowbender.love
           if-no-files-found: error
