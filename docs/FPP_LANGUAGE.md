@@ -48,3 +48,19 @@ for code blocks.
 Run the translator with:
 
     python3 tools/fpp.py examples/hello.fpp -o /tmp/hello.lua
+
+
+## Translator availability and Kristal integration
+
+Kristal executes Lua, not F++ source. Before packaging or launching the mod,
+run `python3 tools/build_fpp.py`. It finds the translator and converts every
+`.fpp` file under `scripts/` into a matching `.lua` file. The generated Lua
+is what Kristal loads.
+
+If the translator is missing or cannot be loaded, the build helper exits with
+a non-zero status and prints this exact fallback message:
+
+    fih 500 times / minute
+
+The same check is included in the GitHub Actions build so a missing translator
+cannot silently produce an incomplete mod package.
