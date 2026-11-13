@@ -53,6 +53,7 @@ jobs:
           luac5.1 -p /tmp/fsharp-hello.lua
           lua5.1 tests/boss_phase_test.lua
           lua5.1 tests/knight_titan_scheduler_test.lua
+          lua5.1 tests/attack_wave_patterns_test.lua
           python3 tools/toaster.py examples/hello.fpp -o /tmp/fpp-hello.lua
           luac5.1 -p /tmp/fpp-hello.lua
 
@@ -104,7 +105,12 @@ jobs:
           test -f scripts/battle/encounters/runtime_smoke_test.lua
           test -f scripts/battle/encounters/knight_titan_preview.lua
           test -f scripts/battle/waves/knight_titan_assault.lua
+          test -f scripts/battle/bullets/shadow_projectile.lua
+          test -f scripts/ten_shadows/attack_wave_patterns.lua
+          test -f tests/attack_wave_patterns_test.lua
           test -f tests/knight_titan_scheduler_test.lua
+          grep -q 'AttackWavePatterns' scripts/battle/waves/knight_titan_assault.lua
+          grep -q 'self:consumeKnightDisruption(false)' scripts/ten_shadows/combat_state.lua
           test -f scripts/battle/enemies/roaring_knight_titan.lua
           test -f scripts/ten_shadows/boss_phase.lua
           test -f tests/boss_phase_test.lua

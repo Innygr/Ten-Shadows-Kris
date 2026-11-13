@@ -556,6 +556,15 @@ function CombatState.new()
             source = #titan > 0 and "titan" or "knight"
         end
 
+        -- Tornado and several Ten Shadows effects disrupt the Knight's next
+        -- action. Preserve the turn by letting the Titan attack alone instead
+        -- of silently spending the Knight's attack slot.
+        local knight_disrupted = false
+        if not frozen and source ~= "titan" and self:consumeKnightDisruption(false) then
+            source = "titan"
+            knight_disrupted = true
+        end
+
         local pool = source == "combo" and {combo} or (source == "titan" and titan or knight)
         if #pool == 0 then pool = eligible end
         if source == "titan" and #pool > 1 then
@@ -605,7 +614,7 @@ function CombatState.new()
             domain_started = self:startKnightDomain()
         end
 
-        return picked, frozen, domain_started
+        return picked, frozen, domain_started, knight_disrupted
     end
 
     function state:canSpare()
