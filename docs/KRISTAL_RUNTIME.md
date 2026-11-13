@@ -109,8 +109,9 @@ The Knight + Titan preview enemy dispatches the Kris Ten Shadows submenu into th
 summon effects, connects all seven Vessel SOUL-mode choices to the shared scheduler, and
 exposes Chimera Shadow Garden as a once-per-battle Kris ACT. BRIGHTEN remains a 4 TP grouped
 ACT for Kris, Susie, and Ralsei; it applies the DEF buff directly and returns ACT dialogue
-instead of injecting a second SPELL action into Kristal's action queue. The regression test
-checks that exactly those three participants are buffed and that a blocked use applies no buff.
+instead of injecting a second SPELL action into Kristal's action queue. The regression test invokes the real boss `onAct` handler with queued Noelle,
+Berdly, and Vessel actions, then verifies those action records remain untouched. It also
+checks that exactly the three participants are buffed and that a blocked use applies no buff.
 The boss-bound CHILL and disruption effects update the shared boss state, so freezing the Knight
 leaves the Titan's attack active and disrupting the Knight diverts its next action slot to the
 Titan. Mahoraga is restored to Kris's party slot when the preview encounter ends.

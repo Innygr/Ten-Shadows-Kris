@@ -67,15 +67,53 @@ local no_state_result = Effects.brightenAct(nil)
 expect(type(no_state_result), "table", "missing boss state must return ACT dialogue")
 expect(#buffed, before_failed_attempt, "missing boss state must not apply buffs")
 
--- Integration guard: the boss ACT handler must resolve Brighten directly and
--- must not inject a second Spell action through Kristal's powerAct helper.
-local file = assert(io.open("scripts/battle/enemies/roaring_knight_titan.lua", "r"))
-local enemy_source = file:read("*a")
-file:close()
-assert(enemy_source:find("return Effects.brightenAct(state)", 1, true),
-    "boss BRIGHTEN handler must call the direct grouped-ACT resolver")
-assert(not enemy_source:find('powerAct("ts_brighten"', 1, true),
-    "boss BRIGHTEN must not enqueue a nested SPELL action")
+-- Load the real boss class and invoke its real onAct method. If BRIGHTEN
+-- regresses to powerAct/pushAction, these stubs fail immediately.
+EnemyBattler = {
+    onAct = function() return "* fallback ACT" end,
+}
+function Class(base)
+    local class = {}
+    class.__index = class
+    setmetatable(class, {__index = base})
+    return class, base
+end
+modRequire = function(path)
+    if path == "scripts/ten_shadows/runtime_spells" then
+        return Effects
+    end
+    error("Unexpected module requested by BRIGHTEN test: " .. tostring(path))
+end
+
+local queued_actions = {
+    [4] = {character_id = 4, action = "SPELL", name = "ICE SHOCK"},
+    [5] = {character_id = 5, action = "SPELL", name = "TORNADO"},
+    [6] = {character_id = 6, action = "ACT", name = "YELLOW SOUL"},
+}
+Game.battle.character_actions = queued_actions
+Game.battle.powerAct = function()
+    error("BRIGHTEN must not call powerAct while the ACT group is resolving")
+end
+Game.battle.pushAction = function()
+    error("BRIGHTEN must not enqueue a second action while the ACT group is resolving")
+end
+
+local boss_class = dofile("scripts/battle/enemies/roaring_knight_titan.lua")
+local boss = {ten_shadows_state = state}
+local before_handler_buff_count = #buffed
+local before_handler_state_calls = state_calls
+local handler_result = boss_class.onAct(boss, Game.battle.party[1], "BRIGHTEN")
+expect(type(handler_result), "table", "real boss BRIGHTEN handler returns ACT dialogue")
+expect(#handler_result, 2, "real boss BRIGHTEN dialogue lines")
+expect(#buffed, before_handler_buff_count + 3,
+    "real boss BRIGHTEN handler applies all three buffs")
+expect(state_calls, before_handler_state_calls + 1,
+    "real boss BRIGHTEN handler updates the Titan state once")
+expect(queued_actions[4].name, "ICE SHOCK", "Noelle action remains queued")
+expect(queued_actions[5].name, "TORNADO", "Berdly action remains queued")
+expect(queued_actions[6].name, "YELLOW SOUL", "Vessel action remains queued")
+expect(Game.battle.character_actions, queued_actions,
+    "BRIGHTEN must preserve the original character action queue")
 
 -- Keep the menu's TP charge and the exact three-member group intact.
 local mod_file = assert(io.open("mod.lua", "r"))
