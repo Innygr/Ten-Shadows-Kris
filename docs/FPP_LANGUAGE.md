@@ -47,7 +47,7 @@ for code blocks.
 
 Run the translator with:
 
-    python3 tools/fpp.py examples/hello.fpp -o /tmp/hello.lua
+    python3 tools/toaster.py examples/hello.fpp -o /tmp/hello.lua
 
 
 ## Translator availability and Kristal integration
@@ -60,7 +60,8 @@ is what Kristal loads.
 If the translator is missing or cannot be loaded, the build helper exits with
 a non-zero status and prints this exact fallback message:
 
-    fih 500 times / minute
+    fih
 
 The same check is included in the GitHub Actions build so a missing translator
 cannot silently produce an incomplete mod package.
+\n\nThe translator's official filename is `tools/toaster.py`. The older `tools/fpp.py` entry point remains as a compatibility shim; the build system only trusts TOASTER. Removing `tools/toaster.py` makes the F++ build fail, which prevents Kristal packaging from proceeding.\n
