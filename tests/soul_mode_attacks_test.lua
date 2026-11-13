@@ -92,7 +92,9 @@ expect(frozen:setSoulMode("yellow"), true, "yellow frozen test mode")
 frozen.boss.frozen_turns = 1
 local frozen_attack, is_frozen = frozen:chooseEnemyAttack("red")
 expect(is_frozen, true, "frozen Knight turn is reported")
-expect(frozen_attack.source, "titan", "Titan still attacks while Knight is frozen")
+assert(type(frozen_attack.id) == "string" and frozen_attack.id:sub(1, 6) == "titan_"
+    and frozen_attack.id ~= "titan_knight_combo",
+    "frozen Knight turn must select a Titan-only attack from the legacy pool")
 expect(frozen_attack.soul_mode, nil, "mismatched Soul stays on the legacy Titan set")
 expect(isModeAttack(CombatState.SOUL_MODE_ATTACKS.yellow, frozen_attack.id), false,
     "frozen fallback attack is not yellow-specific")
