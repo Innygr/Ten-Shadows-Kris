@@ -329,6 +329,13 @@ jobs:
           conf_path.write_text(conf, encoding="utf-8")
           PY
 
+      - name: Restore required Kristal main font
+        run: |
+          mkdir -p kristal-engine/assets/fonts
+          cp assets/fonts/main.ttf assets/fonts/main.json kristal-engine/assets/fonts/
+          test -s kristal-engine/assets/fonts/main.ttf
+          test -s kristal-engine/assets/fonts/main.json
+
       - name: Build and verify .love archive
         run: |
           cd kristal-engine
