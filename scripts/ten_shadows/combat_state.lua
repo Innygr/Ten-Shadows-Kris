@@ -92,47 +92,89 @@ end
 CombatState.SOUL_MODE_ATTACKS = {
     red = {
         label = "RED SOUL",
-        titan = {soulAttack("red_titan_pulse_barrage", "TITAN · HEARTBEAT BARRAGE", "titan", "radial-pulse-barrage", "Read the pulse, then weave between expanding shots.")},
-        knight = {soulAttack("red_knight_crosscut", "KNIGHT · CROSSCUT", "knight", "crosscut-burst", "Avoid the opening sweep before the crossing blade paths.")},
-        combo = {soulAttack("red_knight_titan_crash", "KNIGHT + TITAN · REDLINE", "combo", "redline-crash", "Both bosses synchronize a crosscut with a pulse burst.", {1, 2, 3})},
+        titan = {
+            soulAttack("red_titan_pulse_barrage", "TITAN · HEARTBEAT BARRAGE", "titan", "radial-pulse-barrage", "Weave between expanding pulse shots."),
+            soulAttack("red_titan_orbit_break", "TITAN · ORBIT BREAK", "titan", "orbiting-gaps", "Orbiting shots tighten, then open a moving escape gap.", {2, 3}),
+        },
+        knight = {
+            soulAttack("red_knight_crosscut", "KNIGHT · CROSSCUT", "knight", "crosscut-burst", "Avoid the opening sweep before crossing blade paths."),
+            soulAttack("red_knight_afterimage", "KNIGHT · AFTERIMAGE", "knight", "afterimage-pursuit", "Afterimages strike the SOUL's previous positions.", {2, 3}),
+        },
+        combo = {soulAttack("red_knight_titan_crash", "KNIGHT + TITAN · REDLINE", "combo", "redline-crash", "A crosscut and pulse burst land together.")},
     },
     blue = {
         label = "BLUE SOUL",
-        titan = {soulAttack("blue_titan_vertical_crush", "TITAN · GRAVITY DROP", "titan", "falling-columns", "Gravity pulls the SOUL low while marked columns descend.")},
-        knight = {soulAttack("blue_knight_gravity_rake", "KNIGHT · GRAVITY RAKE", "knight", "gravity-arc", "A sword arc changes the arena's vertical pull.")},
-        combo = {soulAttack("blue_knight_titan_slam", "KNIGHT + TITAN · DEEP PRESSURE", "combo", "gravity-slam", "A gravity shift leads into a synchronized slam.", {1, 2, 3})},
+        titan = {
+            soulAttack("blue_titan_vertical_crush", "TITAN · GRAVITY DROP", "titan", "falling-columns", "Jump over marked columns as gravity pulls downward."),
+            soulAttack("blue_titan_updraft", "TITAN · UPDRAFT", "titan", "updraft-sweep", "An updraft lifts the SOUL before a horizontal sweep.", {2, 3}),
+        },
+        knight = {
+            soulAttack("blue_knight_gravity_rake", "KNIGHT · GRAVITY RAKE", "knight", "gravity-arc", "A sword arc changes the arena's vertical pull."),
+            soulAttack("blue_knight_inversion", "KNIGHT · INVERSION", "knight", "gravity-inversion", "Gravity flips between alternating blade lanes.", {2, 3}),
+        },
+        combo = {soulAttack("blue_knight_titan_slam", "KNIGHT + TITAN · DEEP PRESSURE", "combo", "gravity-slam", "A gravity shift leads into a synchronized slam.")},
     },
     green = {
         label = "GREEN SOUL",
-        titan = {soulAttack("green_titan_laser_grid", "TITAN · GUARDIAN GRID", "titan", "timed-laser-grid", "A timed grid tests defensive positioning.")},
-        knight = {soulAttack("green_knight_guardbreak", "KNIGHT · GUARD BREAK", "knight", "feint-then-lunge", "The Knight feints before committing to a marked strike.")},
-        combo = {soulAttack("green_knight_titan_breach", "KNIGHT + TITAN · BREACH", "combo", "guardbreak-grid", "The Knight pressures the guard while the Titan closes safe lanes.", {1, 2, 3})},
+        titan = {
+            soulAttack("green_titan_laser_grid", "TITAN · GUARDIAN GRID", "titan", "timed-laser-grid", "Block the timed grid's marked lanes."),
+            soulAttack("green_titan_shieldbreaker", "TITAN · SHIELDBREAKER", "titan", "shieldbreaker-strike", "A heavy strike requires a correctly timed guard.", {2, 3}),
+        },
+        knight = {
+            soulAttack("green_knight_guardbreak", "KNIGHT · GUARD BREAK", "knight", "feint-then-lunge", "The Knight feints before a committed strike."),
+            soulAttack("green_knight_barrage", "KNIGHT · BLADE BARRAGE", "knight", "directional-blade-barrage", "Rapid blade strikes change direction between tells.", {2, 3}),
+        },
+        combo = {soulAttack("green_knight_titan_breach", "KNIGHT + TITAN · BREACH", "combo", "guardbreak-grid", "The Knight pressures the guard while the Titan closes safe lanes.")},
     },
     yellow = {
         label = "YELLOW SOUL",
-        titan = {soulAttack("yellow_titan_bigshot_volley", "TITAN · BIG SHOT VOLLEY", "titan", "aimed-projectile-volley", "Aimed shots arrive in readable volleys.")},
-        knight = {soulAttack("yellow_knight_ricochet", "KNIGHT · RICOCHET BLADES", "knight", "ricochet-blades", "The Knight launches blades that rebound across the arena.")},
-        combo = {soulAttack("yellow_knight_titan_crossfire", "KNIGHT + TITAN · CROSSFIRE", "combo", "aimed-crossfire", "Ricochets and aimed shots overlap in alternating lanes.", {1, 2, 3})},
+        titan = {
+            soulAttack("yellow_titan_bigshot_volley", "TITAN · BIG SHOT VOLLEY", "titan", "aimed-projectile-volley", "Shoot or dodge the aimed volleys."),
+            soulAttack("yellow_titan_barricade", "TITAN · TARGET BARRICADE", "titan", "target-barricade", "Shoot openings in the moving target wall.", {2, 3}),
+        },
+        knight = {
+            soulAttack("yellow_knight_ricochet", "KNIGHT · RICOCHET BLADES", "knight", "ricochet-blades", "Blades rebound across the arena."),
+            soulAttack("yellow_knight_artillery", "KNIGHT · ARTILLERY", "knight", "armored-artillery", "Armored shots need repeated hits to clear.", {2, 3}),
+        },
+        combo = {soulAttack("yellow_knight_titan_crossfire", "KNIGHT + TITAN · CROSSFIRE", "combo", "aimed-crossfire", "Ricochets and aimed shots overlap in alternating lanes.")},
     },
     purple = {
         label = "PURPLE SOUL",
-        titan = {soulAttack("purple_titan_thread_cage", "TITAN · THREAD CAGE", "titan", "closing-thread-grid", "Thread lanes close in and leave a shifting route.")},
-        knight = {soulAttack("purple_knight_thread_snare", "KNIGHT · THREAD SNARE", "knight", "thread-lane-snare", "Sword strikes mark thread lanes that constrain movement.")},
-        combo = {soulAttack("purple_knight_titan_tangle", "KNIGHT + TITAN · ENTANGLEMENT", "combo", "thread-cage-crosscut", "The Knight cuts across the Titan's closing thread cage.", {1, 2, 3})},
+        titan = {
+            soulAttack("purple_titan_thread_cage", "TITAN · THREAD CAGE", "titan", "closing-thread-grid", "Thread lanes close in and leave a shifting route."),
+            soulAttack("purple_titan_severed_thread", "TITAN · SEVERED THREAD", "titan", "severed-thread-lanes", "Sections of the web vanish and reappear.", {2, 3}),
+        },
+        knight = {
+            soulAttack("purple_knight_thread_snare", "KNIGHT · THREAD SNARE", "knight", "thread-lane-snare", "Sword strikes mark thread lanes that constrain movement."),
+            soulAttack("purple_knight_loom", "KNIGHT · TITAN'S LOOM", "knight", "crossing-thread-projectiles", "Projectiles travel along crossing web threads.", {2, 3}),
+        },
+        combo = {soulAttack("purple_knight_titan_tangle", "KNIGHT + TITAN · ENTANGLEMENT", "combo", "thread-cage-crosscut", "The Knight cuts across the Titan's closing thread cage.")},
     },
     orange = {
         label = "ORANGE SOUL",
-        titan = {soulAttack("orange_titan_moving_walls", "TITAN · MOVING WALLS", "titan", "moving-hazard-lanes", "Keep moving through shifting hazard lanes.")},
-        knight = {soulAttack("orange_knight_chase_combo", "KNIGHT · CHASE COMBO", "knight", "moving-target-slashes", "The Knight pressures the SOUL with advancing slash paths.")},
-        combo = {soulAttack("orange_knight_titan_stampede", "KNIGHT + TITAN · STAMPEDE", "combo", "chase-and-sweep", "The Knight advances as the Titan sweeps the opposite lane.", {1, 2, 3})},
+        titan = {
+            soulAttack("orange_titan_moving_walls", "TITAN · MOVING WALLS", "titan", "moving-hazard-lanes", "Keep moving through shifting hazard lanes."),
+            soulAttack("orange_titan_ember_chase", "TITAN · CHASING EMBERS", "titan", "chasing-embers", "Embers accelerate toward where the SOUL was.", {2, 3}),
+        },
+        knight = {
+            soulAttack("orange_knight_chase_combo", "KNIGHT · CHASE COMBO", "knight", "moving-target-slashes", "Advance through the safe gaps between slash paths."),
+            soulAttack("orange_knight_unbroken_charge", "KNIGHT · UNBROKEN CHARGE", "knight", "shifting-safe-zones", "Keep moving through shifting safe zones.", {2, 3}),
+        },
+        combo = {soulAttack("orange_knight_titan_stampede", "KNIGHT + TITAN · STAMPEDE", "combo", "chase-and-sweep", "The Knight advances as the Titan sweeps the opposite lane.")},
     },
     cyan = {
         label = "CYAN SOUL",
-        titan = {soulAttack("cyan_titan_pulse_clock", "TITAN · PULSE CLOCK", "titan", "timed-pulse-rings", "Wait through the tell, then move between timed pulse rings.")},
-        knight = {soulAttack("cyan_knight_stop_start", "KNIGHT · STOP-START", "knight", "pause-then-strike", "The Knight alternates pauses with sudden committed strikes.")},
-        combo = {soulAttack("cyan_knight_titan_sync", "KNIGHT + TITAN · SYNCHRONIZED", "combo", "timed-cross-pulse", "A Knight strike lands between the Titan's timed pulses.", {1, 2, 3})},
+        titan = {
+            soulAttack("cyan_titan_pulse_clock", "TITAN · PULSE CLOCK", "titan", "timed-pulse-rings", "Read the pulse timing and move between rings."),
+            soulAttack("cyan_titan_lightless_interval", "TITAN · LIGHTLESS INTERVAL", "titan", "dark-interval-pulses", "A short blackout separates two timed pulse waves.", {2, 3}),
+        },
+        knight = {
+            soulAttack("cyan_knight_stop_start", "KNIGHT · STOP-START", "knight", "pause-then-strike", "The Knight alternates pauses with sudden strikes."),
+            soulAttack("cyan_knights_execution", "KNIGHT'S EXECUTION", "knight", "cyan-parry-window", "Compress the Cyan light circle; release as the blade reaches the SOUL to parry and earn a counter.", {2, 3}),
+        },
+        combo = {soulAttack("cyan_knight_titan_sync", "KNIGHT + TITAN · SYNCHRONIZED", "combo", "timed-cross-pulse", "A Knight strike lands between the Titan's timed pulses.")},
     },
-}
+};
 
 -- Items on this denylist must never be imported into the mod's equipment data.
 -- The actual equipment UI/loader is not implemented yet; all future equipment
