@@ -331,7 +331,7 @@ jobs:
           path = Path("kristal-engine/src/kristal.lua")
           source = path.read_text(encoding="utf-8")
           start_marker = "function Kristal.errorHandler(msg, trace_level)"
-          end_marker = "\\nfunction Kristal.isLoading()"
+          end_marker = chr(10) + "function Kristal.isLoading()"
           start = source.index(start_marker)
           end = source.index(end_marker, start)
           handler = source[start:end]
@@ -347,7 +347,9 @@ jobs:
           handler = replace_once(
               handler,
               "    Draw.reset()",
-              "    if not love or not love.graphics or not love.event or not love.window:\\n        return\\n    end\\n\\n    love.graphics.reset()",
+              "    if not love or not love.graphics or not love.event or not love.window:" + chr(10)
+              + "        return" + chr(10) + "    end" + chr(10) + chr(10)
+              + "    love.graphics.reset()",
           )
           # The crash UI uses LÖVE's built-in font, never a file-backed font.
           handler = replace_once(
@@ -365,7 +367,10 @@ jobs:
           art_init_start = handler.index("    local starwalker, starwalkertext, banana_anim")
           art_init_end = handler.index("    local critical = false", art_init_start)
           handler = handler[:art_init_start] + handler[art_init_end:]
-          handler = handler.replace("    local starwalker_error = (love.math.random(100) <= 5) -- 5% chance for starwalker\\n", "")
+          handler = handler.replace(
+              "    local starwalker_error = (love.math.random(100) <= 5) -- 5% chance for starwalker" + chr(10),
+              "",
+          )
 
           # Replace the decorative image animation in the draw callback with
           # nothing: the error screen is deliberately text-only.
@@ -373,7 +378,11 @@ jobs:
           art_start = handler.index("        if starwalker_error then", draw_start)
           art_end = handler.index("        -- DT shouldnt exceed 30FPS", art_start)
           handler = handler[:art_start] + handler[art_end:]
-          handler = handler.replace("        -- DT shouldnt exceed 30FPS\\n        DT = math.min(love.timer.getDelta(), 1 / 30)\\n\\n", "")
+          handler = handler.replace(
+              "        -- DT shouldnt exceed 30FPS" + chr(10)
+              + "        DT = math.min(love.timer.getDelta(), 1 / 30)" + chr(10) + chr(10),
+              "",
+          )
 
           # Do not depend on the optional Draw utility for the crash screen.
           handler = handler.replace("    Draw.reset()", "    love.graphics.reset()")
