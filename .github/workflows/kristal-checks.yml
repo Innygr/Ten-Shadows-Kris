@@ -48,6 +48,7 @@ jobs:
         run: |
           python3 tests/fpp_transpiler_test.py
           python3 tests/fpp_build_test.py
+          lua5.1 tests/boss_phase_test.lua
           python3 tools/toaster.py examples/hello.fpp -o /tmp/fpp-hello.lua
           luac5.1 -p /tmp/fpp-hello.lua
 
@@ -97,6 +98,10 @@ jobs:
         run: |
           test -f mod.lua
           test -f scripts/battle/encounters/runtime_smoke_test.lua
+          test -f scripts/battle/encounters/knight_titan_preview.lua
+          test -f scripts/battle/enemies/roaring_knight_titan.lua
+          test -f scripts/ten_shadows/boss_phase.lua
+          test -f tests/boss_phase_test.lua
           test -f scripts/battle/enemies/runtime_dummy.lua
           test -f scripts/battle/waves/runtime_smoke.lua
           test -f scripts/battle/bullets/runtime_test_bullet.lua
@@ -111,6 +116,9 @@ jobs:
           test -f assets/sprites/party/README.md
           test -f assets/sprites/party/berdly/dark/README.md
           grep -q 'SOUL_MODE_ATTACKS' scripts/ten_shadows/combat_state.lua
+          grep -q 'self.disable_mercy = true' scripts/battle/enemies/roaring_knight_titan.lua
+          grep -q 'self.can_freeze = false' scripts/battle/enemies/roaring_knight_titan.lua
+          grep -q 'BossPhase.advance' scripts/battle/enemies/roaring_knight_titan.lua
           for member in kris susie ralsei noelle berdly vessel; do test -f "scripts/data/party/$member.lua"; done
           test -f scripts/data/actors/vessel.lua
           grep -q 'function Actions.install()' scripts/ten_shadows/berdly_actions.lua
