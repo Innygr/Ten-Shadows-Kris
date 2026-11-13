@@ -54,7 +54,10 @@ function actor:init()
     if kris then
         local copied_tables = {}
         for key, value in pairs(kris) do
-            if key ~= "id" then
+            -- Copy serializable actor configuration, never executable callbacks.
+            -- In particular, copying onSpriteInit here would overwrite Vessel's
+            -- own method and silently skip its scale/shader setup.
+            if key ~= "id" and type(value) ~= "function" then
                 self[key] = copyActorValue(value, copied_tables)
             end
         end

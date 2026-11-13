@@ -52,6 +52,8 @@ vessel:init()
 
 assert(vessel.id == "vessel", "Vessel must retain its own actor ID")
 assert(vessel.name == "Vessel", "Vessel must have its own display name")
+assert(vessel.onSpriteInit ~= kris.onSpriteInit,
+    "Vessel must not have its sprite callback overwritten by Kris's copied configuration")
 assert(vessel.path == kris.path and vessel.default == kris.default,
     "Vessel must reuse Kris's sprite path and default animation")
 assert(vessel.width == kris.width and vessel.height == kris.height,
