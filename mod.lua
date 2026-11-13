@@ -473,6 +473,11 @@ function Mod:onBattleEnemySelect(reason, selected)
             battle:pushAction("ACT", enemy, item)
         end, {"kris", "susie", "ralsei"}}
         local boss_state = enemy.ten_shadows_state
+        if boss_state and boss_state.boss.counter_ready then
+            root[#root + 1] = {"EXECUTION COUNTER", "Strike while the Knight is staggered.", 0, function(item)
+                battle:pushAction("ACT", enemy, item)
+            end}
+        end
         if not boss_state or not boss_state.player_domain.used then
             root[#root + 1] = {"CHIMERA SHADOW GARDEN", "Expand Kris's domain; empower Ten Shadows.", 60, function(item)
                 battle:pushAction("ACT", enemy, item)

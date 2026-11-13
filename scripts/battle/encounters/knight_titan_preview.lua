@@ -32,6 +32,10 @@ function KnightTitanPreview:createSoul(x, y, color)
     local mode = state and state.soul_mode
 
     if mode and SOUL_MODE_COLORS[mode] then
+        if mode == "cyan" then
+            local CyanSoul = modRequire("scripts/objects/cyan_soul")
+            return CyanSoul(x, y)
+        end
         local soul = super.createSoul(self, x, y, SOUL_MODE_COLORS[mode])
         soul.ten_shadows_mode = mode
         return soul

@@ -80,6 +80,21 @@ function RoaringKnightTitan:onAct(battler, name)
     end
 
     local state = self.ten_shadows_state
+    if name == "EXECUTION COUNTER" then
+        if not state then
+            return "* The Knight's stagger has already faded."
+        end
+        local ready, damage = state:consumeExecutionCounter()
+        if not ready then
+            return "* The Knight is no longer open to a counter."
+        end
+        self:hurt(damage, battler)
+        return {
+            "* Kris strikes through the opening left by the parry!",
+            "* The counter deals " .. tostring(damage) .. " damage.",
+        }
+    end
+
     if name == "BRIGHTEN" then
         local Effects = modRequire("scripts/ten_shadows/runtime_spells")
         -- The menu has already charged 4 TP and grouped Kris, Susie, and Ralsei

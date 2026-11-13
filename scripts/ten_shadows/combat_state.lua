@@ -205,6 +205,7 @@ function CombatState.new()
             hp = 260, max_hp = 260, phase = 1, exposed = 0,
             chill = 0, frozen_turns = 0, tired_immune = true,
             mercy_immune = true, status = "Normal",
+            counter_ready = false, counter_turns = 0,
         },
         tp = 35,
         dark_candy = 3,
@@ -305,6 +306,22 @@ function CombatState.new()
 
     function state:disruptKnight()
         self.knight_disrupted = 1
+    end
+
+    function state:parryExecution()
+        self:disruptKnight()
+        self:expose(2)
+        self.boss.counter_ready = true
+        self.boss.counter_turns = 2
+        self:addTP(12)
+        return true
+    end
+
+    function state:consumeExecutionCounter()
+        if not self.boss.counter_ready then return false end
+        self.boss.counter_ready = false
+        self.boss.counter_turns = 0
+        return true, 36
     end
 
     function state:consumeKnightDisruption(knight_is_frozen)
@@ -426,6 +443,13 @@ function CombatState.new()
 
     function state:tickEnemyTurnEffects()
         if self.boss.exposed > 0 then self.boss.exposed = self.boss.exposed - 1 end
+        if self.boss.counter_turns > 0 then
+            self.boss.counter_turns = self.boss.counter_turns - 1
+            if self.boss.counter_turns <= 0 then
+                self.boss.counter_ready = false
+                self.boss.counter_turns = 0
+            end
+        end
         if self.titan.brighten_turns > 0 then
             self.titan.brighten_turns = self.titan.brighten_turns - 1
             if self.titan.brighten_turns == 0 then
