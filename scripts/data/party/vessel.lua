@@ -16,9 +16,10 @@ function character:init()
     self.health = 240
     self.stats = {health = 240, attack = 12, defense = 2, magic = 0}
     self.max_stats = {health = 240}
-    self.color = {0.72, 0.72, 0.76}
+    self.color = {0.72, 0.72, 0.72}
     self.dmg_color = {0.95, 0.08, 0.12}
-    -- Reuse Kris's gray head icon for Vessel's party-menu entry.
+    -- Vessel uses Kris's grayscale head portrait in the battle/party UI.
+    -- The actor itself supplies the red outline; keep the portrait neutral gray.
     self.menu_icon = "party/kris/head"
     self.head_icons = "party/kris/icon"
     self.attack_sprite = "effects/attack/cut"
