@@ -345,7 +345,7 @@ jobs:
           conf = conf.replace('t.window.title = "Kristal"', 't.window.title = "Deltarune: Shadowbender"')
           if 't.identity = "ten_shadows_kris"' not in conf:
               raise SystemExit("Could not set the game save identity")
-          if 't.window.title = "Ten Shadows Kris"' not in conf:
+          if 't.window.title = "Deltarune: Shadowbender"' not in conf:
               raise SystemExit("Could not set the game window title")
           conf_path.write_text(conf, encoding="utf-8")
           PY
