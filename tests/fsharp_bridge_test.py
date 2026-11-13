@@ -7,7 +7,7 @@ sys.path.insert(0, str(ROOT / "tools"))
 from fsharp_bridge import BridgeError, fpp_to_fsharp, fsharp_to_fpp, fsharp_to_lua
 
 
-SAMPLE = (ROOT / "examples" / "hello.fs").read_text(encoding="utf-8")
+SAMPLE = (ROOT / "examples" / "hello.f#").read_text(encoding="utf-8")
 
 
 class FSharpBridgeTests(unittest.TestCase):
