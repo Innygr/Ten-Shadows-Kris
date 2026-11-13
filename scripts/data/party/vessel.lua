@@ -6,6 +6,7 @@ function character:init()
     self:setActor("vessel")
     self:setWeapon("soul_rapier")
     self:setArmor(1, "soul_anchor")
+    self:setArmor(2, "red_soul_charm")
     self.level = Game.chapter
     self.title = "SOUL BEARER"
     self.soul_priority = 3
