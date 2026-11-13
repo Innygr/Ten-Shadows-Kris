@@ -37,18 +37,27 @@ def transpile(source: str) -> str:
     output = []
     blocks = []
     pending_block = None
+
+    def trim_trailing_whitespace():
+        while output and output[-1].isspace():
+            output.pop()
     for kind, value in tokens:
         if kind in ("space", "line_comment", "string", "number"):
             output.append(value)
             continue
         if kind == "identifier":
-            output.append(KEYWORDS.get(value, value))
+            if value == "sinon":
+                trim_trailing_whitespace()
+                output.append("\\n" + ("    " * len(blocks)) + "else")
+            else:
+                output.append(KEYWORDS.get(value, value))
             if value in ("fonction", "si", "sinon", "tant_que", "pour"):
                 pending_block = value
             continue
         if value == "{":
             if pending_block in ("fonction", "si", "sinon", "tant_que", "pour"):
                 block_type = pending_block
+                trim_trailing_whitespace()
                 if block_type == "si":
                     output.append(" then")
                 elif block_type in ("tant_que", "pour"):
