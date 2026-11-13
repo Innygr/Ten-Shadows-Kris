@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build .fpp and .fs modules into Lua before Kristal packages or loads the mod."""
+"""Build .fpp and .f# modules into Lua before Kristal packages or loads the mod."""
 from __future__ import annotations
 import argparse
 import importlib.util
@@ -83,7 +83,7 @@ def main() -> int:
         print(f"TOASTER translator available: {args.translator}")
         print(f"F# bridge available: {args.bridge}")
         return 0
-    sources = sorted([*args.source_dir.rglob("*.fpp"), *args.source_dir.rglob("*.fs")])
+    sources = sorted([*args.source_dir.rglob("*.fpp"), *args.source_dir.rglob("*.f#")])
     for source in sources:
         relative = source.relative_to(args.source_dir).with_suffix(".lua")
         destination = args.output_dir / relative
