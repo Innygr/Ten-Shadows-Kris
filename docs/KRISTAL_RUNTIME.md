@@ -92,6 +92,20 @@ find . -type f -name '*.lua' -not -path './.git/*' -print0 |
   xargs -0 -n1 luac5.1 -p
 ```
 
+## Preview boss ACT integration
+
+The Knight + Titan preview enemy dispatches the Kris Ten Shadows submenu into the runtime
+summon effects, connects all seven Vessel SOUL-mode choices to the shared scheduler, and
+exposes Chimera Shadow Garden as a once-per-battle Kris ACT. BRIGHTEN uses Kristal's native
+`powerAct` flow after its ACT has reserved the three party turns and charged 4 TP. The
+boss-bound CHILL and disruption effects update the shared boss state, so freezing the Knight
+leaves the Titan's attack active and disrupting the Knight diverts its next action slot to the
+Titan. Mahoraga is restored to Kris's party slot when the preview encounter ends.
+
+This is the first pass of action/state integration, not final balance or visual polish. The
+preview encounter is still separate from the manifest's smoke-test starting encounter, and
+these actions still need a hands-on Kristal v0.10.0 launch/playtest.
+
 ## Knight + Titan wave implementation
 
 The preview encounter now uses a shared, deterministic spawn planner at
@@ -150,10 +164,11 @@ an engine asset, not a file supplied by the mod folder.
 - The first custom spell set now has real Kristal spell classes: Susie's RUSH and BRIGHTEN;
   Ralsei's HEAL and REVIVESONG; Noelle's ICE SHOCK and ICE WAVE; and Berdly's TORNADO.
   Damage, healing, revival, and the temporary defense buff are implemented in the shared
-  runtime spell helper and covered by Lua tests. CHILL/freeze and Tornado disruption are
-  currently recorded as target state flags; the real Knight + Titan turn scheduler still needs
-  to consume those flags. The Ten Shadows ACT entries and Chimera Shadow Garden still need
-  their actual summon/domain presentation and combat effects.
+  runtime spell helper and covered by Lua tests. Boss-bound CHILL and disruption now update
+  the shared scheduler: freezing suppresses the Knight for one turn while the Titan still attacks,
+  and a disrupted Knight's next action slot is diverted to the Titan. Ten Shadows, the seven
+  Vessel SOUL-mode choices, BRIGHTEN, and Chimera Shadow Garden now dispatch through the preview
+  boss ACT handler. Dedicated summon/domain presentation and bespoke attack mechanics remain.
 - The runtime smoke wave now fires five slow, visible test bullets. It is a basic attack/collision test, not a production boss pattern.
 - No overworld map is configured yet. The first milestone is a known-good battle runtime;
   the route map and story entry point follow once that is stable.

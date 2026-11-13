@@ -71,7 +71,7 @@ and has been tested in Kristal.
 - [x] Kristal integration: first custom spell classes exist for RUSH, BRIGHTEN, HEAL, REVIVESONG, ICE SHOCK, ICE WAVE, and TORNADO, with costs and core effects covered by Lua tests.
 - [ ] Kristal integration: verify spell menus, target selection, action completion, and battle turn consumption in Kristal.
 - [x] Kristal integration: consume Knight disruption on the next Knight-led turn, diverting that slot to the Titan; preserve disruption while the Knight is frozen.
-- [ ] Kristal integration: connect CHILL stacks from Noelle's spells to the enemy's frozen-turn state.
+- [x] Kristal integration: connect CHILL stacks from Noelle's spells and Ten Shadows to the shared frozen-turn state; freeze exposes the boss for one enemy turn.
 
 ### Ten Shadows and domains
 
@@ -80,9 +80,10 @@ and has been tested in Kristal.
   Piercing Ox, Tiger Funeral, and Mahoraga.
 - [x] Core rules: Chimera Shadow Garden costs 60 TP, can be used once, lasts 3 enemy turns,
   boosts summon damage by 1.35, and reduces summon costs to 75% (rounded up).
-- [ ] Kristal integration: Kris-only SHADOWS submenu, summon descriptions, TP costs,
-  summon presentation, and each summon effect.
-- [ ] Kristal integration: Chimera Shadow Garden presentation, duration ticks, and end message.
+- [x] Kristal integration: Kris-only SHADOWS submenu dispatches into the runtime Ten Shadows effects, with the three-turn Mahoraga party-slot swap cleaned up on battle end.
+- [ ] Kristal integration: custom summon animations/presentation and individual summon-specific Wave behaviours.
+- [x] Kristal integration: Chimera Shadow Garden can be activated once from Kris's ACT menu; it reduces Ten Shadows costs and boosts summon damage. The domain lasts three enemy turns.
+- [ ] Kristal integration: final Chimera visual presentation and dedicated end message.
 
 ### Knight + Titan shared encounter
 
@@ -115,7 +116,7 @@ and has been tested in Kristal.
 - [x] Core data: separate Knight, Titan, and combined attack definitions for Red, Blue, Green, Yellow, Purple, Orange, and Cyan SOUL modes.
 - [x] Core rules: selecting a Vessel mode switches the shared enemy scheduler to that mode's attack pool; Titan and Knight turns alternate, with a synchronized attack on the combo cadence.
 - [x] Core rules: a frozen Knight still yields a Titan attack from the selected mode.
-- [ ] Kristal integration: connect Vessel mode changes to state:setSoulMode(mode).
+- [x] Kristal integration: Vessel's seven SOUL-mode menu choices call state:setSoulMode(mode) on the Knight + Titan enemy.
 - [x] Kristal foundation: all 21 SOUL-mode attack definitions route through the shared wave-pattern planner.
 - [ ] Kristal integration: implement bespoke mechanics for the 21 mode-specific Knight/Titan/combined Wave patterns using each definition's pattern key.
 - [ ] Kristal integration: playtest each SOUL mode and verify arena movement, hitboxes, timing, and difficulty scaling in the actual Kristal runtime.
