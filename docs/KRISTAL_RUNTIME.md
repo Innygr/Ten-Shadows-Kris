@@ -18,7 +18,7 @@ remains on a different version.
 ## Required project structure
 
 ```
-Ten-Shadows-Kris/
+Deltarune-Shadowbender/
 ├── mod.json
 ├── mod.lua
 ├── scripts/
@@ -43,7 +43,7 @@ integration does not depend on custom actor sprite files. It registers Inspect a
 Signal ACTs, preserves CHECK and the standard X-ACT response, and uses a custom visible
 bullet for a short dodgeable attack. The test enemy also registers the party spell ACTs (RUSH, BRIGHTEN, HEAL, REVIVESONG,
 ICE SHOCK, ICE WAVE, and TORNADO), Chimera Shadow Garden, and all ten Ten Shadows
-summons with their TP costs. The five custom party definitions and seven custom spells
+summons with their TP costs. The six custom party definitions and seven custom spells
 must live in the mod registry directories: `scripts/data/party/` and `scripts/data/spells/`.
 
 ## Automated checks and artifacts
@@ -53,23 +53,24 @@ pushes, pull requests, and manual dispatch. It currently:
 
 - Parses `mod.json` and checks the required project fields.
 - Rejects the incorrect `darkInventory` key.
-- Runs Lua 5.1 syntax validation (`luac5.1 -p`) on every Lua file.\n- Executes `tests/flavor_text_test.lua` to check multiple variants, repeat avoidance, conditions, and fallbacks.
+- Runs Lua 5.1 syntax validation (`luac5.1 -p`) on every Lua file.
+- Executes `tests/flavor_text_test.lua` to check multiple variants, repeat avoidance, conditions, and fallbacks.
 - Confirms the smoke-test encounter, enemy, wave, and custom bullet files exist.
 - Checks that the runtime enemy registers party spells, all ten shadows, and Chimera Shadow Garden.
 - Checks that the runtime enemy handles custom ACTs and the standard X-ACT.
 - Checks that the smoke wave spawns the custom runtime-test bullet.
-- Packages a clean Kristal mod folder as `Ten-Shadows-Kris-test.zip`.
+- Packages a clean Kristal mod folder as `Deltarune-Shadowbender-test.zip`.
 - Checks out Kristal v0.10.0, integrates the mod as the target mod, and creates
-  `Ten-Shadows-Kris.love` from the engine source.
+  `Deltarune-Shadowbender.love` from the engine source.
 
 The workflow publishes three clearly named artifacts:
 
-- **Ten-Shadows-Kris-standalone-Love-11.5** — recommended. A downloadable ZIP containing
-  `Ten-Shadows-Kris.love` and launch instructions. Extract the ZIP and launch the inner
+- **Deltarune-Shadowbender-standalone-Love-11.5** — recommended. A downloadable ZIP containing
+  `Deltarune-Shadowbender.love` and launch instructions. Extract the ZIP and launch the inner
   `.love` file with LÖVE 11.5.
-- **Ten-Shadows-Kris-love-file** — the standalone `.love` file alone. GitHub wraps the
+- **Deltarune-Shadowbender-love-file** — the standalone `.love` file alone. GitHub wraps the
   downloaded Actions artifact in a ZIP; extract it before launching the inner file.
-- **Ten-Shadows-Kris-mod-only-Kristal-v0.10.0** — mod-only package for an existing Kristal
+- **Deltarune-Shadowbender-mod-only-Kristal-v0.10.0** — mod-only package for an existing Kristal
   installation. It is not a runnable LÖVE game.
 
 The standalone build includes the engine's `assets/fonts/main.ttf`. CI now extracts that
@@ -93,15 +94,15 @@ find . -type f -name '*.lua' -not -path './.git/*' -print0 |
 
 ## First launch checklist
 
-1. For the standalone route, download and extract `Ten-Shadows-Kris-standalone-Love-11.5`,
-   then launch the inner `Ten-Shadows-Kris.love` file with LÖVE 11.5.
-2. For the mod-only route, install `Ten-Shadows-Kris-mod-only-Kristal-v0.10.0` into an
-   existing Kristal v0.10.0 installation, then launch Kristal and select Ten Shadows Kris.
+1. For the standalone route, download and extract `Deltarune-Shadowbender-standalone-Love-11.5`,
+   then launch the inner `Deltarune-Shadowbender.love` file with LÖVE 11.5.
+2. For the mod-only route, install `Deltarune-Shadowbender-mod-only-Kristal-v0.10.0` into an
+   existing Kristal v0.10.0 installation, then launch Kristal and select Deltarune: Shadowbender.
    Never open the mod-only ZIP or folder directly with LÖVE.
 3. Create a new file. The manifest should route into the runtime smoke-test encounter.
 4. Confirm the placeholder enemy, battle UI, and ACT menu load.
 5. Open Kris's ACT list and confirm all ten shadows plus Chimera Shadow Garden appear with their TP costs.
-6. Confirm only Kris, Susie, and Ralsei load. Kris has ACT; Susie and Ralsei have SPELL but no ACT menu.
+6. Confirm Kris, Susie, Ralsei, Noelle, Berdly, and Vessel all appear in the six-member battle roster. Verify their turn order, action menus, and downed-member handling.
 7. Use CHECK, Inspect, Kris's Signal ACT, and the standard X-ACT; confirm each returns dialogue.
 8. Dodge the five slow bullets during the short attack wave, then confirm the wave exits cleanly.
 9. Finish the encounter and confirm Kristal returns without a Lua error.
@@ -115,16 +116,15 @@ static inspection or successful GitHub commits.
 
 The `Could not open file assets/fonts/main.ttf` error occurs before the mod's battle code runs.
 For the standalone route, make sure the downloaded Actions artifact ZIP was extracted and that
-the inner `Ten-Shadows-Kris.love` file—not the outer ZIP—was opened. For the mod-only route,
+the inner `Deltarune-Shadowbender.love` file—not the outer ZIP—was opened. For the mod-only route,
 check that the existing Kristal installation contains `assets/fonts/main.ttf`; that font is
 an engine asset, not a file supplied by the mod folder.
 
 ## Current intentional limitations
 
-- The manifest now selects all five party IDs. Kris, Susie, Ralsei, and Noelle use their
-  matching built-in actors; Berdly currently uses Kris's actor as a temporary visual placeholder
-  until dedicated Berdly battle/overworld art is added. The custom party data sets the project's
-  intended HP and stats for all five members.
+- The manifest selects all six party IDs. Kris, Susie, Ralsei, and Noelle use their matching
+  built-in actors. Vessel has a dedicated gray/red-outline actor; Berdly has a dedicated actor
+  identity, but still borrows Kris's animation frames and portrait assets as visual placeholders.
 - The temporary test enemy is not the Knight + Titan. It exists only to prove the engine's
   mod -> encounter -> enemy -> wave loading path and ACT registration/dispatch.
 - The first custom spell set now has real Kristal spell classes: Susie's RUSH and BRIGHTEN;
@@ -151,11 +151,9 @@ an engine asset, not a file supplied by the mod folder.
 - [ ] A fresh save and a second launch both behave consistently.
 
 
-## Five-member party and first spell pass
+## Six-member party and first spell pass
 
-The current manifest party is Kris, Susie, and Ralsei. Noelle and Berdly definitions remain available for later recruitment but are not in the starting roster. Kristal v0.10.0's
-registry loads custom PartyMember definitions from `scripts/data/party/` and custom Spell definitions
-from `scripts/data/spells/`. Keep these paths inside the mod's `scripts/` tree. Only Kris has the ACT menu in the current roster. Susie and Ralsei have spell menus but no ACT menu. The SOUL/Vessel will also receive ACT access when its party implementation is added. The first spell pass is:
+The manifest and runtime roster now include Kris, Susie, Ralsei, Noelle, Berdly, and Vessel. Kristal v0.10.0 loads custom PartyMember definitions from `scripts/data/party/` and custom Spell definitions from `scripts/data/spells/`; keep these paths inside the mod's `scripts/` tree. Kris and Vessel have ACT access, Berdly has the custom B-Action, and Susie, Ralsei, Noelle, and Berdly have spell lists. The table below records the initial custom spell effects; it is not an exhaustive list of every spell currently registered.
 
 | Character | Spell | TP | Current effect |
 | --- | --- | ---: | --- |
@@ -168,7 +166,7 @@ from `scripts/data/spells/`. Keep these paths inside the mod's `scripts/` tree. 
 | Berdly | TORNADO | 20 | 16 damage; records next-attack disruption |
 
 `tests/runtime_spells_test.lua` exercises the shared effects without needing the graphical
-runtime. GitHub Actions also syntax-checks every Lua file and packages both artifacts. This is
+runtime. GitHub Actions also syntax-checks every Lua file and publishes all three build artifacts. This is
 still not a substitute for launching the project in Kristal: party menu visibility, target
 selection, animations, spell action completion, and battle transitions must be checked in-game.
 
@@ -180,17 +178,18 @@ his actual art is still outstanding.
 
 ## Party balance and equipment exclusions
 
-The current mod-balanced stat profiles for the active three-member party are:
+The current mod-balanced stat profiles for all six party members are:
 
 | Member | HP | ATK | DEF | MAG |
 | --- | ---: | ---: | ---: | ---: |
-| Kris | 240 | 17 | 2 | 0 |
-| Susie | 290 | 24 | 2 | 2 |
-| Ralsei | 210 | 10 | 2 | 9 |
-| Noelle | 220 | 7 | 1 | 11 |
-| Berdly | 240 | 20 | 2 | 8 |
+| Kris | 290 | 17 | 2 | 10 |
+| Susie | 350 | 24 | 2 | 2 |
+| Ralsei | 250 | 10 | 2 | 14 |
+| Noelle | 260 | 7 | 1 | 11 |
+| Berdly | 310 | 20 | 2 | 8 |
+| Vessel | 240 | 12 | 2 | 0 |
 
-The party now uses a late-game Chapter 6-7 fan-game HP scale, not official unreleased chapter data. Noelle's Chapter 2 baseline is 90 HP; her 220 HP profile is an extrapolation that places her near Ralsei and Kris while preserving her low physical defense and high magic. Kris, Susie, and Ralsei were raised to a coherent late-game baseline as well, using the lower end of their known Chapter 5 HP ranges as a reference. Berdly's 240/20/2/8 profile is original fan-game balance, positioned between Kris and Susie physically with moderate magic. The ThornRing is explicitly denylisted in CombatState.BLACKLISTED_EQUIPMENT; future equipment import and equip paths must check CombatState.isEquipmentBlacklisted(item_id). The current prototype does not yet implement a complete equipment UI or loader, so the denylist is in place as a rule for the upcoming equipment integration rather than a claim that a finished menu filter already exists. tests/combat_balance_test.lua covers the denylist and verifies the active three-member roster.
+The party now uses a late-game Chapter 6-7 fan-game HP scale, not official unreleased chapter data. Noelle's Chapter 2 baseline is 90 HP; her 220 HP profile is an extrapolation that places her near Ralsei and Kris while preserving her low physical defense and high magic. Kris, Susie, and Ralsei were raised to a coherent late-game baseline as well, using the lower end of their known Chapter 5 HP ranges as a reference. Berdly's 240/20/2/8 profile is original fan-game balance, positioned between Kris and Susie physically with moderate magic. The ThornRing is explicitly denylisted in CombatState.BLACKLISTED_EQUIPMENT; future equipment import and equip paths must check CombatState.isEquipmentBlacklisted(item_id). The current prototype does not yet implement a complete equipment UI or loader, so the denylist is in place as a rule for the upcoming equipment integration rather than a claim that a finished menu filter already exists. tests/combat_balance_test.lua covers the denylist and verifies all six active party members and their HP profiles.
 
 
 ## Vessel SOUL-mode boss attack sets

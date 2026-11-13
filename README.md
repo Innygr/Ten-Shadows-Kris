@@ -26,13 +26,13 @@ architecture contract.
 
 GitHub Actions publishes three artifacts after the checks pass:
 
-- `Ten-Shadows-Kris-standalone-Love-11.5`: recommended. Download and extract this ZIP,
-  then open the inner `Ten-Shadows-Kris.love` file with **LÖVE 11.5**. This is the complete
+- `Deltarune-Shadowbender-standalone-Love-11.5`: recommended. Download and extract this ZIP,
+  then open the inner `Deltarune-Shadowbender.love` file with **LÖVE 11.5**. This is the complete
   game and includes the Kristal v0.10.0 engine plus `assets/fonts/main.ttf`.
-- `Ten-Shadows-Kris-love-file`: the standalone `.love` file by itself. GitHub still wraps
+- `Deltarune-Shadowbender-love-file`: the standalone `.love` file by itself. GitHub still wraps
   downloaded Actions artifacts in a ZIP, so extract the downloaded ZIP before opening the
   inner `.love` file.
-- `Ten-Shadows-Kris-mod-only-Kristal-v0.10.0`: mod-only ZIP for an existing Kristal v0.10.0
+- `Deltarune-Shadowbender-mod-only-Kristal-v0.10.0`: mod-only ZIP for an existing Kristal v0.10.0
   installation. **Do not open this ZIP or its extracted mod folder with LÖVE.** It does not
   contain the engine entry point or engine fonts.
 
@@ -49,7 +49,7 @@ fallback until dedicated art is added.
 ## Startup troubleshooting
 
 If startup reports `assets/fonts/main.ttf` is missing, first check which file was opened:
-the standalone artifact must be extracted, and the inner `Ten-Shadows-Kris.love` file is the
+the standalone artifact must be extracted, and the inner `Deltarune-Shadowbender.love` file is the
 one to launch. Opening the mod-only ZIP/folder is not a supported launch method. When using an
 existing Kristal installation instead, its own `assets/fonts/main.ttf` engine asset must be
 present; reinstall or repair that Kristal engine rather than copying the mod folder into LÖVE.
