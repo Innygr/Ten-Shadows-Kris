@@ -104,6 +104,8 @@ jobs:
 
       - name: Test Vessel identity profile and save import
         run: lua5.1 tests/vessel_identity_test.lua
+      - name: Test Vessel identity menu and first-run setup
+        run: lua5.1 tests/vessel_identity_menu_test.lua
 
       - name: Test Vessel sprite configuration
         run: lua5.1 tests/vessel_actor_test.lua
