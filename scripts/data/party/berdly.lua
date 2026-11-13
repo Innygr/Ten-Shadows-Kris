@@ -9,6 +9,7 @@ function character:init()
     self:setActor("berdly")
     self:setWeapon("storm_halberd")
     self:setArmor(1, "aero_cape")
+    self:setArmor(2, "storm_guard")
     self.level = Game.chapter
     self.title = "TECH SUPPORT"
     self.soul_priority = 0
