@@ -72,4 +72,14 @@ expect(Effects.brighten(), true, "brighten succeeds in battle")
 expect(buffed, 3, "brighten buffs Kris, Susie, and Ralsei only")
 expect(Game.battle.ten_shadows_brightened, true, "brighten state flag")
 
+-- Spell statuses must feed the shared Knight + Titan scheduler state.
+local CombatState = dofile("scripts/ten_shadows/combat_state.lua")
+local boss_state = CombatState.new()
+local boss_target = {ten_shadows_state = boss_state, hurt = function() end}
+Effects.addChill(boss_target, 3)
+expect(boss_state.boss.frozen_turns, 1, "three spell CHILL stacks freeze the Knight")
+expect(boss_state.boss.exposed, 1, "spell freeze exposes the shared boss")
+Effects.disrupt(boss_target)
+expect(boss_state.knight_disrupted, 1, "Berdly spell disruption reaches the scheduler")
+
 print("Runtime spell effect tests passed.")

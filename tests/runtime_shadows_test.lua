@@ -91,4 +91,38 @@ Shadows.onEnemyTurnEnd(enemy)
 assert(enemy.waves[1] == "test_wave", "enemy waves must restore after disruption")
 assert(Shadows.onEnemyTurnStart(enemy) == false, "disruption must not suppress a second wave")
 
+-- Boss-bound status actions must modify the shared scheduler, not suppress
+-- the complete Knight + Titan wave (the Titan still gets its attacks).
+local CombatState = dofile("scripts/ten_shadows/combat_state.lua")
+local boss_state = CombatState.new()
+local boss_target = {
+    hp = 260,
+    waves = {"knight_titan_assault"},
+    ten_shadows_state = boss_state,
+}
+function boss_target:hurt(amount)
+    self.hp = self.hp - amount
+    boss_state.boss.hp = self.hp
+end
+
+Shadows.use("TOAD", user, boss_target)
+assert(boss_state.knight_disrupted == 1, "Toad must disrupt the Knight's next scheduler action")
+assert(boss_target.ten_shadows_saved_waves == nil and #boss_target.waves == 1,
+    "Knight disruption must leave the Titan's shared wave available")
+
+local boss_chill = {ten_shadows_state = CombatState.new()}
+Shadows.addChill(boss_chill, 3)
+assert(boss_chill.ten_shadows_state.boss.frozen_turns == 1,
+    "three CHILL stacks must freeze the Knight in the shared state")
+assert(boss_chill.ten_shadows_state.boss.exposed == 1,
+    "freezing the Knight must expose the shared boss")
+
+local domain_state = CombatState.new()
+domain_state.player_domain.active = true
+local domain_target = {hp = 260, ten_shadows_state = domain_state}
+function domain_target:hurt(amount) self.last_damage = amount end
+Shadows.use("NUE", user, domain_target)
+assert(domain_target.last_damage == 34,
+    "Chimera Shadow Garden must boost summon damage by 1.35")
+
 print("Ten Shadows effects and Attack scaling tests passed.")

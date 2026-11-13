@@ -10,4 +10,9 @@ function KnightTitanPreview:init()
     self:addEnemy("roaring_knight_titan")
 end
 
+function KnightTitanPreview:onBattleEnd()
+    local Shadows = modRequire("scripts/ten_shadows/runtime_shadows")
+    Shadows.onBattleEnd()
+end
+
 return KnightTitanPreview

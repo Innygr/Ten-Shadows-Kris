@@ -456,7 +456,12 @@ function Mod:onBattleEnemySelect(reason, selected)
         root[#root + 1] = {"TEN SHADOWS", "Open Kris's Ten Shadows techniques.", 0, function()
             local entries = {}
             for _, shadow in ipairs(SHADOWS) do
-                entries[#entries + 1] = {shadow[1], shadow[2], shadow[3], function(item)
+                local cost = shadow[3]
+                local state = enemy.ten_shadows_state
+                if state and state.player_domain.active then
+                    cost = math.ceil(cost * 0.75)
+                end
+                entries[#entries + 1] = {shadow[1], shadow[2], cost, function(item)
                     battle:pushAction("ACT", enemy, item)
                 end}
             end
@@ -467,6 +472,12 @@ function Mod:onBattleEnemySelect(reason, selected)
         root[#root + 1] = {"BRIGHTEN", "Kris strengthens the party.", 4, function(item)
             battle:pushAction("ACT", enemy, item)
         end, {"kris", "susie", "ralsei"}}
+        local boss_state = enemy.ten_shadows_state
+        if not boss_state or not boss_state.player_domain.used then
+            root[#root + 1] = {"CHIMERA SHADOW GARDEN", "Expand Kris's domain; empower Ten Shadows.", 60, function(item)
+                battle:pushAction("ACT", enemy, item)
+            end}
+        end
         root[#root + 1] = {"CHECK", "Check the target.", 0, function(item)
             battle:pushAction("ACT", enemy, item)
         end}
