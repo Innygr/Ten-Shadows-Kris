@@ -5,6 +5,9 @@ function Mod:init()
     Mod.vessel_identity = modRequire("scripts/ten_shadows/vessel_identity")
     Mod.vessel_identity.load()
 
+    local VesselIdentityMenu = modRequire("scripts/ten_shadows/vessel_identity_menu")
+    VesselIdentityMenu.install()
+
     Mod.flavor_text = modRequire("scripts/ten_shadows/flavor_text")
 
     local BerdlyActions = modRequire("scripts/ten_shadows/berdly_actions")
@@ -392,12 +395,24 @@ installSixPartySupport = function()
     end
 end
 
-function Mod:postInit()
+function Mod:postInit(is_new_file)
     for _, id in ipairs(PARTY_ROSTER) do
         assert(Game:getPartyMember(id), "Ten Shadows Kris: party member '" .. id .. "' was not registered")
     end
     assert(#Game.party == 6 and Game.party[6].id == "vessel",
         "Ten Shadows Kris: saved party did not load all six members, including Vessel")
+
+    -- First-time players can import the Vessel name from their own Deltarune
+    -- save or enter a name and identity manually before continuing.
+    if is_new_file and not Mod.vessel_identity.hasSavedProfile() and Game.world then
+        local menu = Game.world:openMenu()
+        if menu and menu.onButtonSelect and menu.buttons and menu.buttons[4] then
+            menu:onButtonSelect(4)
+            if menu.box and menu.box.openVesselIdentity then
+                menu.box:openVesselIdentity(true)
+            end
+        end
+    end
 end
 
 local SHADOWS = {
