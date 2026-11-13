@@ -24,7 +24,8 @@ architecture contract.
 - `scripts/ten_shadows/combat_state.lua`, `runtime_shadows.lua`, and `attack_wave_patterns.lua`:
   six-member party rules, boss ACT/status/SOUL-mode integration, disruption, and six reusable
   projectile-pattern families. Wall, aimed, and falling attacks now telegraph their paths before
-  projectiles become dangerous. Bespoke attack mechanics and final presentation remain in progress.
+  projectiles become dangerous. BRIGHTEN resolves as one grouped ACT so later party actions are
+  not interrupted by a nested Spell action. Bespoke attack mechanics and final presentation remain in progress.
 
 ## Build artifacts
 

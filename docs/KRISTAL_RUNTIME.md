@@ -15,6 +15,10 @@ The manifest's engine version must be updated deliberately when the project move
 Kristal build. Do not silently target the latest engine API while the user's installed runtime
 remains on a different version.
 
+The standalone build leaves Kristal's optional native window icon disabled in `conf.lua`.
+The icon asset is still packaged, but LÖVE no longer tries to load it as part of its earliest
+boot configuration before the game initializes.
+
 ## Required project structure
 
 ```
@@ -103,9 +107,11 @@ find . -type f -name '*.lua' -not -path './.git/*' -print0 |
 
 The Knight + Titan preview enemy dispatches the Kris Ten Shadows submenu into the runtime
 summon effects, connects all seven Vessel SOUL-mode choices to the shared scheduler, and
-exposes Chimera Shadow Garden as a once-per-battle Kris ACT. BRIGHTEN uses Kristal's native
-`powerAct` flow after its ACT has reserved the three party turns and charged 4 TP. The
-boss-bound CHILL and disruption effects update the shared boss state, so freezing the Knight
+exposes Chimera Shadow Garden as a once-per-battle Kris ACT. BRIGHTEN remains a 4 TP grouped
+ACT for Kris, Susie, and Ralsei; it applies the DEF buff directly and returns ACT dialogue
+instead of injecting a second SPELL action into Kristal's action queue. The regression test
+checks that exactly those three participants are buffed and that a blocked use applies no buff.
+The boss-bound CHILL and disruption effects update the shared boss state, so freezing the Knight
 leaves the Titan's attack active and disrupting the Knight diverts its next action slot to the
 Titan. Mahoraga is restored to Kris's party slot when the preview encounter ends.
 
@@ -150,9 +156,10 @@ engine diagnostics. Dedicated Knight/Titan art is still outstanding.
 5. Confirm all six party members appear and can select actions; inspect the paged action UI.
 6. Open Kris's ACT list and confirm the Ten Shadows submenu and Chimera Shadow Garden appear.
 7. Open Vessel's ACT list and verify all seven SOUL-mode choices switch the boss attack scheduler.
-8. Dodge the six-volley Knight + Titan assault, then confirm the wave exits cleanly and the next turn starts.
-9. Exercise CHECK/Inspect, summons, domain duration, CHILL, and Knight disruption.
-10. Finish or lose the encounter and confirm Kristal returns without a Lua error. Record the exact engine build and any traceback.
+8. Use BRIGHTEN while Noelle, Berdly, and Vessel have actions queued; confirm their actions still resolve after the grouped ACT.
+9. Dodge the six-volley Knight + Titan assault, then confirm the wave exits cleanly and the next turn starts.
+10. Exercise CHECK/Inspect, summons, domain duration, CHILL, and Knight disruption.
+11. Finish or lose the encounter and confirm Kristal returns without a Lua error. Record the exact engine build and any traceback.
 
 The repository work environment does not contain the user's Kristal/LÖVE runtime, so this
 launch checklist remains unverified here. Do not mark runtime checks complete based only on

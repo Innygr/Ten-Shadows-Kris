@@ -73,4 +73,24 @@ function RuntimeSpells.brighten()
     return true
 end
 
+function RuntimeSpells.brightenAct(state)
+    local failure = {
+        "* The Titan's light cannot be strengthened right now."
+    }
+    if not state or not Game or not Game.battle then
+        return failure
+    end
+    -- The ACT menu already charged the 4 TP. Do not spend it again here.
+    if not state:brighten(true) then
+        return failure
+    end
+    if not RuntimeSpells.brighten() then
+        return failure
+    end
+    return {
+        "* Kris, Susie, and Ralsei channel their strength together.",
+        "* Their DEF increased for this turn."
+    }
+end
+
 return RuntimeSpells

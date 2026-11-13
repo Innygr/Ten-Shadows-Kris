@@ -82,6 +82,9 @@ jobs:
       - name: Test runtime spell effects
         run: lua5.1 tests/runtime_spells_test.lua
 
+      - name: Test grouped BRIGHTEN ACT
+        run: lua5.1 tests/brighten_act_test.lua
+
       - name: Test Ten Shadows effects and Attack scaling
         run: lua5.1 tests/runtime_shadows_test.lua
 
@@ -113,6 +116,7 @@ jobs:
           test -f scripts/ten_shadows/attack_wave_patterns.lua
           test -f tests/attack_wave_patterns_test.lua
           test -f tests/shadow_projectile_test.lua
+          test -f tests/brighten_act_test.lua
           test -f tests/knight_titan_scheduler_test.lua
           grep -q 'Patterns.build' scripts/battle/waves/knight_titan_assault.lua
           grep -q 'shot.warning' scripts/battle/waves/knight_titan_assault.lua
@@ -363,10 +367,18 @@ jobs:
           conf = conf_path.read_text(encoding="utf-8")
           conf = conf.replace('t.identity = "kristal"', 't.identity = "ten_shadows_kris"')
           conf = conf.replace('t.window.title = "Kristal"', 't.window.title = "Deltarune: Shadowbender"')
+          icon_setting = 't.window.icon = "icon.png"'
+          if conf.count(icon_setting) != 1:
+              raise SystemExit("Expected exactly one optional Kristal window icon setting")
+          # The native window icon is optional. Disable its early boot-time load so
+          # a missing working-directory icon can never prevent Kristal startup.
+          conf = conf.replace(icon_setting, "t.window.icon = nil", 1)
           if 't.identity = "ten_shadows_kris"' not in conf:
               raise SystemExit("Could not set the game save identity")
           if 't.window.title = "Deltarune: Shadowbender"' not in conf:
               raise SystemExit("Could not set the game window title")
+          if "t.window.icon = nil" not in conf:
+              raise SystemExit("Could not disable optional boot-time window icon loading")
           conf_path.write_text(conf, encoding="utf-8")
           PY
 
@@ -395,6 +407,8 @@ jobs:
           unzip -Z1 Deltarune-Shadowbender.love | grep -qx 'VERSION'
           unzip -p Deltarune-Shadowbender.love VERSION | grep -Eq '^[v]?[0-9]+([.][0-9]+){0,2}([+-].*)?$'
           unzip -Z1 Deltarune-Shadowbender.love | grep -qx 'main.lua'
+          unzip -Z1 Deltarune-Shadowbender.love | grep -qx 'icon.png'
+          unzip -p Deltarune-Shadowbender.love conf.lua | grep -Fq 't.window.icon = nil'
           unzip -Z1 Deltarune-Shadowbender.love | grep -qx 'assets/fonts/main.ttf'
           unzip -Z1 Deltarune-Shadowbender.love | grep -qx 'assets/fonts/extra_mono.ttf'
           unzip -Z1 Deltarune-Shadowbender.love | grep -qx 'assets/fonts/extra_mono.json'

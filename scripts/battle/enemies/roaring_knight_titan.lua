@@ -81,12 +81,11 @@ function RoaringKnightTitan:onAct(battler, name)
 
     local state = self.ten_shadows_state
     if name == "BRIGHTEN" then
-        if state and not state:brighten(true) then
-            return "* The Titan's light cannot be strengthened right now."
-        end
-        -- Kristal already charged 4 TP and reserved the participating turns.
-        Game.battle:powerAct("ts_brighten", battler, "kris")
-        return
+        local Effects = modRequire("scripts/ten_shadows/runtime_spells")
+        -- The menu has already charged 4 TP and grouped Kris, Susie, and Ralsei
+        -- into this ACT. Resolve the buff here; powerAct would queue a second
+        -- SPELL action while the current ACT group is still being processed.
+        return Effects.brightenAct(state)
     end
 
     if name == "CHIMERA SHADOW GARDEN" then
