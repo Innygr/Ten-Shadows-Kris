@@ -96,6 +96,24 @@ installSixPartySupport = function()
         end
     end
 
+    -- Kristal's map/story code can call World:spawnParty with a shorter
+    -- local roster, which silently omits late-game members such as Vessel.
+    -- This project uses one fixed six-member overworld line, so normalize
+    -- every spawnParty call to the canonical roster before followers spawn.
+    if not Mod._six_party_overworld_spawn_patch then
+        Mod._six_party_overworld_spawn_patch = true
+        local original_spawn_party = World.spawnParty
+        World.spawnParty = function(world, marker, party, extra, facing)
+            local full_roster = {}
+            for i, id in ipairs(roster) do
+                full_roster[i] = Game:getPartyMember(id)
+                assert(full_roster[i],
+                    "Ten Shadows Kris: missing overworld party member '" .. id .. "'")
+            end
+            return original_spawn_party(world, marker, full_roster, extra, facing)
+        end
+    end
+
     -- Kristal normally hard-caps battle creation at three party members.
     -- This mod deliberately expands that to the complete six-member roster.
     if not Mod._six_party_battle_patch then
