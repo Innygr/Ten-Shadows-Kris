@@ -44,6 +44,12 @@ jobs:
           print("Initial encounter:", manifest["encounter"])
           PY
 
+      - name: Test F++ to Lua transpiler
+        run: |
+          python3 tests/fpp_transpiler_test.py
+          python3 tools/fpp.py examples/hello.fpp -o /tmp/fpp-hello.lua
+          luac5.1 -p /tmp/fpp-hello.lua
+
       - name: Validate every Lua script
         run: |
           mapfile -t scripts < <(find . -type f -name '*.lua' -not -path './.git/*' | sort)
