@@ -344,13 +344,13 @@ jobs:
 
           # The first reset used to run before the handler checked whether
           # LÖVE's graphics subsystem was available.
-          handler = replace_once(
-              handler,
-              "    Draw.reset()",
+          first_reset = handler.index("    Draw.reset()")
+          guard_block = (
               "    if not love or not love.graphics or not love.event or not love.window:" + chr(10)
               + "        return" + chr(10) + "    end" + chr(10) + chr(10)
-              + "    love.graphics.reset()",
+              + "    love.graphics.reset()"
           )
+          handler = handler[:first_reset] + guard_block + handler[first_reset + len("    Draw.reset()"):]
           # The crash UI uses LÖVE's built-in font, never a file-backed font.
           handler = replace_once(
               handler,
