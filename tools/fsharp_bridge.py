@@ -114,7 +114,7 @@ def fpp_to_fsharp(source: str) -> str:
             output.append(prefix + f"let {function.group(1)} () =")
             depth += 1
         elif conditional:
-            output.append(prefix + f"if {conditional.group(1)} then")
+            output.append(prefix + f"if {conditional.group(1).strip()} then")
             depth += 1
         elif binding:
             output.append(prefix + f"let {binding.group(1)} = {binding.group(2)}")
