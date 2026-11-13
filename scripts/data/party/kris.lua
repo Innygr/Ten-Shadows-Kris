@@ -6,6 +6,7 @@ function character:init()
     self:setActor("kris")
     self:setWeapon("ten_shadow_blade")
     self:setArmor(1, "shadow_cloak")
+    self:setArmor(2, "shadow_mantle")
     self.level = Game.chapter
     self.title = "TEN SHADOWS"
     self.soul_priority = 2
