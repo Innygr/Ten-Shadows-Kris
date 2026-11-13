@@ -2,13 +2,20 @@
 local RuntimeSpells = {}
 
 function RuntimeSpells.damage(user, target, amount)
-    local exposed = target.ten_shadows_exposed_turns or 0
-    if exposed > 0 then amount = math.floor(amount * 1.4 + 0.5) end
+    local state = target and target.ten_shadows_state
+    local exposed = (target and target.ten_shadows_exposed_turns or 0) > 0
+        or (state and state.boss and state.boss.exposed > 0)
+    if exposed then amount = math.floor(amount * 1.4 + 0.5) end
     target:hurt(amount, user)
     return amount
 end
 
 function RuntimeSpells.addChill(target, amount)
+    local state = target and target.ten_shadows_state
+    if state and state.applyChill then
+        return state:applyChill(amount)
+    end
+
     target.ten_shadows_chill = (target.ten_shadows_chill or 0) + amount
     if target.ten_shadows_chill >= 3 then
         target.ten_shadows_chill = target.ten_shadows_chill - 3
@@ -24,7 +31,12 @@ function RuntimeSpells.addChill(target, amount)
 end
 
 function RuntimeSpells.disrupt(target)
-    target.ten_shadows_disrupted = true
+    local state = target and target.ten_shadows_state
+    if state and state.disruptKnight then
+        state:disruptKnight()
+    else
+        target.ten_shadows_disrupted = true
+    end
 end
 
 function RuntimeSpells.heal(target, amount)

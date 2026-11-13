@@ -73,6 +73,9 @@ function KnightTitanAssault:onEnd(death)
 
     local enemy = Game.battle.enemies and Game.battle.enemies[1] or nil
     local state = enemy and enemy.ten_shadows_state or nil
+    local Shadows = modRequire("scripts/ten_shadows/runtime_shadows")
+    Shadows.onEnemyTurnEnd(enemy)
+
     if state then
         -- Status durations are measured in enemy turns, not individual
         -- volleys. Tick once after the complete Wave has ended.

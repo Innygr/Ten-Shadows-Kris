@@ -64,10 +64,55 @@ function RoaringKnightTitan:onHurt(damage, battler)
     end
 end
 
+local SOUL_MODE_ACTIONS = {
+    ["RED SOUL"] = "red",
+    ["BLUE SOUL"] = "blue",
+    ["GREEN SOUL"] = "green",
+    ["YELLOW SOUL"] = "yellow",
+    ["PURPLE SOUL"] = "purple",
+    ["ORANGE SOUL"] = "orange",
+    ["CYAN SOUL"] = "cyan",
+}
+
 function RoaringKnightTitan:onAct(battler, name)
-    if name == "Inspect" or name == "Check" then
+    if name == "Inspect" or name == "Check" or name == "CHECK" then
         return self.check
     end
+
+    local state = self.ten_shadows_state
+    if name == "BRIGHTEN" then
+        if state and not state:brighten(true) then
+            return "* The Titan's light cannot be strengthened right now."
+        end
+        -- Kristal already charged 4 TP and reserved the participating turns.
+        Game.battle:powerAct("ts_brighten", battler, "kris")
+        return
+    end
+
+    if name == "CHIMERA SHADOW GARDEN" then
+        if not state or not state:expandChimeraDomain(true) then
+            return "* The shadows cannot form the domain again."
+        end
+        return {
+            "* DOMAIN EXPANSION — CHIMERA SHADOW GARDEN.",
+            "* The battlefield sinks into a sea of shadows. Ten Shadows are empowered.",
+        }
+    end
+
+    local soul_mode = SOUL_MODE_ACTIONS[name]
+    if soul_mode then
+        if not state then
+            return "* The Vessel's SOUL cannot reach the shared battle state."
+        end
+        local changed, reason = state:setSoulMode(soul_mode)
+        if not changed then return "* " .. tostring(reason) end
+        return "* The Vessel shifts to " .. string.upper(soul_mode) .. " SOUL. The Knight and Titan adapt."
+    end
+
+    local Shadows = modRequire("scripts/ten_shadows/runtime_shadows")
+    local shadow_message = Shadows.use(name, battler, self)
+    if shadow_message then return shadow_message end
+
     return super.onAct(self, battler, name)
 end
 

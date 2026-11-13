@@ -22,8 +22,12 @@ end
 
 local function damage(user, target, multiplier)
     if not target or not target.hurt then return 0 end
-    local amount = math.floor(attackStat(user) * multiplier + 0.5)
-    if (target.ten_shadows_exposed_turns or 0) > 0 then
+    local state = target.ten_shadows_state
+    local domain_bonus = state and state.player_domain and state.player_domain.active
+    local exposed = (target.ten_shadows_exposed_turns or 0) > 0
+        or (state and state.boss and state.boss.exposed > 0)
+    local amount = math.floor(attackStat(user) * multiplier * (domain_bonus and 1.35 or 1) + 0.5)
+    if exposed then
         amount = math.floor(amount * 1.4 + 0.5)
     end
     target:hurt(amount, user)
@@ -31,7 +35,12 @@ local function damage(user, target, multiplier)
 end
 
 local function expose(target, turns)
-    target.ten_shadows_exposed_turns = math.max(target.ten_shadows_exposed_turns or 0, turns or 1)
+    local duration = turns or 1
+    target.ten_shadows_exposed_turns = math.max(target.ten_shadows_exposed_turns or 0, duration)
+    local state = target.ten_shadows_state
+    if state and state.expose then
+        state:expose(duration)
+    end
 end
 
 local function suppressNextWave(target)
@@ -42,11 +51,22 @@ local function suppressNextWave(target)
 end
 
 local function disrupt(target)
-    target.ten_shadows_disrupted = true
-    suppressNextWave(target)
+    local state = target.ten_shadows_state
+    if state and state.disruptKnight then
+        -- The Knight loses its next action, but the Titan still attacks.
+        state:disruptKnight()
+    else
+        target.ten_shadows_disrupted = true
+        suppressNextWave(target)
+    end
 end
 
 local function chill(target, amount)
+    local state = target.ten_shadows_state
+    if state and state.applyChill then
+        return state:applyChill(amount)
+    end
+
     target.ten_shadows_chill = (target.ten_shadows_chill or 0) + amount
     if target.ten_shadows_chill >= 3 then
         target.ten_shadows_chill = target.ten_shadows_chill - 3

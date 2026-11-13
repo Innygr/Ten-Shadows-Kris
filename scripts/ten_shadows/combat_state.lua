@@ -339,11 +339,13 @@ function CombatState.new()
         return true
     end
 
-    function state:brighten()
+    function state:brighten(skip_cost)
         local susie = self:getMember("susie")
         local ralsei = self:getMember("ralsei")
         if not susie or susie.hp <= 0 or not ralsei or ralsei.hp <= 0 then return false end
-        if self.titan.brighten_turns > 0 or not self:spendTP(4) then return false end
+        if self.titan.brighten_turns > 0 then return false end
+        -- Kristal has already charged the ACT's menu TP when skip_cost is true.
+        if not skip_cost and not self:spendTP(4) then return false end
         self.titan.light_radius = 58
         self.titan.brighten_turns = 1
         return true
@@ -404,9 +406,11 @@ function CombatState.new()
         return true, "healed"
     end
 
-    function state:expandChimeraDomain()
+    function state:expandChimeraDomain(skip_cost)
         local domain = self.player_domain
-        if domain.used or domain.active or not self:spendTP(60) then return false end
+        if domain.used or domain.active then return false end
+        -- Kristal's menu has already deducted the 60 TP for a live ACT.
+        if not skip_cost and not self:spendTP(60) then return false end
         domain.active = true
         domain.turns = 3
         domain.used = true
