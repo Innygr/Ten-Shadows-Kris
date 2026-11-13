@@ -71,6 +71,14 @@ local warning = ShadowProjectile(30, 40, 0, 5, "titan", {
     duration = 0.42,
     length = 160,
 })
+local execution = ShadowProjectile(50, 60, math.pi, 6, "knight", {
+    kind = "target",
+    duration = 0.55,
+    length = 120,
+}, {
+    kind = "execution_slash",
+})
+assert(execution.is_execution_slash, "Knight's Execution marker must survive projectile construction")
 assert(not warning.armed, "telegraphed projectiles must start unarmed")
 assert(warning.collider == nil, "telegraph must not damage the player before launch")
 assert(warning.physics.speed == 0, "telegraph must remain stationary")

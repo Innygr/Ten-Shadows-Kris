@@ -83,6 +83,17 @@ local falling_shots, falling_family = Patterns.build({id = "titan_swarm"}, 2, 1,
 assert(falling_family == "falling", "Titan swarm should use the falling family")
 assert(falling_shots[1].warning.kind == "falling", "falling shot should telegraph its descent")
 
+local execution_shots, execution_family = Patterns.build(
+    {id = "cyan_knights_execution", source = "knight", pattern = "cyan-parry-window"},
+    2, 3, arena, target, false
+)
+assert(execution_family == "aimed", "Knight's Execution should remain an aimed slash pattern")
+assert(#execution_shots == 1, "Knight's Execution should create one dedicated slash on its marked volley")
+assert(execution_shots[1].mechanic and execution_shots[1].mechanic.kind == "execution_slash",
+    "Knight's Execution projectile must carry the parry marker")
+assert(execution_shots[1].warning and execution_shots[1].warning.kind == "target",
+    "Knight's Execution slash must telegraph its path before launching")
+
 local base_shots = Patterns.build({id = "twin_slashes"}, 3, 3, arena, target, false)
 local domain_shots = Patterns.build({id = "twin_slashes"}, 3, 3, arena, target, true)
 assert(#domain_shots == #base_shots + 2, "Knight domain must layer two extra falling blades")

@@ -115,15 +115,28 @@ function Class(base)
     return class, base
 end
 local Preview = dofile("scripts/battle/encounters/knight_titan_preview.lua")
+modRequire = function(path)
+    expect(path, "scripts/objects/cyan_soul", "Cyan Soul factory module")
+    return function(x, y)
+        return {
+            x = x, y = y, is_cyan_soul = true,
+            ten_shadows_mode = "cyan", color = {0.20, 0.90, 1.0},
+        }
+    end
+end
 local mode_state = CombatState.new()
 Game = {battle = {enemies = {{ten_shadows_state = mode_state}}}}
 for _, mode in ipairs(expected_modes) do
     expect(mode_state:setSoulMode(mode), true, mode .. " Soul factory mode")
     local soul = Preview.createSoul({}, 12, 24, {1, 0, 0})
-    expect(soul.base_soul, true, mode .. " uses Kristal's standard Soul movement")
+    if mode == "cyan" then
+        expect(soul.is_cyan_soul, true, "Cyan mode creates the special charge Soul")
+    else
+        expect(soul.base_soul, true, mode .. " uses Kristal's standard Soul movement")
+    end
     expect(soul.ten_shadows_mode, mode, mode .. " Soul is tagged with active mode")
     expect(type(soul.color), "table", mode .. " Soul has a distinct colour")
-end
+end)
 
 -- Clearing the mode returns the default Kristal SOUL and leaves no stale tag.
 mode_state:setSoulMode(nil)
