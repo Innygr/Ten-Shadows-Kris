@@ -33,6 +33,7 @@ and has been tested in Kristal.
 - [x] Encounter registration path, enemy class, and a short no-projectile test wave.
 - [ ] Launch the project in Kristal v0.10.0-192-geaf9e0ef and confirm all six party members appear in the battle.
 - [ ] Confirm the six-member test wave ends cleanly and the battle can return to the menu without errors.
+- [x] Add a separate Knight + Titan preview encounter with one 260 HP enemy, disabled MERCY/TIRED/freeze, and phase CHECK/dialogue at 175 HP and 78 HP. It remains separate from the default smoke-test entry until dedicated art and a complete boss wave set exist.
 - [ ] Replace the temporary encounter with the shared Knight + Titan enemy and real battle flow.
 - [x] Add custom PartyMember definitions for all six party IDs in `scripts/data/party/` and set the manifest party roster.
 - [ ] Add dedicated Berdly and Knight/Titan sprites, then verify Kris → Susie → Ralsei → Noelle → Berdly → Vessel turn order and downed-member handling in Kristal.
