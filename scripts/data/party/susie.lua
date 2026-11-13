@@ -6,6 +6,7 @@ function character:init()
     self:setActor("susie")
     self:setWeapon("roaring_axe")
     self:setArmor(1, "ironhide_vest")
+    self:setArmor(2, "titan_bracer")
     self.level = Game.chapter
     self.title = "HEAVY HITTER"
     self.soul_priority = 2
