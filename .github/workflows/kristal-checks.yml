@@ -314,7 +314,7 @@ jobs:
       - name: Install packaging tools
         run: |
           sudo apt-get update
-          sudo apt-get install --yes rsync zip
+          sudo apt-get install --yes lua5.1 rsync zip
 
       - name: Check out matching Kristal engine
         uses: actions/checkout@v5
