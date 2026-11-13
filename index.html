@@ -1,0 +1,969 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TEN SHADOWS: DARK WORLD INCIDENT</title>
+<style>
+:root{color-scheme:dark;--white:#f5f4ff;--muted:#aaa8bd;--line:#e9e7f2;--gold:#ffe66d}
+*{box-sizing:border-box}body{margin:0;background:#08080e;color:var(--white);font:16px "Courier New",monospace;min-height:100vh;display:grid;place-items:center;padding:16px}
+#game{width:min(980px,100%);background:#08080e;border:3px solid var(--line);padding:12px;box-shadow:0 0 0 5px #22202d,0 0 35px #24204c}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:2px 2px 10px;border-bottom:2px solid #625d72}
+h1{font-size:clamp(17px,3vw,25px);letter-spacing:2px;margin:0}.tag{font-size:11px;color:var(--muted);text-align:right}
+#stage{display:block;width:100%;height:auto;aspect-ratio:640/300;background:#0b0b16;border:2px solid #b9b6c8;margin:12px 0;image-rendering:pixelated}
+#hud{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:10px 0}
+.card{border:1px solid #777286;padding:8px;background:#10101a;min-width:0}.name{font-weight:bold;font-size:14px}.stats{font-size:12px;color:#d4d1e2;margin-top:5px}.hpbar{height:7px;background:#3b3546;margin-top:5px}.hpfill{height:100%;background:#f4d45e;width:100%}
+#bossbar{border:1px solid #777286;padding:8px;background:#10101a;margin-bottom:10px;font-size:13px}.bossline{display:flex;justify-content:space-between;gap:10px}.bossfill{height:9px;background:#e65d78;width:100%;margin-top:6px}.mercyline{display:flex;justify-content:space-between;gap:10px;margin-top:8px;font-size:11px;color:#aaa4b8}.mercybar{height:7px;margin-top:4px;background:#292432;border:1px solid #51465b;position:relative;overflow:hidden}.mercyfill{height:100%;width:100%;background:#b65b91;opacity:.35}.mercyx{position:absolute;inset:-7px 0 0;text-align:center;color:#ff637d;font-size:20px;font-weight:900;line-height:18px;text-shadow:0 0 4px #120711;}
+#dialogue{min-height:76px;padding:12px;border:2px solid var(--line);background:#050509;line-height:1.5;margin-bottom:10px;white-space:pre-wrap}
+#menu{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+button{font: bold 14px "Courier New",monospace;color:white;background:#10101b;border:2px solid #c5c1d5;padding:12px 8px;cursor:pointer;min-height:45px}
+button:hover:not(:disabled),button:focus-visible{outline:none;border-color:var(--gold);color:var(--gold);background:#25213a}
+button:disabled{opacity:.35;cursor:not-allowed}
+#sub{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+#sub button{font-size:12px;min-height:38px;padding:8px}
+#footer{display:flex;justify-content:space-between;gap:8px;color:#9995ac;font-size:11px;margin-top:10px}
+@media(max-width:760px){#hud{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:620px){body{padding:6px}#game{padding:8px}#hud{grid-template-columns:1fr}#menu{grid-template-columns:repeat(2,1fr)}.tag{max-width:110px}}
+</style>
+</head>
+<body>
+<main id="game">
+<header><h1>TEN SHADOWS: DARK WORLD INCIDENT</h1><div class="tag">A VERY NORMAL DELTARUNE-ISH BOSS FIGHT<br>DEMO 0.2 • DEVICE KNIGHT ENCOUNTER</div></header>
+<canvas id="stage" width="640" height="300" aria-label="Pixel-art battle scene"></canvas>
+<section id="hud" aria-label="Party status"></section>
+<section id="bossbar"><div class="bossline"><b id="bossname">THE ROARING KNIGHT & TITAN</b><span id="bossstatus">ARMOR: INTACT</span></div><div class="bossfill" id="bossfill"></div><div class="mercyline"><b>MERCY</b><span>UNAVAILABLE</span></div><div class="mercybar" role="img" aria-label="Mercy unavailable"><div class="mercyfill"></div><span class="mercyx" aria-hidden="true">×</span></div><div class="bossline" style="margin-top:8px"><span id="tpstatus">TP: 35 / 100</span><span id="itemstatus">DARK CANDY: 3</span></div></section>
+<div id="dialogue" aria-live="polite">* The air shakes. A huge silhouette blocks the way forward.\n* Kris feels their shadow move before they do.</div>
+<div id="menu"></div><div id="sub"></div>
+<footer id="footer"><span>DEFEND reduces damage and builds TP.</span><span id="turnlabel">PARTY TURN</span></footer>
+</main>
+<script src="sprite-sheet.js"></script>
+<script src="sprite-assets.js"></script>
+<script src="flavor-text.js"></script>
+<script src="weird-route-ice.js"></script>
+<script src="shadows.js"></script>
+<script>
+const $=id=>document.getElementById(id), canvas=$("stage"),ctx=canvas.getContext("2d");
+ctx.imageSmoothingEnabled=false;
+const party=[
+ {id:"kris",name:"KRIS",hp:48,max:48,role:"TEN SHADOWS",guard:false,color:"#40b9a4"},
+ {id:"susie",name:"SUSIE",hp:62,max:62,role:"HEAVY HITTER",guard:false,color:"#bd75e8"},
+ {id:"ralsei",name:"RALSEI",hp:44,max:44,role:"SUPPORT",guard:false,color:"#75c78c"},
+ {id:"noelle",name:"NOELLE",hp:50,max:50,role:"ICE / CONTROL",guard:false,color:"#83c9ef"},
+ {id:"berdly",name:"BERDLY",hp:54,max:54,role:"TECH SUPPORT",guard:false,color:"#e2c75c"}
+];
+const boss={hp:260,max:260,phase:1,exposed:0,chill:0,frozenTurns:0,mercy:0,status:"Normal",pacified:false,tiredImmune:true,mercyImmune:true};
+let tp=35,active=0,actions=[],busy=false,won=false,lost=false,turn=1,anim=0,reservedTurns=new Set();
+const inventory={darkCandy:3};
+let hitCursor=0,lastBossDamage=0;
+let knightDisrupted=0,domainHazardTimer=null;
+let bulletMode=false,bullets=[],soul={x:320,y:190,targetX:320,targetY:190,r:7,invuln:0},bulletClock=null,patternClock=null,attackClock=null,patternType="star_swarm",box={x:210,y:82,w:220,h:145},keys={},hitNotice="",hitNoticeTimer=0;
+const sprite={
+ kris:["....bbbb....","...bccccb...","...bccccb...","....bbbb....","..gggggggg..","..gwwggwwg..","..gggggggg..","....bbbb....","....b..b....","...bb..bb...","...b....b...","..bb....bb.."],
+ susie:["....pppp....","...pppppp...","..pppppppp..","..pppppppp..","...pppppp...","....pppp....","..rrrrrrrr..","..rwwrrwwr..","..rrrrrrrr..","....pppp....","...pp..pp...","..pp....pp.."],
+ noelle:["....hhhh....","...hhhhhh...","..hhhhhhhh..","..hhwwwwhh..","..hhhhhhhh..","...hhhhhh...","....bbbb....","...bwwwwb...","...bbbbbb...","....bbbb....","...bb..bb...","..bb....bb.."],
+ berdly:["....yyyy....","...yyyyyy...","..yyyyyyyy..","..yywwwwyy..","..yyyyyyyy..","...yyyyyy...","....bbbb....","...bwwwwb...","...bbbbbb...","....bbbb....","...bb..bb...","..bb....bb.."],
+ ralsei:["....hhhh....","...hhhhhh...","..hhhhhhhh..","..hhwwwwhh..","..hhhhhhhh..","...hhhhhh...","....gggg....","...gwwwwg...","...gggggg...","....gggg....","...gg..gg...","..gg....gg.."],
+ knight:["........kkkk........","......kkkkkkkk......",".....kkkwwwwkkk.....","....kkkwwwwwwkkk....","...kkkwwkwwkwwkkk...","...kkkwwwwwwwwkkk...","....kkkkkkkkkkkk....","......kkksskkk......",".....kkkksssskk.....","....kkkkksssskkk....","...kkkkkksssskkkk...","...kkkkksssssskkk...","....kkksssssskkk....",".....kkksssskkk......","....kkk..ss..kkk.....","...kkk...ss...kkk....","..kkk....ss....kkk...","..kk.....ss.....kk..."]
+};
+const palettes={b:"#254d58",c:"#3f9f98",g:"#294b3d",w:"#f0d5c4",p:"#9d58bc",r:"#632c83",h:"#e5e4dc",k:"#303445",s:"#d0b8ef",y:"#b69b35"};
+// Native-resolution Kris sheet; displayed at crisp 2x. Frame rectangles are configured in source pixels.
+const krisSheet=new PixelSpriteSheet({image:"assets/sprites/kris-sheet.png",scale:2,smoothing:false,frames:{},animations:{idle:{frames:[],fps:5,loop:true},walk:{frames:[],fps:8,loop:true},run:{frames:[],fps:12,loop:true},battle:{frames:[],fps:6,loop:true}}}).load();
+function drawSprite(data,x,y,scale,pal){if(data===sprite.kris&&krisSheet.draw(ctx,"idle",x,y))return;data.forEach((row,yy)=>[...row].forEach((ch,xx)=>{if(pal[ch]){ctx.fillStyle=pal[ch];ctx.fillRect(x+xx*scale,y+yy*scale,scale,scale)}}))}
+function scene(){
+ ctx.fillStyle="#090a15";ctx.fillRect(0,0,640,300);
+ for(let i=0;i<70;i++){ctx.fillStyle=i%3?"#34334d":"#77708d";ctx.fillRect((i*83)%640,(i*47)%160,2,2)}
+ ctx.fillStyle="#17152b";ctx.fillRect(0,205,640,95);
+ ctx.fillStyle="#35304e";ctx.fillRect(0,222,640,3);
+ for(let x=0;x<640;x+=48){ctx.fillStyle="#28243d";ctx.fillRect(x,225,2,75)}
+ // distant pillars
+ ctx.fillStyle="#121323";ctx.fillRect(34,115,22,105);ctx.fillRect(580,90,24,130);
+ // The Titan looms behind the Knight throughout this single shared encounter.
+ // Its hands and central core echo the hazards used during Titan attack turns.
+ ctx.save();
+ const titanPulse=.72+Math.sin(Date.now()/520)*.08;
+ ctx.globalAlpha=titanPulse;
+ ctx.shadowColor=boss.phase===3?"#ff496d":"#aaa6c7";ctx.shadowBlur=18;
+ ctx.fillStyle="#11111d";ctx.strokeStyle="#777487";ctx.lineWidth=3;
+ ctx.beginPath();ctx.ellipse(555,92,45,51,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+ ctx.fillRect(523,130,64,86);ctx.strokeRect(523,130,64,86);
+ ctx.beginPath();ctx.moveTo(528,143);ctx.lineTo(493,181);ctx.lineTo(481,218);ctx.lineTo(500,225);ctx.lineTo(525,190);ctx.stroke();
+ ctx.beginPath();ctx.moveTo(582,143);ctx.lineTo(610,176);ctx.lineTo(617,211);ctx.lineTo(599,219);ctx.lineTo(582,190);ctx.stroke();
+ ctx.fillStyle=boss.phase===3?"#ff496d":"#d8d3ee";ctx.shadowBlur=12;
+ ctx.beginPath();ctx.ellipse(555,151,12,18,0,0,Math.PI*2);ctx.fill();
+ ctx.restore();
+ // Knight remains in front: this is one encounter, not two separate fights.
+ ctx.fillStyle=boss.phase===3?"#65334f":"#292748";ctx.globalAlpha=.23;ctx.beginPath();ctx.ellipse(470,192,110,100,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+ if(!SpriteAssets.draw(ctx,"enemies.roaring_knight",408,77,140,126))drawSprite(sprite.knight,408,77,7,palettes);
+ // party
+ if(!SpriteAssets.draw(ctx,"characters.kris",80,175,48,48))drawSprite(sprite.kris,80,175,4,palettes);
+ if(!SpriteAssets.draw(ctx,"characters.susie",145,170,48,48))drawSprite(sprite.susie,145,170,4,palettes);
+ if(!SpriteAssets.draw(ctx,"characters.ralsei",210,177,48,48))drawSprite(sprite.ralsei,210,177,4,palettes);
+ if(!SpriteAssets.draw(ctx,"characters.noelle",275,177,48,48))drawSprite(sprite.noelle,275,177,4,palettes);
+ if(!SpriteAssets.draw(ctx,"characters.berdly",340,177,48,48))drawSprite(sprite.berdly,340,177,4,palettes);
+ // summon presentation: distinct silhouettes/effects, intentionally separate from final sprite art
+ if(window.currentShadow){
+  const name=window.currentShadow.toUpperCase(),cx=320,cy=142,pulse=anim>0?Math.max(.25,anim/14):.55;
+  const styles={
+   TOAD:{color:"#77d68b",shape:"bind"},NUE:{color:"#8edbff",shape:"wing"},
+   "DIVINE DOG":{color:"#f2e7c8",shape:"fang"},"GREAT SERPENT":{color:"#b4e27b",shape:"coil"},
+   "MAX ELEPHANT":{color:"#91b8ff",shape:"wave"},"RABBIT ESCAPE":{color:"#f2d9ff",shape:"burst"},
+   "ROUND DEER":{color:"#a9efc0",shape:"halo"},"PIERCING OX":{color:"#ffc477",shape:"charge"},
+   "TIGER FUNERAL":{color:"#ff9a72",shape:"claw"},MAHORAGA:{color:"#e4d0ff",shape:"wheel"}
+  };
+  const fx=styles[name]||{color:"#c4a7ff",shape:"burst"};
+  ctx.save();ctx.globalAlpha=pulse;ctx.strokeStyle=fx.color;ctx.fillStyle=fx.color;ctx.lineWidth=3;
+  ctx.shadowColor=fx.color;ctx.shadowBlur=14;
+  if(fx.shape==="bind"){
+   for(let i=0;i<3;i++){ctx.beginPath();ctx.arc(430,145,22+i*13,Math.PI*.15+i*.35,Math.PI*1.05+i*.35);ctx.stroke()}
+  }else if(fx.shape==="wing"){
+   for(let side of [-1,1]){ctx.beginPath();ctx.moveTo(cx,cy);ctx.quadraticCurveTo(cx+side*65,cy-75,cx+side*105,cy-18);ctx.quadraticCurveTo(cx+side*48,cy-8,cx,cy);ctx.stroke()}
+  }else if(fx.shape==="fang"||fx.shape==="claw"){
+   for(let i=-1;i<=1;i++){ctx.beginPath();ctx.moveTo(420+i*17,115);ctx.lineTo(455+i*17,145);ctx.lineTo(420+i*17,176);ctx.stroke()}
+  }else if(fx.shape==="coil"){
+   for(let i=0;i<3;i++){ctx.beginPath();ctx.ellipse(450,145,18+i*12,48,0,0,Math.PI*2);ctx.stroke()}
+  }else if(fx.shape==="wave"){
+   for(let i=0;i<3;i++){ctx.beginPath();ctx.ellipse(455,155,25+i*19,12+i*9,0,0,Math.PI*2);ctx.stroke()}
+  }else if(fx.shape==="halo"||fx.shape==="wheel"){
+   ctx.beginPath();ctx.arc(455,142,fx.shape==="wheel"?48:35,0,Math.PI*2);ctx.stroke();
+   for(let i=0;i<8;i++){const a=i*Math.PI/4;ctx.beginPath();ctx.moveTo(455+Math.cos(a)*30,142+Math.sin(a)*30);ctx.lineTo(455+Math.cos(a)*48,142+Math.sin(a)*48);ctx.stroke()}
+  }else if(fx.shape==="charge"){
+   for(let i=0;i<4;i++){ctx.beginPath();ctx.moveTo(410,105+i*22);ctx.lineTo(470,105+i*22);ctx.stroke()}
+  }else{
+   for(let i=0;i<8;i++){const a=i*Math.PI/4;ctx.beginPath();ctx.moveTo(455,145);ctx.lineTo(455+Math.cos(a)*55,145+Math.sin(a)*55);ctx.stroke()}
+  }
+  ctx.globalAlpha=.95;ctx.font="bold 13px monospace";ctx.fillText(name,305,248);ctx.restore();
+ }
+ // phase text
+ ctx.fillStyle="#d7d2e8";ctx.font="12px monospace";ctx.fillText("THE DARK FOUNTAIN HUMS...",16,20);
+ if(anim>0){ctx.fillStyle="#ffe66d";ctx.font="bold 16px monospace";ctx.fillText(anim%2?"✦":"✧",330,125);anim--}
+}
+function render(){
+ scene();
+ $("hud").innerHTML=party.map(p=>'<div class="card"><div class="name" style="color:'+p.color+'">'+p.name+'</div><div class="stats">'+p.role+' · HP '+p.hp+'/'+p.max+'</div><div class="hpbar"><div class="hpfill" style="width:'+(p.hp/p.max*100)+'%"></div></div></div>').join("");
+ $("bossfill").style.width=(boss.hp/boss.max*100)+"%";
+ $("bossstatus").textContent=+(boss.frozenTurns>0?"FROZEN":(boss.chill>0?"CHILL "+boss.chill+"/3 · ":"")+(boss.exposed>0?"ARMOR: EXPOSED":"PHASE "+boss.phase+" · "+(boss.hp>0?boss.hp+" HP":"DEFEATED")));
+ $("tpstatus").textContent="TP: "+tp+" / 100";
+ $("itemstatus").textContent="DARK CANDY: "+inventory.darkCandy;
+}
+function say(t){$("dialogue").textContent=t}
+function setMenu(items){$("menu").innerHTML="";items.forEach(it=>{let b=document.createElement("button");b.textContent=it.label;b.disabled=!!it.disabled;b.onclick=it.run;$("menu").appendChild(b)})}
+function setSub(items){$("sub").innerHTML="";items.forEach(it=>{let b=document.createElement("button");b.textContent=it.label;b.disabled=!!it.disabled;b.onclick=it.run;$("sub").appendChild(b)})}
+function living(){return party.filter(p=>p.hp>0)}
+function begin(){
+ if(won||lost||busy)return;
+ active=0;actions=[];reservedTurns.clear();party.forEach(p=>p.guard=false);
+ say("* Kris, Susie, Ralsei, Noelle, and Berdly face the Roaring Knight and the Titan.\\n* " + FlavorText.get("roaring_knight.opening"));
+ render();chooseActor();
+}
+function chooseActor(){
+ if(won||lost)return;
+ if(boss.hp<=0){victory();return;}
+ while(active<party.length&&(party[active].hp<=0||reservedTurns.has(party[active].id))){reservedTurns.delete(party[active].id);active++;}
+ if(active>=party.length){enemyTurn();return}
+ const p=party[active];
+ const attacks={kris:{damage:17,message:"Kris strikes with their blade."},susie:{damage:24,message:"Susie swings with all her strength."},ralsei:{damage:10,message:"Ralsei sends a gentle burst of magic."},noelle:{damage:15,message:"Noelle sends a sharp strike of ice."},berdly:{damage:18,message:"Berdly fires a precise energy shot."}};
+ const basic=attacks[p.id]||attacks.kris;
+ $("turnlabel").textContent=p.name+"'S TURN";
+ say("* "+p.name+"'s turn. What will they do?");
+ setMenu([
+  {label:"⚔ FIGHT",run:()=>attack(p,basic.damage,basic.message)},
+  {label:"☻ ACT",run:()=>actMenu(p)},
+  {label:"✦ ITEM",run:()=>itemMenu()},
+  {label:"🛡 DEFEND",run:()=>defend(p)},
+  {label:"☆ SPARE",run:()=>spare(p)}
+ ]);
+ setSub([]);
+}
+function afterAction(message){
+ actions.push(message);
+ if(boss.hp<=0){victory();return;}
+ active++;render();setTimeout(chooseActor,300);
+}
+function damageBoss(amount){
+ let bonus=boss.exposed>0?1.4:1;let dealt=Math.round(amount*bonus);lastBossDamage=dealt;boss.hp=Math.max(0,boss.hp-dealt);
+ if(boss.hp<=175&&boss.phase===1){boss.phase=2;return " The Knight's armor shifts. The Roaring grows louder."}
+ if(boss.hp<=78&&boss.phase===2){boss.phase=3;return " THE KNIGHT ENTERS ITS FINAL PHASE."}
+ return "";
+}
+function attack(p,dmg,msg){if(busy)return;let extra=damageBoss(dmg);anim=8;window.currentShadow=null;say("* "+msg+" ("+lastBossDamage+" damage.)"+extra);render();afterAction(msg)}
+function iceMove(p,name,cost,dmg,chill){
+ if(busy||tp<cost)return;
+ tp-=cost;
+ const before=boss.chill;
+ boss.chill=Math.min(3,boss.chill+chill);
+ const extra=damageBoss(dmg);
+ let effect=" The Knight is rimed with frost ("+boss.chill+"/3 CHILL).";
+ if(boss.chill>=3){boss.chill=0;boss.frozenTurns=1;boss.exposed=Math.max(boss.exposed,1);effect=" The Knight is FROZEN! Its next attack will be cancelled, and its armor is exposed."}
+ if(window.WeirdRouteIce)WeirdRouteIce.recordIceAction(name+" applied "+chill+" chill");
+ window.currentShadow=name;anim=12;
+ say("* Noelle casts "+(name==="IceShock"?"ICE SHOCK":"ICE WAVE")+"! ("+lastBossDamage+" damage.)"+effect+extra);
+ render();afterAction("Noelle used "+name);
+}
+function controlMove(p,name,cost,dmg){
+ if(busy||tp<cost)return;
+ tp-=cost;
+ const extra=damageBoss(dmg);
+ if(name==="Tornado")knightDisrupted=1;
+ anim=10;window.currentShadow=name;
+ say("* "+p.name+" uses "+name+"! "+(name==="Tornado"?"The swirling wind disrupts the Knight's next attack.":"The Knight's movements slow under the ice.")+" ("+lastBossDamage+" damage.)"+extra);
+ render();afterAction(p.name+" used "+name);
+}
+function defend(p){if(busy)return;p.guard=true;tp=Math.min(100,tp+14);say("* "+p.name+" braces for impact. (+14 TP)");render();afterAction(p.name+" defended")}
+function spare(p){
+ if(busy)return;
+ if(boss.mercyImmune){say("* "+p.name+" considers SPARE.\\n* The Knight and Titan cannot receive MERCY. They cannot be spared.");render();afterAction(p.name+" attempted to spare the unspareable bosses");return;}
+  if(boss.mercy>=100){
+  boss.hp=0;boss.pacified=true;endKnightDomain();endPlayerDomain();won=true;busy=false;render();
+  say("* "+p.name+" approaches carefully.\\n* The Roaring Knight lowers its weapon.\\n* The Titan's presence fades with it.\\n\\n* YOU SPARED THE ROARING KNIGHT AND THE TITAN.");
+  setMenu([{label:"PLAY AGAIN",run:()=>location.reload()}]);setSub([]);$("turnlabel").textContent="SPARED";return;
+ }
+ say("* "+p.name+" tried to SPARE the Knight.\\n* MERCY: "+boss.mercy+"%. The Knight is not ready to stand down.");
+ render();afterAction(p.name+" tried to spare the Knight");
+}
+function tickTitanBrighten(){
+ if(titanSystem.brightenTurns>0){
+  titanSystem.brightenTurns--;
+  if(titanSystem.brightenTurns===0)titanSystem.lightRadius=titanSystem.baseLightRadius;
+ }
+}
+function brighten(){
+ const ralsei=party.find(member=>member.id==="ralsei");
+ if(busy||tp<4||active!==1||!ralsei||ralsei.hp<=0||titanSystem.brightenTurns>0)return;
+ tp-=4;
+ titanSystem.lightRadius=58;
+ titanSystem.brightenTurns=1;
+ reservedTurns.add("ralsei");
+ say("* Susie and Ralsei combine their strength. BRIGHTEN! The SOUL's glow expands, increasing its purification radius for the next enemy turn. (-4 TP)");
+ render();afterAction("Susie and Ralsei used Brighten");
+}
+function wakeUpKris(p){
+ const kris=party.find(member=>member.id==="kris");
+ if(!kris||kris.hp>0)return;
+ kris.hp=1;
+ say("* "+p.name+" calls out to Kris. WAKE KRIS! Kris gets back up with 1 HP.");
+ render();afterAction(p.name+" used Wake Kris");
+}
+function actMenu(p){
+ // The Roaring Knight and Titan share this encounter; Wake Kris takes the
+ // character-specific ACT slot for every non-Kris party member here.
+ const options=[
+
+  {label:"CHECK",run:()=>{say("* THE ROARING KNIGHT — a towering machine wrapped in a dark mantle.\\n* THE TITAN — a colossal presence looming behind it. Their attacks overlap, but the Knight's armor remains the party's target. Neither can become TIRED or receive MERCY. (ATK ?? DEF ??)");if(boss.exposed===0)tp=Math.min(100,tp+8);render();afterAction("checked the Knight and Titan")}},
+  {label:"DISTRACT",run:()=>{boss.exposed=2;tp=Math.min(100,tp+12);say("* "+p.name+" draws the Knight's attention. Its guard is exposed! (+12 TP)");render();afterAction("distracted the Knight")}}
+ ];
+ if(p.id!=="kris")options.unshift({label:"WAKE KRIS",disabled:party.find(member=>member.id==="kris").hp>0,run:()=>wakeUpKris(p)});
+ if(p.id==="kris"){options.push({label:"SHADOWS",run:()=>shadowMenu(p)});options.push({label:"DOMAIN EXPANSION · 60 TP",disabled:tp<60||playerDomain.used,run:expandChimeraDomain});}
+ if(p.id==="susie"){
+  options.push({label:"BRIGHTEN · 4 TP",disabled:tp<4||party.find(member=>member.id==="ralsei").hp<=0||active!==1||titanSystem.brightenTurns>0,run:brighten});
+  options.push({label:"RUSH",run:()=>attack(p,34,"Susie charges. The Knight's armor shudders.")});
+ }
+ if(p.id==="ralsei"){options.push({label:"HEAL · 16 TP",disabled:tp<16,run:()=>healMenu(p)});options.push({label:"REVIVESONG · 84 TP",disabled:tp<84,run:()=>reviveSong(p)});}
+ if(p.id==="noelle"){options.push({label:"ICE SHOCK · 16 TP",disabled:tp<16,run:()=>iceMove(p,"IceShock",16,18,1)});options.push({label:"ICE WAVE · 28 TP",disabled:tp<28,run:()=>iceMove(p,"IceWave",28,30,2)});}
+ if(p.id==="berdly")options.push({label:"TORNADO · 20 TP",disabled:tp<20,run:()=>controlMove(p,"Tornado",20,16)});
+ options.push({label:"Back",run:chooseActor});
+ setMenu(options);setSub([]);
+}
+function shadowMenu(p){
+ const roster=ShadowSystem.list();
+ setMenu(roster.map(s=>{const cost=playerDomain.active?Math.ceil(s.cost*.75):s.cost;return {label:s.name+" · "+cost+" TP"+(playerDomain.active?" · DOMAIN":"")+" — "+s.desc,disabled:tp<cost,run:()=>{
+  if(tp<cost)return;
+  tp-=cost;
+  const result=ShadowSystem.use(s.id,{
+   damageBoss,getDamage:()=>lastBossDamage,damageMultiplier:playerDomain.active?1.35:1,party,living,boss,
+   gainTP:n=>{tp=Math.min(100,tp+n)},
+   expose:n=>{boss.exposed=Math.max(boss.exposed,n)},
+   disrupt:()=>{knightDisrupted=1},
+   setChill:n=>{boss.chill=Math.min(3,boss.chill+n);if(boss.chill>=3){boss.chill=0;boss.frozenTurns=1;boss.exposed=Math.max(1,boss.exposed)}}
+  });
+  window.currentShadow=s.name;anim=14;
+  if(result.damage>0)lastBossDamage=result.damage;
+  say("* "+result.text+(result.damage>0?" ("+result.damage+" damage.)":""));
+  render();afterAction("summoned "+s.name);
+ }};}));
+ setSub([{label:"Back",run:()=>actMenu(p)}]);
+}
+function reviveSong(p){
+ if(busy||tp<84)return;
+ const targets=party.filter(member=>member.hp>0);
+ setMenu(party.map(target=>({label:target.name+" · "+target.hp+"/"+target.max,disabled:target.hp>=target.max,run:()=>{
+  if(tp<84||busy)return;
+  tp-=84;
+  if(target.hp<=0){target.hp=Math.ceil(target.max/2);say("* Ralsei sings ReviveSong. "+target.name+" is revived!");}
+  else{target.hp=Math.min(target.max,target.hp+Math.ceil(target.max/2));say("* Ralsei sings ReviveSong. "+target.name+" is restored by the song.");}
+  render();afterAction("Ralsei used ReviveSong");
+ }})));
+ setSub([{label:"Back",run:()=>actMenu(p)}]);
+}
+function healMenu(p){
+ if(tp<16){say("* Not enough TP to heal.");return;}
+ setMenu(party.map(target=>({label:target.name+" · "+target.hp+"/"+target.max,disabled:target.hp===target.max||target.hp===0,run:()=>{
+  if(tp<16){say("* Not enough TP!");return}
+  tp-=16;target.hp=Math.min(target.max,target.hp+22);say("* Ralsei casts a gentle healing spell. "+target.name+" recovered HP.");render();afterAction("healed "+target.name)
+ }})));
+ setSub([{label:"Back",run:()=>actMenu(p)}]);
+}
+function itemMenu(){
+ if(inventory.darkCandy<=0){say("* No Dark Candy left.");return;}
+ setMenu(party.map(target=>({label:target.name+" · "+target.hp+"/"+target.max,disabled:target.hp===target.max||target.hp===0,run:()=>{
+ inventory.darkCandy--;target.hp=Math.min(target.max,target.hp+18);say("* Dark Candy restored 18 HP to "+target.name+". ("+inventory.darkCandy+" remaining)");render();afterAction("used Dark Candy")
+ }})));
+ setSub([{label:"Back",run:chooseActor}]);
+}
+const playerDomain={active:false,turns:0,used:false};
+function expandChimeraDomain(){
+ if(playerDomain.used||playerDomain.active||tp<60||busy)return;
+ tp-=60;playerDomain.active=true;playerDomain.turns=3;playerDomain.used=true;
+ window.currentShadow="CHIMERA SHADOW GARDEN";anim=14;
+ say("* DOMAIN EXPANSION — CHIMERA SHADOW GARDEN.\\n* The battlefield sinks into a boundless sea of shadows. The Ten Shadows grow stronger for three enemy turns.");
+ render();afterAction("expanded Chimera Shadow Garden");
+}
+function endPlayerDomain(){playerDomain.active=false;playerDomain.turns=0;}
+function tickPlayerDomain(){if(playerDomain.active){playerDomain.turns--;if(playerDomain.turns<=0){endPlayerDomain();say("* Chimera Shadow Garden recedes. The battlefield returns to normal.");}}}
+const titanSystem={lightRadius:38,baseLightRadius:38,brightenTurns:0,courage:[],phase:1,centipedes:[],nextCentipede:0,hands:null,bigShots:null,encounter:{phase:1,lastClass:"",lastSource:"",phaseCounts:{1:0,2:0,3:0},lastAttack:"",turns:0}};
+const knightSystem={
+ domain:false,domainTurns:0,lastAttack:"",barrageUses:0,barrageVariation:0,twinSlashes:null,knightCombo:null,sanguineSlash:null,
+ attacks:[
+  {id:"titan_swarm",name:"TITAN · SWARM",phases:[1,2,3],weight:1},
+  {id:"titan_hands",name:"TITAN · THE HANDS",phases:[1,2,3],weight:1},
+  {id:"titan_big_shots",name:"TITAN · BIG SHOTS 1",phases:[2],weight:1},
+  {id:"titan_big_shots_2",name:"TITAN · BIG SHOTS 2",phases:[2,3],weight:1},
+  {id:"titan_big_shots_3",name:"TITAN · BIG SHOTS 3",phases:[3],weight:1},
+  {id:"titan_desperation",name:"TITAN · DESPERATION SHOTS",phases:[3],weight:2},
+  {id:"titan_knight_combo",name:"TITAN + KNIGHT · COLLISION",phases:[1,2,3],weight:1},
+  {id:"crystal_barrage",name:"CRYSTAL BARRAGE",phases:[1,2,3],weight:1},
+  {id:"twin_slashes",name:"TWIN SLASHES",phases:[1,2,3],weight:1},
+  {id:"knight_combo",name:"KNIGHT COMBO",phases:[1,2,3],weight:1},
+  {id:"sanguine_slash",name:"SANGUINE SLASH",phases:[1,2,3],weight:1},
+  {id:"sanguine_slash_d2",name:"SANGUINE SLASH II",phases:[2,3],weight:1},
+  {id:"tracking_swords",name:"TRACKING SWORDS",phases:[1,2,3],weight:3},
+  {id:"box_splitter",name:"BOX SPLITTER",phases:[1,2,3],weight:2},
+  {id:"sword_tunnel",name:"SWORD TUNNEL",phases:[1,2,3],weight:2},
+  {id:"rotating_slash",name:"ROTATING SLASH",phases:[1,2,3],weight:2},
+  {id:"crescent_slashes_v1",name:"CRESCENT SLASHES V1",phases:[1,2,3],weight:1},
+  {id:"crescent_slashes_v2",name:"CRESCENT SLASHES V2",phases:[1,2,3],weight:1},
+  {id:"sticking_stars",name:"STICKING STARS",phases:[1,2,3],weight:1},
+  {id:"tracking_swords_d1",name:"TRACKING SWORDS · DIFFICULTY 1",phases:[2,3],weight:1},
+  {id:"tracking_swords_d2",name:"TRACKING SWORDS · DIFFICULTY 2",phases:[2,3],weight:1},
+  {id:"rotating_slash_tracking_swords",name:"ROTATING SLASH + TRACKING SWORDS",phases:[2,3],weight:1},
+  {id:"diagonal_bullet_walls",name:"DIAGONAL BULLET WALLS",phases:[2,3],weight:1},
+  {id:"sword_tunnel_d1",name:"SWORD TUNNEL · DIFFICULTY 1",phases:[2,3],weight:1},
+  {id:"sword_tunnel_d2",name:"SWORD TUNNEL · DIFFICULTY 2",phases:[2,3],weight:1},
+  {id:"sword_vortex_base",name:"SWORD VORTEX",phases:[2,3],weight:1},
+  {id:"sword_vortex_d1",name:"SWORD VORTEX · DIFFICULTY 1",phases:[2,3],weight:1},
+  {id:"sword_vortex_d2",name:"SWORD VORTEX · DIFFICULTY 2",phases:[3],weight:1},
+  {id:"revolver",name:"REVOLVER",phases:[1,2,3],weight:1},
+  {id:"cross_attack",name:"CROSS ATTACK",phases:[1,2,3],weight:1},
+  {id:"combination",name:"COMBINATION",phases:[2,3],weight:1},
+  {id:"bottom_shadows",name:"BOTTOM SHADOWS",phases:[2,3],weight:1},
+  {id:"falling_swords",name:"FALLING SWORDS",phases:[2,3],weight:2},
+  {id:"sword_vortex",name:"SWORD VORTEX",phases:[2,3],weight:1},
+  {id:"quick_slashes",name:"QUICK SLASHES",phases:[2,3],weight:1},
+  {id:"roaring_fire",name:"ROARING FIRE",phases:[3],weight:1},
+  {id:"black_flash",name:"THE ROARING",phases:[3],weight:1}
+ ]
+};
+function startKnightDomain(){knightSystem.domain=true;knightSystem.domainTurns=3;}
+function endKnightDomain(){knightSystem.domain=false;}
+function chooseKnightAttack(){
+ const phase=boss.phase,enc=titanSystem.encounter;
+ const eligible=knightSystem.attacks.filter(a=>a.phases.includes(phase));
+ const titan=eligible.filter(a=>a.id.startsWith("titan_")&&a.id!=="titan_knight_combo");
+ const knight=eligible.filter(a=>!a.id.startsWith("titan_"));
+ const combo=eligible.find(a=>a.id==="titan_knight_combo");
+ if(enc.phase!==phase){enc.phase=phase;enc.lastClass="";enc.lastSource="";enc.phaseCounts[phase]=0;enc.turns=0;}
+ enc.turns++;
+ // Coordinate combined strikes on a phase-specific cadence; otherwise alternate
+ // which boss leads the attack, while retaining Titan shield-pattern rotation.
+ const comboInterval=phase===3?3:4;
+ let source=combo&&enc.turns%comboInterval===0?"combo":(titan.length&&knight.length?(enc.lastSource==="titan"?"knight":"titan"):(titan.length?"titan":"knight"));
+ let candidates=source==="combo"?[combo]:source==="titan"?titan:knight;
+ if(!candidates.length)candidates=eligible;
+ if(source==="titan"&&candidates.length>1){
+  const shieldClass=a=>a.id==="titan_swarm"||a.id==="titan_hands"?"shield-up":"shield-down";
+  const alternate=candidates.filter(a=>shieldClass(a)!==enc.lastClass);
+  if(alternate.length)candidates=alternate;
+ }
+ const fresh=candidates.filter(a=>a.id!==enc.lastAttack);
+ if(fresh.length)candidates=fresh;
+ const total=candidates.reduce((sum,a)=>sum+(a.weight||1),0);
+ let roll=Math.random()*total,picked=candidates[0];
+ for(const attack of candidates){roll-=attack.weight||1;if(roll<=0){picked=attack;break;}}
+ if(picked.id.startsWith("titan_")&&picked.id!=="titan_knight_combo"){enc.lastSource="titan";enc.lastClass=picked.id==="titan_swarm"||picked.id==="titan_hands"?"shield-up":"shield-down";enc.phaseCounts[phase]++;}
+ else if(picked.id!=="titan_knight_combo")enc.lastSource="knight";
+ enc.lastAttack=picked.id;knightSystem.lastAttack=picked.id;
+ return picked;
+}
+function hitParty(target,raw){
+ if(!target||target.hp<=0)return 0;
+ const dmg=target.guard?Math.max(1,Math.floor(raw*.35)):raw;
+ target.hp=Math.max(0,target.hp-dmg);return dmg;
+}
+function updateRevolver(){
+ const r=knightSystem.revolver;
+ if(!bulletMode||patternType!=="revolver"||!r||r.shots>=6)return;
+ const now=Date.now(),elapsed=now-r.stageAt;
+ if(r.stage==="rotate"){
+  r.angle+=r.direction*r.speed*16;
+  if(elapsed>=650){r.stage="pause";r.stageAt=now;r.pauseFor=260+Math.random()*180;}
+ }else if(r.stage==="pause"&&elapsed>=r.pauseFor){
+  const cx=box.x+box.w/2,cy=box.y+box.h+27,orbit=27;
+  const a=r.angle+r.shots*Math.PI/3,x=cx+Math.cos(a)*orbit,y=cy+Math.sin(a)*orbit;
+  // Each circle fires three parallel rows at each of three inward angles.
+  const directions=[-Math.PI/2,-Math.PI*.75,-Math.PI*.25];
+  for(const direction of directions){
+   const px=-Math.sin(direction),py=Math.cos(direction);
+   for(let n=-1;n<=1;n++){
+    const offset=n*9;
+    spawnBullet(x+px*offset,y+py*offset,Math.cos(direction)*4.1,Math.sin(direction)*4.1,5,"#17131f");
+   }
+  }
+  r.shots++;
+  if(r.shots<6){r.stage="rotate";r.stageAt=now;r.direction=Math.random()<.5?-1:1;r.speed=.0025+Math.random()*.002;}
+  else r.stage="done";
+ }
+}
+function drawBulletArena(){
+ ctx.fillStyle="#05050a";ctx.fillRect(box.x,box.y,box.w,box.h);
+ ctx.strokeStyle="#f4f0ff";ctx.lineWidth=3;ctx.strokeRect(box.x,box.y,box.w,box.h);
+ if(playerDomain.active){
+  ctx.save();
+  // Chimera Shadow Garden: a lightless field with a pale spinal core
+  // and branching, blue root-like tendrils.
+  ctx.fillStyle="#020308";
+  ctx.fillRect(box.x,box.y,box.w,box.h);
+  ctx.lineCap="round";
+  ctx.lineJoin="round";
+  for(let side of [-1,1]){
+   for(let n=0;n<7;n++){
+    const sy=box.y+18+n*24;
+    const sx=320+side*(10+(n%3)*3);
+    const ex=320+side*(65+(n%3)*38);
+    const ey=box.y+12+((n*41+side*17+box.h*3)%Math.max(1,box.h-24));
+    ctx.beginPath();ctx.moveTo(sx,sy);
+    ctx.bezierCurveTo(320+side*34,sy-12,ex-side*24,ey+18,ex,ey);
+    ctx.strokeStyle="#83dfff";ctx.globalAlpha=.72;ctx.lineWidth=1.5;ctx.stroke();
+    ctx.beginPath();ctx.moveTo(ex,ey);
+    ctx.bezierCurveTo(ex+side*13,ey-15,ex+side*25,ey+13,ex+side*34,ey-7);
+    ctx.globalAlpha=.52;ctx.lineWidth=1;ctx.stroke();
+   }
+  }
+  // Vertebra-like white centre, suspended vertically in the shadow.
+  ctx.globalAlpha=1;
+  ctx.shadowColor="#eaf7ff";ctx.shadowBlur=13;
+  ctx.strokeStyle="#f5f7fb";ctx.fillStyle="#f5f7fb";
+  ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(320,box.y+24);ctx.lineTo(320,box.y+box.h-24);ctx.stroke();
+  for(let n=0;n<6;n++){
+   const y=box.y+29+n*22;
+   ctx.beginPath();
+   ctx.ellipse(320,y,12,6,0,0,Math.PI*2);ctx.fill();
+   ctx.fillStyle="#cbd5e1";ctx.fillRect(316,y-2,8,4);
+   ctx.fillStyle="#f5f7fb";
+   ctx.beginPath();ctx.moveTo(310,y);ctx.lineTo(300,y-7);ctx.lineTo(304,y+3);ctx.closePath();ctx.fill();
+   ctx.beginPath();ctx.moveTo(330,y);ctx.lineTo(340,y-7);ctx.lineTo(336,y+3);ctx.closePath();ctx.fill();
+  }
+  ctx.shadowBlur=0;ctx.globalAlpha=1;
+  ctx.fillStyle="#bceeff";ctx.font="bold 10px monospace";
+  ctx.fillText("CHIMERA SHADOW GARDEN · "+playerDomain.turns,box.x+8,box.y+13);
+  ctx.restore();
+ }
+ if(knightSystem.domain){ctx.strokeStyle="#a78bfa";ctx.lineWidth=2;ctx.strokeRect(box.x+5,box.y+5,box.w-10,box.h-10);ctx.fillStyle="#c4a7ff";ctx.font="10px monospace";ctx.fillText("KINGDOM OF THE ROARING",box.x+25,box.y+16);}
+ if(patternType.startsWith("titan_")){
+  const phase=titanSystem.phase||boss.phase,labels=["THE AWAKENING","THE ROARING","THE LAST LIGHT"];
+  ctx.save();ctx.fillStyle="#ffe7a1";ctx.font="bold 10px monospace";
+  ctx.fillText("TITAN // "+labels[Math.max(0,Math.min(2,phase-1))]+" · "+phase+"/3",box.x+8,box.y+13);
+  for(let n=0;n<3;n++){ctx.fillStyle=n<phase?"#ffe7a1":"#514d5c";ctx.fillRect(box.x+box.w-49+n*15,box.y+7,11,3);}
+  ctx.restore();
+ }
+ if(patternType==="titan_desperation"){const d=titanSystem.desperation;if(d&&d.laser&&Date.now()-d.laserAt>450){ctx.save();ctx.fillStyle="#f7f4ff";ctx.shadowColor="#fff";ctx.shadowBlur=18;ctx.fillRect(box.x,box.y+box.h*.43,box.w,box.h*.14);ctx.restore();}ctx.fillStyle="#ffe7a1";ctx.font="10px monospace";ctx.fillText("TITAN · DESPERATION SHOTS",box.x+8,box.y+13);}
+ if(patternType==="titan_big_shots"||patternType==="titan_big_shots_2"||patternType==="titan_big_shots_3"){ctx.fillStyle="#ffe7a1";ctx.font="10px monospace";ctx.fillText(patternType==="titan_big_shots"?"TITAN · BIG SHOTS 1":patternType==="titan_big_shots_2"?"TITAN · BIG SHOTS 2":"TITAN · BIG SHOTS 3",box.x+8,box.y+13);}
+ if(patternType==="titan_hands"&&titanSystem.hands){const h=titanSystem.hands,g=h.gap||0,cy=box.y+box.h/2;for(const side of [-1,1]){const x=side<0?box.x+8+g*46:box.x+box.w-8-g*46,y=cy+Math.sin(Date.now()/520+(side<0?0:Math.PI))*box.h*.22;ctx.save();ctx.translate(x,y);ctx.fillStyle="#030307";ctx.strokeStyle="#f4f1ff";ctx.lineWidth=2;ctx.shadowColor="#fff";ctx.shadowBlur=8;ctx.beginPath();ctx.ellipse(0,0,27,34,0,0,Math.PI*2);ctx.fill();ctx.stroke();for(let f=0;f<4;f++){const fx=(f-1.5)*12;ctx.beginPath();ctx.roundRect(fx-4,side<0?18:-42,8,42+g*16,4);ctx.fill();ctx.stroke();if(h.purified[side<0?0:1]?.[f]){ctx.fillStyle="#ffd85e";ctx.fillRect(fx-3,side<0?18:-42,6,10);}}ctx.fillStyle=h.purified[side<0?0:1]?.[4]?"#ffd85e":"#fff";ctx.beginPath();ctx.arc(0,-4,7,0,Math.PI*2);ctx.fill();ctx.restore();}}
+ if(patternType==="titan_swarm"){
+  for(const c of titanSystem.centipedes){const pts=[];for(let s=c.length-1;s>=0;s--){const p=c.history[Math.min(c.history.length-1,s*12)]||c.head;pts.push(p);}ctx.save();ctx.lineCap="round";ctx.lineJoin="round";ctx.strokeStyle="rgba(244,241,255,.72)";ctx.lineWidth=c.small?5:8;ctx.shadowColor="#fff";ctx.shadowBlur=6;ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();for(let s=pts.length-1;s>=0;s--){const p=pts[s];ctx.fillStyle="#030307";ctx.strokeStyle="#f4f1ff";ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(p.x,p.y,s===0?8:c.small?5:6.5,0,Math.PI*2);ctx.fill();ctx.stroke();if(s===0){ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(p.x+2,p.y-2,2.5,0,Math.PI*2);ctx.fill();}}ctx.restore();}
+  ctx.save();const glow=ctx.createRadialGradient(soul.x,soul.y,4,soul.x,soul.y,titanSystem.lightRadius);glow.addColorStop(0,"rgba(255,255,225,.28)");glow.addColorStop(1,"rgba(255,245,170,.02)");ctx.fillStyle=glow;ctx.beginPath();ctx.arc(soul.x,soul.y,titanSystem.lightRadius,0,Math.PI*2);ctx.fill();ctx.strokeStyle="rgba(255,245,190,.7)";ctx.stroke();ctx.restore();
+ }
+ if(patternType==="revolver"&&knightSystem.revolver){
+  const r=knightSystem.revolver,cx=box.x+box.w/2,cy=box.y+box.h+27,orbit=27;
+  const circles=Array.from({length:6},(_,i)=>{const a=r.angle+i*Math.PI/3;return{x:cx+Math.cos(a)*orbit,y:cy+Math.sin(a)*orbit,index:i};}).sort((a,b)=>a.y-b.y);
+  for(let i=0;i<circles.length;i++){
+   const q=circles[i];ctx.save();ctx.strokeStyle=i===circles.length-1?"#ffffff":"#85818e";ctx.lineWidth=2;
+   ctx.beginPath();ctx.arc(q.x,q.y,9,0,Math.PI*2);ctx.stroke();ctx.restore();
+  }
+ }
+ if(patternType==="titan_desperation"&&titanSystem.desperation?.laser){const d=titanSystem.desperation,age=Date.now()-d.laserAt,safe=soul.y<box.y+box.h*.25||soul.y>box.y+box.h*.75;if(age>450&&age<1200&&!d.laserHit&&!safe){d.laserHit=true;if(soul.invuln<=0){const survivors=living(),target=survivors.length?survivors[hitCursor++%survivors.length]:null;if(target){const dmg=hitParty(target,9);hitNotice=target.name+" -"+dmg+" HP";hitNoticeTimer=55;}soul.invuln=52;if(living().length===0){stopBulletPhase(disrupted);return;}}}if(age>=1200)d.laserResolved=true;}
+ if(soul.invuln<=0||Math.floor(soul.invuln/4)%2===0){
+  ctx.save();ctx.shadowBlur=soul.invuln>0?18:8;ctx.shadowColor=soul.invuln>0?"#ff3f70":"#ff8aa8";
+  ctx.fillStyle="#ff3f70";ctx.beginPath();ctx.moveTo(soul.x,soul.y-8);ctx.lineTo(soul.x+7,soul.y);ctx.lineTo(soul.x,soul.y+8);ctx.lineTo(soul.x-7,soul.y);ctx.closePath();ctx.fill();ctx.restore();
+ }
+ if(patternType==="knight_combo"&&knightSystem.knightCombo){
+  const combo=knightSystem.knightCombo,elapsed=Date.now()-combo.started;
+  for(const cut of combo.cuts){
+   const age=elapsed-cut.at;if(age< -430||age>155)continue;
+   ctx.save();ctx.translate(cut.x,cut.y);ctx.rotate(cut.angle);
+   ctx.globalAlpha=age<0?.38:.98;ctx.strokeStyle=age<0?"#ff9bad":"#fff1f4";
+   ctx.lineWidth=age<0?2:5;ctx.setLineDash(age<0?[8,6]:[]);
+   ctx.shadowColor="#ff315f";ctx.shadowBlur=age<0?5:18;
+   ctx.beginPath();ctx.moveTo(-270,0);ctx.lineTo(270,0);ctx.stroke();ctx.restore();
+  }
+ }
+ if((patternType==="sanguine_slash"||patternType==="sanguine_slash_d2")&&knightSystem.sanguineSlash){
+  const slash=knightSystem.sanguineSlash,elapsed=Date.now()-slash.started;
+  for(const cut of slash.cuts){
+   const age=elapsed-cut.at;
+   if(age< -430||age>155)continue;
+   ctx.save();ctx.translate(cut.x,cut.y);ctx.rotate(cut.angle);
+   ctx.globalAlpha=age<0?.34:.98;ctx.strokeStyle=age<0?"#ff6688":"#fff0f3";
+   ctx.lineWidth=age<0?2:6;ctx.setLineDash(age<0?[9,6]:[]);
+   ctx.shadowColor="#ff174f";ctx.shadowBlur=age<0?7:22;
+   ctx.beginPath();ctx.moveTo(-275,0);ctx.lineTo(275,0);ctx.stroke();ctx.restore();
+  }
+ }
+ if(patternType==="twin_slashes"&&knightSystem.twinSlashes){
+  const t=knightSystem.twinSlashes,now=Date.now()-t.started;
+  for(const cut of t.cuts){
+   const age=now-cut.at;
+   if(age>=-420&&age<=150){
+    const a=cut.angle,dx=Math.cos(a),dy=Math.sin(a),cx=box.x+box.w*cut.x,cy=box.y+box.h*cut.y;
+    ctx.save();ctx.translate(cx,cy);ctx.rotate(a);
+    ctx.globalAlpha=age<0?.35:.95;ctx.strokeStyle=age<0?"#ff9bad":"#fff0f3";
+    ctx.lineWidth=age<0?2:5;ctx.setLineDash(age<0?[7,6]:[]);
+    ctx.shadowColor="#ff315f";ctx.shadowBlur=age<0?5:18;
+    ctx.beginPath();ctx.moveTo(-260,0);ctx.lineTo(260,0);ctx.stroke();
+    ctx.restore();
+   }
+  }
+ }
+ for(const b of bullets){if(patternType==="titan_big_shots"&&b.kind==="titan_big_shot"){ctx.save();ctx.translate(b.x,b.y);ctx.rotate(b.angle||0);ctx.shadowColor="#777";ctx.shadowBlur=15;ctx.fillStyle="#171720";ctx.strokeStyle="#d8d6e2";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,0,b.r*1.5,b.r,0,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle="#514f5d";ctx.beginPath();ctx.ellipse(-b.r*.25,-b.r*.2,b.r*.45,b.r*.22,0,0,Math.PI*2);ctx.fill();ctx.restore();continue;}if(patternType==="titan_swarm"&&(b.kind==="titan_spawn"||b.kind==="evolving_spawn"||b.kind==="red_spawn"||b.kind==="courage")){ctx.save();const courage=b.kind==="courage",red=b.kind==="red_spawn",evolving=b.kind==="evolving_spawn";ctx.shadowBlur=courage?10:8;ctx.shadowColor=courage?"#ffd84d":red?"#ff344f":"#f4f1ff";ctx.fillStyle=courage?"#ffd84d":"#030307";ctx.strokeStyle=red?"#ff344f":"#f5f2ff";ctx.lineWidth=1.7;ctx.beginPath();if(courage){ctx.arc(b.x,b.y,3.5,0,Math.PI*2);}else{ctx.ellipse(b.x,b.y,evolving?b.r*.68:b.r*.9,evolving?b.r*1.55:b.r,0,0,Math.PI*2);}ctx.fill();if(!courage)ctx.stroke();if(!courage){ctx.shadowBlur=3;ctx.fillStyle=red?"#ff344f":"#fff";ctx.beginPath();ctx.arc(b.x+b.r*.22,b.y-b.r*.12,Math.max(1.5,b.r*.2),0,Math.PI*2);ctx.fill();}ctx.restore();continue;}ctx.save();ctx.shadowBlur=8;ctx.shadowColor=b.color||"#f7e9ff";ctx.fillStyle=b.color||"#f7e9ff";if(b.kind==="sword"){ctx.translate(b.x,b.y);ctx.rotate(b.angle||0);ctx.fillRect(-3,-b.r,6,b.r*2);}else if(b.kind==="crystal"){ctx.translate(b.x,b.y);ctx.rotate(b.angle||0);ctx.beginPath();ctx.moveTo(0,-b.r*1.5);ctx.lineTo(b.r*.75,0);ctx.lineTo(0,b.r*1.5);ctx.lineTo(-b.r*.75,0);ctx.closePath();ctx.fill();}else{ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill();}ctx.restore();}
+ ctx.fillStyle="#d9d4e8";ctx.font="10px monospace";ctx.fillText("DODGE!  WASD / POINTER",box.x,box.y-8);
+ if(hitNoticeTimer>0){ctx.fillStyle="#ff7894";ctx.font="bold 13px monospace";ctx.fillText(hitNotice,box.x+8,box.y+box.h+17);hitNoticeTimer--;}
+}
+function spawnBullet(x,y,vx,vy,r=5,color="#f4e9ff",kind="orb",angle=0){bullets.push({x,y,vx,vy,r,color,kind,angle});}
+function spawnPattern(){
+ if(!bulletMode)return;
+ const cx=box.x+box.w/2,cy=box.y+box.h/2,phase=boss.phase;
+ const aimed=(x,y,speed,r=6,color="#e8ddff",kind="orb")=>{const a=Math.atan2(soul.y-y,soul.x-x);spawnBullet(x,y,Math.cos(a)*speed,Math.sin(a)*speed,r,color,kind,a);};
+ const sword=(x,y,speed,angle,color="#e9e1ff")=>spawnBullet(x,y,Math.cos(angle)*speed,Math.sin(angle)*speed,11,color,"sword",angle+Math.PI/2);
+ const shard=(x,y,vx,vy,color="#e8ddff")=>spawnBullet(x,y,vx,vy,5,color,"orb");
+ switch(patternType){
+  case "knight_combo":{
+   const combo=knightSystem.knightCombo;if(!combo)break;
+   const now=Date.now()-combo.started;
+   if(now-combo.lastSword>=1050){
+    combo.lastSword=now;
+    for(let n=0;n<2;n++){
+     const side=n===0?box.x-18:box.x+box.w+18;
+     const y=box.y+box.h*(.28+Math.random()*.44);
+     const a=Math.atan2(soul.y-y,soul.x-side)+(n===0?-.10:.10);
+     spawnBullet(side,y,Math.cos(a)*4.4,Math.sin(a)*4.4,12,"#f0e8ff","sword",a+Math.PI/2);
+    }
+   }
+   break;
+  }
+  case "titan_big_shots":{spawnTitanBigShots(1);break;}
+  case "titan_desperation":break;
+  case "titan_hands":break;
+  case "titan_swarm":{
+   const phase=titanSystem.phase||1,harder=phase>=2,hardest=phase>=3;
+   if(!titanSystem.centipedesStarted){titanSystem.centipedesStarted=true;const count=hardest?3:2,length=hardest?3:harder?6:4;for(let n=0;n<count;n++){const cLength=length;spawnTitanCentipede(cLength);const c=titanSystem.centipedes[titanSystem.centipedes.length-1];c.angle+=n*Math.PI*2/count;c.head.x=c.orbit.cx+Math.cos(c.angle)*c.orbit.rx;c.head.y=c.orbit.cy+Math.sin(c.angle)*c.orbit.ry;c.history=[{x:c.head.x,y:c.head.y}];}titanSystem.nextCentipede=Date.now()+999999;}
+   if(Date.now()>=titanSystem.nextSmallCentipede){spawnTitanCentipede(1,true);titanSystem.nextSmallCentipede=Date.now()+(hardest?650:harder?780:950);}
+   
+   for(let i=0;i<(harder?4:3);i++){
+    const side=Math.floor(Math.random()*4);
+    const x=side===0?box.x-10:side===1?box.x+box.w+10:box.x+Math.random()*box.w;
+    const y=side===2?box.y-10:side===3?box.y+box.h+10:box.y+Math.random()*box.h;
+    const red=harder&&Math.random()<.24,evolving=harder&&!red&&Math.random()<.28;
+    spawnBullet(x,y,0,0,evolving?10:7,red?"#ff4965":"#f4f4ff",red?"red_spawn":evolving?"evolving_spawn":"titan_spawn");
+   }
+   break;
+  }
+  case "twin_slashes":break;
+  case "crystal_barrage":{
+   const variation=knightSystem.barrageVariation;
+   const count=variation===0?6:variation===1?6:6;
+   for(let i=0;i<count;i++){
+    const spread=(i-(count-1)/2)*0.19;
+    const angle=Math.PI/2+spread;
+    const x=cx+(Math.random()-.5)*34,y=box.y-12;
+    spawnBullet(x,y,Math.cos(angle)*2.4,Math.sin(angle)*2.4,variation===1?10:8,variation===2?"#e84b58":"#bdefff","crystal",angle);
+    const p=bullets[bullets.length-1];
+    p.crystalStage="outbound";p.crystalAge=0;p.crystalVariation=variation;
+    p.reverseAt=variation===1?58:48;p.explodeAt=variation===1?82:70;
+    p.splitAngle=spread;
+   }
+   break;
+  }
+  case "stars":case "star_swarm":
+   for(let i=0;i<(phase===1?3:2);i++){const x=box.x+15+Math.random()*(box.w-30);shard(x,box.y-8,(Math.random()-.5)*.8,2.8+Math.random()*1.4);}
+   if(phase>=2&&Math.random()<.55){const x=box.x+15+Math.random()*(box.w-30);for(let j=-1;j<=1;j++)shard(x,box.y-8,j*1.4,3.6,"#ff718e");}break;
+  case "tracking_swords":
+   for(let i=0;i<(phase===1?1:2);i++){const a=Math.random()*Math.PI*2,x=cx+Math.cos(a)*(box.w*.58),y=cy+Math.sin(a)*(box.h*.58);aimed(x,y,phase===3?4.5:3.5,11,"#eee7ff","sword");}
+   if(phase>=2)for(let i=0;i<8;i++){const a=i*Math.PI/4+Date.now()/900;sword(cx+Math.cos(a)*72,cy+Math.sin(a)*48,1.2,a+Math.PI/2,"#c7b8ff");}break;
+  case "box_splitter":{
+   const side=Math.floor(Math.random()*4),x=side===0?box.x:side===1?box.x+box.w:cx,y=side===2?box.y:side===3?box.y+box.h:cy;aimed(x,y,3.4,7,"#ff9bb3");for(let i=0;i<2;i++){const a=Math.random()*Math.PI*2;shard(cx,cy,Math.cos(a)*2.8,Math.sin(a)*2.8);}break;}
+  case "sword_tunnel":{
+   const gap=phase===1?64:phase===2?48:34,top=Math.random()<.5;for(let x=box.x+12;x<box.x+box.w-8;x+=22){if(Math.abs(x-soul.x)<gap)continue;sword(x,top?box.y-12:box.y+box.h+12,4.2,top?Math.PI/2:-Math.PI/2);}break;}
+  case "rotating_slash":{
+   const a=Date.now()/260;for(let i=0;i<6;i++){const ang=a+i*Math.PI/3;sword(cx+Math.cos(ang)*75,cy+Math.sin(ang)*50,2.8,ang+Math.PI/2,"#fff1f5");}break;}
+  case "crescent_slashes":case "crescent_slashes_v1":case "crescent_slashes_v2":{
+   const v2=patternType==="crescent_slashes_v2";
+   // Paired vertical crescents sweep right-to-left; the safe channel widens as they cross.
+   const progress=(Date.now()%2600)/2600;
+   for(let i=0;i<3;i++){
+    const y=box.y+28+i*43+(v2?0:Math.sin(Date.now()/190+i)*10);
+    const gap=(v2?34:24)+progress*(v2?18:48);
+    const x=box.x+box.w+18-progress*(box.w+45);
+    for(const side of [-1,1]){
+     const yy=y+side*gap/2;
+     spawnBullet(x,yy,-(v2?4.8:3.7),0,9,"#e9d8ff","crescent",side);
+    }
+   }break;}
+  case "sticking_stars":{
+   // Slash marks appear at the right, then reverse and seek the SOUL.
+   const phaseStep=Math.floor(Date.now()/850)%2;
+   for(let i=0;i<3;i++){
+    const x=phaseStep?box.x+box.w-12:box.x+box.w+16+i*12;
+    const y=box.y+22+i*(box.h-44)/2;
+    if(phaseStep)aimed(x,y,3.2,8,"#ffe8a6");
+    else shard(x,y,-.2,0,"#ffe8a6");
+   }break;}
+  case "tracking_swords_d1":{
+   const a=Math.random()*Math.PI*2,x=cx+Math.cos(a)*(box.w*.58),y=cy+Math.sin(a)*(box.h*.58);
+   aimed(x,y,3.1,10,"#eee7ff","sword");
+   for(let i=0;i<2;i++){const px=x+(Math.random()-.5)*24,py=y+(Math.random()-.5)*24;spawnBullet(px,py,(Math.random()-.5)*.7,(Math.random()-.5)*.7,5,"#fff","orb");}
+   break;}
+  case "tracking_swords_d2":
+   for(let i=0;i<2;i++){const a=Math.random()*Math.PI*2,x=cx+Math.cos(a)*(box.w*.58),y=cy+Math.sin(a)*(box.h*.58);aimed(x,y,3.8,10,"#eee7ff","sword");}
+   break;
+  case "rotating_slash_tracking_swords":{
+   const a=Date.now()/260;
+   for(let i=0;i<6;i++){const ang=a+i*Math.PI/3;sword(cx+Math.cos(ang)*75,cy+Math.sin(ang)*50,2.8,ang+Math.PI/2);}
+   if(Math.random()<.6){const q=Math.random()*Math.PI*2;aimed(cx+Math.cos(q)*120,cy+Math.sin(q)*75,3.8,10,"#eee7ff","sword");}
+   break;}
+  case "diagonal_bullet_walls":{
+   const down=Math.random()<.5?1:-1,spacing=Math.max(22,54-(phase-1)*14);
+   for(let y=box.y-20;y<box.y+box.h+20;y+=spacing)shard(box.x+box.w+8,y,down*-1.15,down*1.15,"#e7ddff");
+   break;}
+  case "sword_tunnel_d1":case "sword_tunnel_d2":{
+   const hard=patternType==="sword_tunnel_d2",gap=hard?34:54,shift=(Math.random()-.5)*(hard?50:24);
+   for(let x=box.x+8;x<box.x+box.w+8;x+=hard?15:20){
+    if(Math.abs(x-(soul.x+shift))<gap)continue;
+    sword(x,box.y-14,hard?5:4.1,Math.PI/2);
+   }break;}
+  case "sword_vortex_base":case "sword_vortex_d1":case "sword_vortex_d2":{
+   const tier=patternType==="sword_vortex_d2"?2:patternType==="sword_vortex_d1"?1:0;
+   const a=Date.now()/(tier===2?115:tier===1?145:190),count=6+tier*2;
+   for(let i=0;i<count;i++){const ang=a+i*Math.PI*2/count;sword(cx+Math.cos(ang)*90,cy+Math.sin(ang)*58,2.5+tier*.7,ang+Math.PI/2,"#cbbaff");}
+   break;}
+  case "revolver":{
+   // The six circles are animated and fired one at a time by updateRevolver().
+   if(!knightSystem.revolver)knightSystem.revolver={angle:Math.random()*Math.PI*2,stage:"rotate",stageAt:Date.now(),shots:0,direction:Math.random()<.5?-1:1,speed:.0025+Math.random()*.002};
+   break;}
+  case "cross_attack":
+   for(let n=-2;n<=2;n++){shard(cx+n*18,box.y-8,0,3.8,"#ff8fa9");shard(box.x-8,cy+n*18,3.8,0,"#ff8fa9");}break;
+  case "titan_knight_combo":{
+   // Titan's dark shots cross the arena while the Knight cuts diagonally.
+   const beat=Math.floor(Date.now()/900)%2;
+   for(let i=0;i<3;i++){
+    const y=box.y+24+i*(box.h-48)/2,x=beat?box.x-12:box.x+box.w+12;
+    aimed(x,y,3.4,9,"#b9b5c9","orb");
+   }
+   const angle=Date.now()/1150+(beat?Math.PI/4:-Math.PI/4);
+   for(let i=0;i<2;i++){const a=angle+i*Math.PI;sword(cx+Math.cos(a)*92,cy+Math.sin(a)*58,3.1,a+Math.PI/2,"#ff9bad");}
+   break;
+  }
+  case "combination":{
+   // Three compact phases: falling swords, rotating slash, then the finished Sword Tunnel.
+   const phaseStep=Math.floor(Date.now()/1900)%3;
+   if(phaseStep===0){for(let i=0;i<3;i++)sword(box.x+Math.random()*box.w,box.y-12,4.2,Math.PI/2);}
+   else if(phaseStep===1){const a=Date.now()/210;for(let i=0;i<5;i++){const ang=a+i*Math.PI*2/5;sword(cx+Math.cos(ang)*78,cy+Math.sin(ang)*48,2.7,ang+Math.PI/2);}}
+   else{const gap=48;for(let x=box.x+8;x<box.x+box.w;x+=19)if(Math.abs(x-soul.x)>gap)sword(x,box.y-12,4,Math.PI/2);}
+   break;}
+  case "bottom_shadows":{
+   // Five rotating shadows beneath the board; one selected shadow fires a seven-shot fan and a heavy cone.
+   const spin=Date.now()/330,selected=Math.floor(Date.now()/720)%5;
+   for(let i=0;i<5;i++){
+    const a=spin+i*Math.PI*2/5,x=cx+Math.cos(a)*62,y=box.y+box.h+18+Math.sin(a)*8;
+    if(i===selected){
+     for(let n=-3;n<=3;n++){const ang=-Math.PI/2+n*.19;shard(x,y,Math.cos(ang)*3.5,Math.sin(ang)*3.5,"#a88cff");}
+     aimed(x,y,2.7,12,"#c5a7ff");
+    }
+   }break;}
+  case "falling_swords":case "sword_rain":
+   for(let i=0;i<(phase===3?3:2);i++)sword(box.x+15+Math.random()*(box.w-30),box.y-15,4.4,Math.PI/2);break;
+  case "sword_vortex":{
+   const a=Date.now()/180;for(let i=0;i<4;i++){const ang=a+i*Math.PI/2;sword(cx+Math.cos(ang)*80,cy+Math.sin(ang)*48,3.2,ang+Math.PI/2,"#cbbaff");}break;}
+  case "quick_slashes":
+   for(let i=0;i<4;i++)aimed(box.x+Math.random()*box.w,box.y+Math.random()*box.h,5.2,7,"#fff4f5","sword");break;
+  case "roaring_fire":
+   for(let i=0;i<5;i++)shard(box.x+Math.random()*box.w,box.y+box.h+8,(Math.random()-.5)*1.5,-4-Math.random()*2,"#ff805f");break;
+  case "black_flash":
+   for(let i=0;i<5;i++){const a=Math.atan2(soul.y-cy,soul.x-cx)+(i-2)*.22;shard(cx,cy,Math.cos(a)*4.3,Math.sin(a)*4.3,"#ff3f70");}break;
+  case "bird_attack":{
+   const x=soul.x+(Math.random()-.5)*130;aimed(Math.max(box.x+8,Math.min(box.x+box.w-8,x)),box.y-8,4.2,8,"#e8d5ff");break;}
+  case "box_cutter":{
+   const x=Math.random()<.5?box.x+4:box.x+box.w-4;aimed(x,box.y+Math.random()*box.h,3.6,7,"#ff8ca5");break;}
+ }
+ if(knightSystem.domain){
+  if(Math.random()<.55){const x=box.x+12+Math.random()*(box.w-24);spawnBullet(x,box.y-10,(Math.random()-.5)*.7,2.5+Math.random()*1.2,5,"#b9a0ff","orb");}
+  if(Math.random()<.35)sword(box.x+12+Math.random()*(box.w-24),box.y-12,4.1,Math.PI/2,"#b28cff");
+ }
+}
+function stopBulletPhase(disrupted){
+ bulletMode=false;titanSystem.hands=null;titanSystem.bigShots=null;titanSystem.desperation=null;titanSystem.centipedes=[];knightSystem.revolver=null;knightSystem.twinSlashes=null;knightSystem.knightCombo=null;knightSystem.sanguineSlash=null;clearInterval(bulletClock);clearInterval(patternClock);clearTimeout(attackClock);bulletClock=patternClock=attackClock=null;bullets=[];
+ party.forEach(p=>p.guard=false);boss.exposed=Math.max(0,boss.exposed-1);tp=Math.min(100,tp+5);
+ if(knightSystem.domain){knightSystem.domainTurns--;if(knightSystem.domainTurns<=0)endKnightDomain();}
+ tickPlayerDomain();tickTitanBrighten();
+ busy=false;turn++;render();
+ if(living().length===0){checkLoss();return;}
+ say("* The Knight withdraws for a moment."+(disrupted?" Its attack was weakened by Tornado.":"")+"\\n* The party regains 5 TP.");
+ $("turnlabel").textContent="PARTY TURN";setMenu([{label:"CONTINUE",run:begin}]);setSub([]);
+}
+function spawnTitanBigShots(version){
+ const count=version===1?2:version===2?4:6,speed=version===1?2.5:version===2?3.1:3.5;
+ const base=Math.atan2(soul.y-(box.y+box.h*.34),soul.x-(box.x+box.w/2));
+ for(let i=0;i<count;i++){const group=version===1?i:Math.floor(i/2);const angle=base+(version===1?0:(group-(version===3?1:0))*0.16);const spread=version===1?0:(i%2===0?-0.035:0.035);const finalAngle=angle+spread;spawnBullet(box.x+box.w/2,box.y+box.h*.34,Math.cos(finalAngle)*speed,Math.sin(finalAngle)*speed,version===1?17:version===2?18:19,"#191923","titan_big_shot",finalAngle);}
+}
+function startTitanBigShots(version=1){titanSystem.bigShots={started:Date.now(),next:Date.now()+(version===1?700:version===2?480:360),version};}
+function updateTitanBigShots(){const b=titanSystem.bigShots;if(!b)return;const interval=b.version===1?1600:b.version===2?1250:950;if(Date.now()>=b.next){b.next=Date.now()+interval;spawnTitanBigShots(b.version);}}
+function startTitanDesperation(){titanSystem.desperation={started:Date.now(),bursts:0,next:Date.now()+350,laser:false,laserAt:0,laserResolved:false,laserHit:false};}
+function updateTitanDesperation(){const d=titanSystem.desperation;if(!d)return;const now=Date.now();if(d.bursts<12&&now>=d.next){const base=Math.atan2(soul.y-(box.y+box.h*.34),soul.x-(box.x+box.w/2)),count=d.bursts%2===0?2:3;for(let i=0;i<count;i++){const a=base+(i-(count-1)/2)*Math.PI/6;spawnBullet(box.x+box.w/2,box.y+box.h*.34,Math.cos(a)*4.4,Math.sin(a)*4.4,15,"#171720","titan_big_shot",a);}d.bursts++;d.next=now+280;}if(d.bursts>=12&&!d.laser){d.laser=true;d.laserAt=now;for(let i=bullets.length-1;i>=0;i--)if(bullets[i].kind==="titan_big_shot")bullets.splice(i,1);}}
+function startTitanHands(){titanSystem.hands={started:Date.now(),next:Date.now()+900,cycleIndex:-1,purified:[[],[]]};}
+function updateTitanHands(){
+ const h=titanSystem.hands;if(!h)return;const elapsed=Date.now()-h.started,cycle=titanSystem.phase>=3?2450:titanSystem.phase>=2?2700:3000,t=(elapsed%cycle)/cycle;
+ const cycleIndex=Math.floor(elapsed/cycle);if(cycleIndex!==h.cycleIndex){h.cycleIndex=cycleIndex;h.purified=[[],[]];}
+ const close=t<.38?Math.sin(t/.38*Math.PI/2):t<.62?1:Math.max(0,Math.cos((t-.62)/.38*Math.PI/2));h.gap=close;
+ if(close>.78){for(let side=0;side<2;side++){const x=side===0?box.x+8+close*46:box.x+box.w-8-close*46,y=box.y+box.h/2+Math.sin(Date.now()/520+(side===0?0:Math.PI))*box.h*.22;for(let f=0;f<4;f++){const fx=x+(f-1.5)*12,fy=y+(side===0?39+close*8:-21+close*8);if(!h.purified[side][f]&&Math.hypot(fx-soul.x,fy-soul.y)<titanSystem.lightRadius){h.purified[side][f]=true;spawnBullet(fx,fy,0,0,3.5,"#ffd85e","courage");}}if(!h.purified[side][4]&&Math.hypot(x-soul.x,y-4-soul.y)<titanSystem.lightRadius){h.purified[side][4]=true;spawnBullet(x,y-4,0,0,5,"#ffd85e","courage");}}}
+ if(close>.78&&Date.now()>=h.next){h.next=Date.now()+(titanSystem.phase>=3?380:titanSystem.phase>=2?440:520);for(let i=0;i<3;i++){const y=box.y+25+i*(box.h-50)/2;spawnBullet(box.x+72,y,(Math.random()-.5)*1.2,2.2,5,"#f4f0ff","hand_shot");spawnBullet(box.x+box.w-72,y,(Math.random()-.5)*1.2,2.2,5,"#f4f0ff","hand_shot");}}
+}
+function spawnTitanCentipede(length,small=false){
+ const angle=Math.random()*Math.PI*2,cx=box.x+box.w/2,cy=box.y+box.h/2,rx=box.w*(.38+Math.random()*.08),ry=box.h*(.34+Math.random()*.08),x=cx+Math.cos(angle)*rx,y=cy+Math.sin(angle)*ry;
+ titanSystem.centipedes.push({id:++titanSystem.nextCentipede,head:{x,y},history:[{x,y}],length,small,orbit:{cx,cy,rx,ry},orbitAngle:angle,rushAt:Date.now()+1800+Math.random()*1200,rushing:false,returning:false,angle,speed:small?1.35:.9,alive:true});
+}
+function updateTitanSwarm(){
+ const radius=titanSystem.lightRadius;
+ for(let n=titanSystem.centipedes.length-1;n>=0;n--){
+  const c=titanSystem.centipedes[n];if(!c.alive)continue;
+  if(c.small){const a=Math.atan2(soul.y-c.head.y,soul.x-c.head.x);c.angle=a;c.speed=titanSystem.phase>=3?2.1:1.65;c.head.x+=Math.cos(a)*c.speed;c.head.y+=Math.sin(a)*c.speed;if(c.head.x<box.x-28||c.head.x>box.x+box.w+28||c.head.y<box.y-28||c.head.y>box.y+box.h+28){c.alive=false;}}
+  else if(!c.rushing&&!c.returning&&Date.now()>=c.rushAt){c.rushing=true;c.angle=Math.atan2(soul.y-c.head.y,soul.x-c.head.x);c.speed=titanSystem.phase>=3?3.35:titanSystem.phase>=2?2.9:2.5;}
+  if(c.rushing&&!c.small){c.head.x+=Math.cos(c.angle)*c.speed;c.head.y+=Math.sin(c.angle)*c.speed;if(c.head.x<box.x-35||c.head.x>box.x+box.w+35||c.head.y<box.y-35||c.head.y>box.y+box.h+35){c.rushing=false;c.returning=true;c.speed=titanSystem.phase>=3?1.5:1.2;}}
+  else if(c.returning&&!c.small){const tx=c.orbit.cx+Math.cos(c.orbitAngle)*c.orbit.rx,ty=c.orbit.cy+Math.sin(c.orbitAngle)*c.orbit.ry,dx=tx-c.head.x,dy=ty-c.head.y,d=Math.hypot(dx,dy);if(d<c.speed+2){c.returning=false;c.rushAt=Date.now()+950;c.orbitAngle+=Math.PI*.72;c.head.x=tx;c.head.y=ty;}else{c.head.x+=dx/d*c.speed;c.head.y+=dy/d*c.speed;}}
+  else if(!c.small&&!c.rushing){c.orbitAngle+=titanSystem.phase>=3?.026:.018;c.head.x=c.orbit.cx+Math.cos(c.orbitAngle)*c.orbit.rx;c.head.y=c.orbit.cy+Math.sin(c.orbitAngle)*c.orbit.ry;}
+  c.history.unshift({x:c.head.x,y:c.head.y});if(c.history.length>c.length*12+8)c.history.length=c.length*12+8;
+  for(let s=c.length-1;s>=0;s--){const p=c.history[Math.min(c.history.length-1,s*12)]||c.head;if(Math.hypot(p.x-soul.x,p.y-soul.y)<radius-5){
+    if(s===0){for(let k=0;k<c.length;k++){const part=c.history[Math.min(c.history.length-1,k*12)]||c.head;spawnBullet(part.x,part.y,0,0,4,"#ffd85e","courage");}c.alive=false;break;}
+    c.length--;c.history.splice(Math.min(c.history.length-1,s*12),1);spawnBullet(p.x,p.y,0,0,3,"#ffd85e","courage");
+   }}
+  if(c.alive&&Math.hypot(c.head.x-soul.x,c.head.y-soul.y)<soul.r+9&&soul.invuln<=0){const target=living()[hitCursor++%Math.max(1,living().length)];if(target){const dmg=hitParty(target,4);hitNotice=target.name+" -"+dmg+" HP";hitNoticeTimer=45;}soul.invuln=45;}
+ }
+ titanSystem.centipedes=titanSystem.centipedes.filter(c=>c.alive&&c.length>0);
+ for(let i=bullets.length-1;i>=0;i--){const q=bullets[i];
+  if(q.kind==="titan_spawn"||q.kind==="evolving_spawn"||q.kind==="red_spawn"){
+   const a=Math.atan2(soul.y-q.y,soul.x-q.x),speed=q.kind==="evolving_spawn"?1.05:.82;
+   q.vx+=(Math.cos(a)*speed-q.vx)*.035;q.vy+=(Math.sin(a)*speed-q.vy)*.035;q.x+=q.vx;q.y+=q.vy;
+   const distance=Math.hypot(q.x-soul.x,q.y-soul.y);if(q.kind!=="red_spawn"){q.purify=Math.max(q.purify||0,Math.max(0,Math.min(1,(radius+8-distance)/radius)));if(distance<radius-5){bullets.splice(i,1);spawnBullet(q.x,q.y,0,0,4,"#ffd85e","courage");continue;}}else if(distance<q.r+soul.r&&soul.invuln<=0){const survivors=living(),target=survivors.length?survivors[hitCursor++%survivors.length]:null;if(target){const dmg=hitParty(target,4);hitNotice=target.name+" -"+dmg+" HP";hitNoticeTimer=45;}soul.invuln=45;bullets.splice(i,1);if(living().length===0){stopBulletPhase(disrupted);return;}continue;}
+  }else if(q.kind==="courage"){
+   q.x+=q.vx;q.y+=q.vy;if(Math.hypot(q.x-soul.x,q.y-soul.y)<15){tp=Math.min(100,tp+1.6);bullets.splice(i,1);}
+  }
+ }
+}
+function updateTwinSlashes(){
+ const t=knightSystem.twinSlashes;if(!t)return;
+ const elapsed=Date.now()-t.started;
+ for(const cut of t.cuts){
+  if(cut.done||elapsed<cut.at||elapsed>cut.at+160)continue;
+  const cx=box.x+box.w*cut.x,cy=box.y+box.h*cut.y;
+  const dx=Math.cos(cut.angle),dy=Math.sin(cut.angle);
+  const px=-dy,py=dx;
+  const along=(soul.x-cx)*dx+(soul.y-cy)*dy;
+  const across=Math.abs((soul.x-cx)*px+(soul.y-cy)*py);
+  if(Math.abs(along)<255&&across<7&&soul.invuln<=0){
+   const survivors=living(),target=survivors.length?survivors[hitCursor++%survivors.length]:null;
+   if(target){const raw=disrupted?3:(boss.phase===1?5:boss.phase===2?7:9),dmg=hitParty(target,raw);hitNotice=target.name+"  -"+dmg+" HP";hitNoticeTimer=55;say("* "+target.name+" was caught by a Knight's slash! -"+dmg+" HP.");}
+   soul.invuln=52;render();
+  }
+  cut.done=true;
+ }
+}
+function makeTwinSlashes(){
+ const cuts=[];
+ for(let wave=0;wave<4;wave++){
+  const count=wave+1,base=650+wave*1320;
+  for(let n=0;n<count;n++){
+   const offset=(n-(count-1)/2)*.19;
+   cuts.push({at:base+n*85,x:.28+wave*.11,y:.32+wave*.105,angle:-.22+offset,done:false});
+   cuts.push({at:base+190+n*85,x:.72-wave*.09,y:.68-wave*.085,angle:1.12-offset,done:false});
+  }
+ }
+ return {started:Date.now(),cuts};
+}
+function makeKnightCombo(){
+ const cuts=[];
+ for(let wave=0;wave<4;wave++){
+  const count=wave+1,base=650+wave*1320;
+  for(let n=0;n<count;n++){
+   const x=soul.x,y=soul.y;
+   cuts.push({at:base+n*95,x,y,angle:wave%2===0?0:Math.PI/2,done:false});
+  }
+ }
+ return {started:Date.now(),cuts,lastSword:-900};
+}
+function updateKnightCombo(){
+ const combo=knightSystem.knightCombo;if(!combo)return;
+ const elapsed=Date.now()-combo.started;
+ for(const cut of combo.cuts){
+  if(cut.done||elapsed<cut.at||elapsed>cut.at+155)continue;
+  const dx=Math.cos(cut.angle),dy=Math.sin(cut.angle),px=-dy,py=dx;
+  const along=(soul.x-cut.x)*dx+(soul.y-cut.y)*dy;
+  const across=Math.abs((soul.x-cut.x)*px+(soul.y-cut.y)*py);
+  if(Math.abs(along)<275&&across<8&&soul.invuln<=0){
+   const survivors=living(),target=survivors.length?survivors[hitCursor++%survivors.length]:null;
+   if(target){const raw=boss.phase===1?5:boss.phase===2?7:9,dmg=hitParty(target,raw);hitNotice=target.name+"  -"+dmg+" HP";hitNoticeTimer=55;say("* "+target.name+" was caught by the Knight's combo! -"+dmg+" HP.");}
+   soul.invuln=52;render();
+  }
+  cut.done=true;
+ }
+}
+function makeSanguineSlash(){
+ const cuts=[];
+ for(let wave=0;wave<6;wave++){
+  const count=Math.floor(wave/2)+1,base=520+wave*930;
+  for(let n=0;n<count;n++){
+   const offset=(n-(count-1)/2)*.16;
+   cuts.push({at:base+n*125,x:soul.x,y:soul.y,angle:(wave%2?Math.PI/2:0)+offset,done:false});
+  }
+ }
+ return {started:Date.now(),cuts};
+}
+function makeSanguineSlashD2(){
+ const cuts=[];
+ for(let wave=0;wave<5;wave++){
+  const count=wave+4,base=360+wave*1120;
+  for(let n=0;n<count;n++){
+   const offset=(n-(count-1)/2)*.105;
+   cuts.push({at:base+n*72,x:soul.x,y:soul.y,angle:(wave%2?Math.PI/2:0)+offset,done:false});
+  }
+ }
+ return {started:Date.now(),cuts};
+}
+function updateSanguineSlash(){
+ const slash=knightSystem.sanguineSlash;if(!slash)return;
+ const elapsed=Date.now()-slash.started;
+ for(const cut of slash.cuts){
+  if(cut.done||elapsed<cut.at||elapsed>cut.at+160)continue;
+  const dx=Math.cos(cut.angle),dy=Math.sin(cut.angle),px=-dy,py=dx;
+  const along=(soul.x-cut.x)*dx+(soul.y-cut.y)*dy;
+  const across=Math.abs((soul.x-cut.x)*px+(soul.y-cut.y)*py);
+  if(Math.abs(along)<280&&across<9&&soul.invuln<=0){
+   const survivors=living(),target=survivors.length?survivors[hitCursor++%survivors.length]:null;
+   if(target){const raw=boss.phase===1?5:boss.phase===2?7:9,dmg=hitParty(target,raw);hitNotice=target.name+"  -"+dmg+" HP";hitNoticeTimer=55;say("* "+target.name+" was struck by Sanguine Slash! -"+dmg+" HP.");}
+   soul.invuln=52;render();
+  }
+  cut.done=true;
+ }
+}
+function startBulletPhase(attack,disrupted){
+ bulletMode=true;bullets=[];knightSystem.revolver=null;knightSystem.twinSlashes=attack.id==="twin_slashes"?makeTwinSlashes():null;knightSystem.knightCombo=attack.id==="knight_combo"?makeKnightCombo():null;knightSystem.sanguineSlash=attack.id==="sanguine_slash"?makeSanguineSlash():(attack.id==="sanguine_slash_d2"?makeSanguineSlashD2():null);if(attack.id==="titan_swarm"){titanSystem.phase=boss.phase;titanSystem.centipedes=[];titanSystem.nextCentipede=Date.now()+350;titanSystem.nextSmallCentipede=Date.now()+900;titanSystem.centipedesStarted=false;}if(attack.id==="titan_hands"){titanSystem.phase=boss.phase;startTitanHands();}if(attack.id==="titan_big_shots"||attack.id==="titan_big_shots_2"||attack.id==="titan_big_shots_3"){titanSystem.phase=boss.phase;startTitanBigShots(attack.id==="titan_big_shots"?1:attack.id==="titan_big_shots_2"?2:3);}if(attack.id==="titan_desperation"){titanSystem.phase=boss.phase;startTitanDesperation();}if(attack.id==="titan_knight_combo")titanSystem.phase=boss.phase;if(attack.id==="crystal_barrage"){knightSystem.barrageVariation=knightSystem.barrageUses%3;knightSystem.barrageUses++;}soul.x=box.x+box.w/2;soul.y=box.y+box.h-24;soul.targetX=soul.x;soul.targetY=soul.y;soul.invuln=0;patternType=attack.id;
+ const duration=(attack.id==="sanguine_slash"||attack.id==="sanguine_slash_d2"||attack.id==="titan_swarm"||attack.id==="titan_hands"||attack.id==="titan_big_shots"||attack.id==="titan_big_shots_2"||attack.id==="titan_big_shots_3"||attack.id==="titan_desperation")?8500:(attack.id==="black_flash"?5200:6500);
+ say("* "+attack.name+"! Dodge their attacks.\\n* Move with WASD, or guide the SOUL with your pointer / touch.");
+ render();
+ patternClock=setInterval(spawnPattern,attack.id==="black_flash"?600:430);
+ bulletClock=setInterval(()=>{
+  if(!bulletMode)return;
+  updateRevolver();
+  if(patternType==="titan_swarm")updateTitanSwarm();
+  if(patternType==="titan_hands")updateTitanHands();
+  if(patternType==="titan_big_shots"||patternType==="titan_big_shots_2"||patternType==="titan_big_shots_3")updateTitanBigShots();
+  if(patternType==="titan_desperation")updateTitanDesperation();
+  if(patternType==="twin_slashes")updateTwinSlashes();
+  if(patternType==="knight_combo")updateKnightCombo();
+  if(patternType==="sanguine_slash"||patternType==="sanguine_slash_d2")updateSanguineSlash();
+  const speed=3.6,dx=(keys.d||keys.D?1:0)-(keys.a||keys.A?1:0),dy=(keys.s||keys.S?1:0)-(keys.w||keys.W?1:0);
+  if(dx||dy){const length=Math.hypot(dx,dy);soul.x+=dx/length*speed;soul.y+=dy/length*speed;soul.targetX=soul.x;soul.targetY=soul.y;}
+  else{const follow=0.24;soul.x+=(soul.targetX-soul.x)*follow;soul.y+=(soul.targetY-soul.y)*follow;}
+  soul.x=Math.max(box.x+soul.r,Math.min(box.x+box.w-soul.r,soul.x));soul.y=Math.max(box.y+soul.r,Math.min(box.y+box.h-soul.r,soul.y));
+  for(let i=bullets.length-1;i>=0;i--){
+   const q=bullets[i];
+   if(q.kind==="courage"&&patternType!=="titan_swarm"){q.x+=q.vx;q.y+=q.vy;if(Math.hypot(q.x-soul.x,q.y-soul.y)<15){tp=Math.min(100,tp+1.6);bullets.splice(i,1);}continue;}
+   if(patternType==="titan_swarm"&&(q.kind==="titan_spawn"||q.kind==="evolving_spawn"||q.kind==="red_spawn"||q.kind==="courage")){
+   ctx.save();ctx.fillStyle=q.kind==="courage"?"#ffd85e":q.kind==="red_spawn"?"#ff4965":"#f4f4ff";ctx.shadowColor=ctx.fillStyle;ctx.shadowBlur=7;ctx.beginPath();ctx.ellipse(q.x,q.y,q.kind==="evolving_spawn"?q.r*.7:q.r,q.kind==="evolving_spawn"?q.r*1.35:q.r,0,0,Math.PI*2);ctx.fill();ctx.restore();continue;
+  }
+  if(q.kind==="crystal"){
+    q.crystalAge++;
+    if(q.crystalStage==="outbound"&&q.crystalAge>=q.reverseAt){
+     q.crystalStage="returning";q.vx*=-1;q.vy=Math.abs(q.vy)*0.85;
+    }
+    if(q.crystalStage==="returning"&&q.crystalAge>=q.explodeAt){
+     const v=q.crystalVariation;
+     if(v===2){
+      for(const sign of [-1,1]){
+       const a=Math.atan2(soul.y-q.y,soul.x-q.x)+sign*(0.55+Math.random()*0.35);
+       spawnBullet(q.x,q.y,Math.cos(a)*4.1,Math.sin(a)*4.1,5,"#ff455b","homing_shard");
+       bullets[bullets.length-1].home=true;
+      }
+     }else{
+      const longFirst=v===0&&i%2===0;
+      const speed=longFirst?4.8:3.2;
+      for(let n=0;n<6;n++){
+       const a=n*Math.PI/3+q.splitAngle;
+       spawnBullet(q.x,q.y,Math.cos(a)*speed,Math.sin(a)*speed,5,"#e8f8ff");
+      }
+     }
+     bullets.splice(i,1);continue;
+    }
+   }else if(q.kind==="homing_shard"){
+    const a=Math.atan2(soul.y-q.y,soul.x-q.x),speed=4.1;
+    q.vx+=(Math.cos(a)*speed-q.vx)*0.045;q.vy+=(Math.sin(a)*speed-q.vy)*0.045;
+   }
+   q.x+=q.vx;q.y+=q.vy;
+   if(q.x<box.x-25||q.x>box.x+box.w+25||q.y<box.y-30||q.y>box.y+box.h+30){bullets.splice(i,1);continue;}
+   if(soul.invuln<=0&&Math.hypot(q.x-soul.x,q.y-soul.y)<q.r+5){
+    const survivors=living();const target=survivors.length?survivors[hitCursor++%survivors.length]:null;if(target){const raw=disrupted?3:(boss.phase===1?5:boss.phase===2?7:9);const guarded=target.guard;const dmg=hitParty(target,raw);hitNotice=target.name+"  -"+dmg+" HP"+(guarded?"  GUARD":"");hitNoticeTimer=55;say("* "+target.name+" was hit! -"+dmg+" HP"+(guarded?" (GUARDED)":""));}
+    soul.invuln=52;bullets.splice(i,1);render();
+    if(living().length===0){stopBulletPhase(disrupted);return;}
+   }
+  }
+  if(soul.invuln>0)soul.invuln--;
+  scene();drawBulletArena();
+ },16);
+ attackClock=setTimeout(()=>stopBulletPhase(disrupted),duration);
+}
+function enemyTurn(){
+ if(won||lost||busy)return;
+ const knightFrozen=boss.frozenTurns>0;
+ if(knightFrozen){boss.frozenTurns--;boss.exposed=Math.max(boss.exposed,1);}
+ busy=true;$("turnlabel").textContent="DODGE THE KNIGHT & TITAN";setMenu([]);setSub([]);
+ let attack;
+ if(knightFrozen){
+  // Freezing the Knight does not silence the Titan in this shared encounter.
+  const enc=titanSystem.encounter;
+  if(enc.phase!==boss.phase){enc.phase=boss.phase;enc.lastClass="";enc.lastSource="";enc.phaseCounts[boss.phase]=0;enc.turns=0;}
+  enc.turns++;
+  const candidates=knightSystem.attacks.filter(a=>a.id.startsWith("titan_")&&a.id!=="titan_knight_combo"&&a.phases.includes(boss.phase));
+  const shieldClass=a=>a.id==="titan_swarm"||a.id==="titan_hands"?"shield-up":"shield-down";
+  let pool=candidates.filter(a=>shieldClass(a)!==enc.lastClass);
+  if(!pool.length)pool=candidates;
+  const fresh=pool.filter(a=>a.id!==enc.lastAttack);if(fresh.length)pool=fresh;
+  attack=pool[Math.floor(Math.random()*pool.length)]||candidates[0]||knightSystem.attacks.find(a=>a.phases.includes(boss.phase));
+  if(attack&&attack.id.startsWith("titan_")&&attack.id!=="titan_knight_combo"){enc.lastClass=shieldClass(attack);enc.lastSource="titan";enc.lastAttack=attack.id;enc.phaseCounts[boss.phase]++;}
+  say("* The Knight is frozen! The Titan attacks alone.");
+ }else attack=chooseKnightAttack();
+ // Tornado weakens the Knight's next attack; preserve it while the Knight is frozen.
+ const disrupted=!knightFrozen&&knightDisrupted>0;
+ if(disrupted)knightDisrupted--;
+ if(!knightFrozen&&boss.phase===3&&!knightSystem.domain&&Math.random()<.45){
+  startKnightDomain();say("* THE ROARING KNIGHT: DOMAIN EXPANSION — KINGDOM OF THE ROARING.\n* Stars and swords now fall inside the battle box.");
+  patternType="star_swarm";
+ }else say("* "+attack.name+"!");
+ if(knightFrozen)attack={...attack,name:attack.name+" · KNIGHT FROZEN"};
+ startBulletPhase(attack,disrupted);
+}
+document.addEventListener("keydown",e=>{if(["w","a","s","d","W","A","S","D"," "].includes(e.key))e.preventDefault();keys[e.key]=true;});
+document.addEventListener("keyup",e=>{keys[e.key]=false;});
+function aimSoul(e){if(!bulletMode)return;const r=canvas.getBoundingClientRect();soul.targetX=(e.clientX-r.left)/r.width*canvas.width;soul.targetY=(e.clientY-r.top)/r.height*canvas.height;soul.targetX=Math.max(box.x+soul.r,Math.min(box.x+box.w-soul.r,soul.targetX));soul.targetY=Math.max(box.y+soul.r,Math.min(box.y+box.h-soul.r,soul.targetY));}
+canvas.addEventListener("pointerdown",e=>{if(bulletMode){if(canvas.setPointerCapture)canvas.setPointerCapture(e.pointerId);aimSoul(e);}});
+canvas.addEventListener("pointermove",aimSoul);
+function checkLoss(){endKnightDomain();endPlayerDomain();lost=true;busy=false;say("* The party falls back. The Knight remains before the fountain.\n* (Refresh the page to try again.)");setMenu([]);setSub([]);$("turnlabel").textContent="PARTY DOWN"}
+function victory(){endKnightDomain();endPlayerDomain();won=true;busy=false;boss.hp=0;render();say("* The Roaring Knight staggers as the Titan's glow fades. Their shared assault finally stops.\\n* Kris's shadows settle. Susie says that was 'kinda sick'.\\n* Ralsei is already checking if everyone is okay.\\n\\n* YOU WON! (For now.)");setMenu([{label:"PLAY AGAIN",run:()=>location.reload()}]);setSub([]);$("turnlabel").textContent="VICTORY"}
+render();setMenu([{label:"FIGHT",run:begin}]);setSub([]);
+</script>
+</body>
+</html>
