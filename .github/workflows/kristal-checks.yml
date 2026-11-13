@@ -44,11 +44,11 @@ jobs:
           print("Initial encounter:", manifest["encounter"])
           PY
 
-      - name: Test F++ translator and missing-translator fallback
+      - name: Test TOASTER translator and missing-translator fallback
         run: |
           python3 tests/fpp_transpiler_test.py
           python3 tests/fpp_build_test.py
-          python3 tools/fpp.py examples/hello.fpp -o /tmp/fpp-hello.lua
+          python3 tools/toaster.py examples/hello.fpp -o /tmp/fpp-hello.lua
           luac5.1 -p /tmp/fpp-hello.lua
 
       - name: Build F++ mod sources for Kristal
