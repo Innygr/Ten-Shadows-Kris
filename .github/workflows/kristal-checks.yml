@@ -8,7 +8,7 @@ on:
 jobs:
   static-checks:
     name: Validate manifest and Lua syntax
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
@@ -297,7 +297,7 @@ jobs:
           zip -9 -r ../Deltarune-Shadowbender-mod.zip Deltarune-Shadowbender
 
       - name: Upload Kristal mod package
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: Deltarune-Shadowbender-mod-only-Kristal-v0.10.0
           path: Deltarune-Shadowbender-mod.zip
@@ -306,7 +306,7 @@ jobs:
   build-love:
     name: Build standalone LÖVE archive
     needs: static-checks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Check out Deltarune Shadowbender
         uses: actions/checkout@v5
@@ -529,14 +529,14 @@ jobs:
           zip -9 -r ../Deltarune-Shadowbender-standalone.zip .
 
       - name: Upload standalone download bundle
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: Deltarune-Shadowbender-standalone-Love-11.5
           path: Deltarune-Shadowbender-standalone.zip
           if-no-files-found: error
 
       - name: Upload standalone .love archive
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: Deltarune-Shadowbender-love-file
           path: Deltarune-Shadowbender.love
