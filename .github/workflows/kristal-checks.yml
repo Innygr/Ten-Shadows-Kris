@@ -292,6 +292,24 @@ jobs:
           ref: v0.10.0
           path: kristal-engine
 
+      - name: Make the startup error screen independent of asset loading
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path("kristal-engine/src/kristal.lua")
+          source = path.read_text(encoding="utf-8")
+          replacements = {
+              'love.graphics.newFont("assets/fonts/main.ttf", 32, "mono")': 'love.graphics.newFont(32, "mono")',
+              'love.graphics.newFont("assets/fonts/main.ttf", 16, "mono")': 'love.graphics.newFont(16, "mono")',
+          }
+          for old, new in replacements.items():
+              if source.count(old) != 1:
+                  raise SystemExit(f"Expected exactly one occurrence of {old!r}")
+              source = source.replace(old, new, 1)
+          path.write_text(source, encoding="utf-8")
+          PY
+
       - name: Verify and build F++ sources before Kristal integration
         run: python3 tools/build_fpp.py
 
@@ -324,7 +342,7 @@ jobs:
           conf_path = Path("kristal-engine/conf.lua")
           conf = conf_path.read_text(encoding="utf-8")
           conf = conf.replace('t.identity = "kristal"', 't.identity = "ten_shadows_kris"')
-          conf = conf.replace('t.window.title = "Kristal"', 't.window.title = "Ten Shadows Kris"')
+          conf = conf.replace('t.window.title = "Kristal"', 't.window.title = "Deltarune: Shadowbender"')
           if 't.identity = "ten_shadows_kris"' not in conf:
               raise SystemExit("Could not set the game save identity")
           if 't.window.title = "Ten Shadows Kris"' not in conf:

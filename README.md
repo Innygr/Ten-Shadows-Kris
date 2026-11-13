@@ -1,6 +1,6 @@
-# Ten Shadows Kris
+# Deltarune: Shadowbender
 
-A Deltarune fangame prototype and Kristal project.
+A Deltarune fangame prototype and Kristal project, officially titled **Deltarune: Shadowbender**.
 
 ## Engine priority
 
