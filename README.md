@@ -23,7 +23,8 @@ architecture contract.
 - `scripts/objects/soul_ejection.lua`: detached SOUL controller foundation.
 - `scripts/ten_shadows/combat_state.lua`, `runtime_shadows.lua`, and `attack_wave_patterns.lua`:
   six-member party rules, boss ACT/status/SOUL-mode integration, disruption, and six reusable
-  projectile-pattern families. Bespoke attack mechanics and final presentation remain in progress.
+  projectile-pattern families. Wall, aimed, and falling attacks now telegraph their paths before
+  projectiles become dangerous. Bespoke attack mechanics and final presentation remain in progress.
 
 ## Build artifacts
 

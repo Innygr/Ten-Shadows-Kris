@@ -6,21 +6,75 @@ local COLORS = {
     combo = {1.0, 0.78, 0.24},
 }
 
-function ShadowProjectile:init(x, y, direction, speed, kind)
+function ShadowProjectile:init(x, y, direction, speed, kind, warning)
     super.init(self, x, y)
 
     self.width = 12
     self.height = 12
     self.collider = CircleCollider(self, 0, 0, 4)
     self.physics.direction = direction
+    self.intended_speed = speed
     self.physics.speed = speed
     self.rotation = direction
     self.damage = 2
     self.kind = COLORS[kind] and kind or "titan"
+    self.armed = true
+    self.telegraph = nil
+
+    -- Warn along the projectile's actual travel vector, but do not give the
+    -- warning a hitbox or movement. The bullet arms only after the tell ends.
+    if type(warning) == "table" and (warning.duration or 0) > 0 and (warning.length or 0) > 0 then
+        self.telegraph = warning
+        self.armed = false
+        self.collider = nil
+        self.physics.speed = 0
+
+        self.telegraph_timer = Timer()
+        self:addChild(self.telegraph_timer)
+        self.telegraph_timer:after(warning.duration, function()
+            self:arm()
+        end)
+    end
+end
+
+function ShadowProjectile:arm()
+    if self.armed then return end
+
+    self.armed = true
+    self.telegraph = nil
+    self.collider = CircleCollider(self, 0, 0, 4)
+    self.physics.speed = self.intended_speed
 end
 
 function ShadowProjectile:draw()
     local color = COLORS[self.kind]
+
+    if self.telegraph then
+        local length = self.telegraph.length
+        love.graphics.setLineWidth(6)
+        love.graphics.setColor(color[1], color[2], color[3], 0.18)
+        love.graphics.line(0, 0, length, 0)
+
+        love.graphics.setLineWidth(2)
+        love.graphics.setColor(color[1], color[2], color[3], 0.88)
+        love.graphics.line(0, 0, length, 0)
+
+        love.graphics.setColor(1, 1, 1, 0.8)
+        if self.telegraph.kind == "target" then
+            love.graphics.circle("line", length, 0, 8)
+            love.graphics.line(length - 5, -5, length + 5, 5)
+            love.graphics.line(length - 5, 5, length + 5, -5)
+        elseif self.telegraph.kind == "lane" then
+            love.graphics.line(0, -5, 0, 5)
+            love.graphics.line(length, -5, length, 5)
+        else
+            love.graphics.polygon("line", length, -5, length + 5, 0, length, 5, length - 5, 0)
+        end
+
+        super.draw(self)
+        return
+    end
+
     love.graphics.setColor(color[1], color[2], color[3], 0.24)
     love.graphics.circle("fill", 0, 0, 7)
 

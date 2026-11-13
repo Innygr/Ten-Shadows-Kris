@@ -2,7 +2,8 @@ local KnightTitanAssault, super = Class(Wave)
 
 function KnightTitanAssault:init()
     super.init(self)
-    self.time = 6.2
+    -- Leave enough room for the final telegraphed volley to cross the arena.
+    self.time = 7.75
 end
 
 function KnightTitanAssault:onStart()
@@ -54,12 +55,13 @@ function KnightTitanAssault:onStart()
                 shot.y,
                 shot.direction,
                 shot.speed,
-                shot.kind
+                shot.kind,
+                shot.warning
             )
         end
 
         if volley >= 6 then
-            self.timer:after(0.75, function()
+            self.timer:after(2.55, function()
                 self:setFinished()
             end)
         end

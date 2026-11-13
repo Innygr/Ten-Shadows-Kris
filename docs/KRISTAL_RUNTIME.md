@@ -119,9 +119,12 @@ The preview encounter now uses a shared, deterministic spawn planner at
 `scripts/ten_shadows/attack_wave_patterns.lua`. The selected scheduler entry is routed
 through six reusable attack families: radial bursts, safe-lane walls, aimed volleys,
 combined crossfire, falling shots, and horizontal sweeps. Projectiles are drawn with
-separate Knight (red), Titan (cyan), and combined (gold) styling. Phase three increases
-pattern density, and an active Knight domain layers two additional falling blades over
-the selected pattern.
+separate Knight (red), Titan (cyan), and combined (gold) styling. Wall lanes, aimed
+trajectories, falling columns, and the Knight-domain blades now show directional warning
+lines before they become damaging projectiles. A warning has no hitbox and remains still;
+the bullet gains its collider and configured speed only when the short tell expires.
+Phase three increases pattern density, and an active Knight domain layers two additional
+telegraphed falling blades over the selected pattern.
 
 Tornado disruption is consumed on the next Knight-led scheduler slot. The Knight's action
 is diverted to a Titan-only attack instead of disappearing; disruption remains pending
@@ -130,7 +133,8 @@ not after each projectile volley.
 
 These are shared pattern families rather than 37 bespoke recreations. The full attack
 library, specialized collision rules, Cyan parry behaviour, and in-game playtesting remain
-outstanding. The Knight + Titan preview is now the manifest default to make the current
+outstanding. Lua tests now exercise both the pattern warning descriptors and the real
+projectile class's warning-to-hitbox transition with a minimal engine test double. The Knight + Titan preview is now the manifest default to make the current
 fight available immediately; the runtime smoke-test encounter remains selectable for
 engine diagnostics. Dedicated Knight/Titan art is still outstanding.
 

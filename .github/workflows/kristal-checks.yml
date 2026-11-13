@@ -57,6 +57,7 @@ jobs:
           lua5.1 tests/boss_phase_test.lua
           lua5.1 tests/knight_titan_scheduler_test.lua
           lua5.1 tests/attack_wave_patterns_test.lua
+          lua5.1 tests/shadow_projectile_test.lua
           python3 tools/toaster.py examples/hello.fpp -o /tmp/fpp-hello.lua
           luac5.1 -p /tmp/fpp-hello.lua
 
@@ -111,8 +112,11 @@ jobs:
           test -f scripts/battle/bullets/shadow_projectile.lua
           test -f scripts/ten_shadows/attack_wave_patterns.lua
           test -f tests/attack_wave_patterns_test.lua
+          test -f tests/shadow_projectile_test.lua
           test -f tests/knight_titan_scheduler_test.lua
           grep -q 'Patterns.build' scripts/battle/waves/knight_titan_assault.lua
+          grep -q 'shot.warning' scripts/battle/waves/knight_titan_assault.lua
+          grep -q 'function ShadowProjectile:arm()' scripts/battle/bullets/shadow_projectile.lua
           grep -q 'self:consumeKnightDisruption(false)' scripts/ten_shadows/combat_state.lua
           grep -q 'state:tickEnemyTurnEffects()' scripts/battle/waves/knight_titan_assault.lua
           grep -q 'Shadows.onEnemyTurnEnd(enemy)' scripts/battle/waves/knight_titan_assault.lua

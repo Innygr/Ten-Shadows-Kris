@@ -106,13 +106,14 @@ local function atan2(y, x)
     return 0
 end
 
-local function add(shots, kind, x, y, direction, speed)
+local function add(shots, kind, x, y, direction, speed, warning)
     shots[#shots + 1] = {
         kind = kind,
         x = x,
         y = y,
         direction = direction,
         speed = speed,
+        warning = warning,
     }
 end
 
@@ -155,16 +156,28 @@ function AttackWavePatterns.build(attack, phase, volley, arena, target, domain_a
         for lane = 1, lanes do
             if lane ~= safe_lane then
                 local y = arena.top + (height * (lane - 1) / (lanes - 1))
-                add(shots, kind, x, y, direction, pace + 0.25)
+                add(shots, kind, x, y, direction, pace + 0.25, {
+                    kind = "lane",
+                    duration = 0.42,
+                    length = width + 20,
+                })
             end
         end
     elseif family == "aimed" then
         local from_right = volley % 2 == 0
         local x = from_right and (arena.right + 10) or (arena.left - 10)
         local y = arena.top + height * (0.18 + ((volley * 2) % 5) * 0.14)
-        local base_angle = atan2(target.y - y, target.x - x)
         for i = -1, 1 do
-            add(shots, kind, x, y + i * 12, base_angle + i * 0.16, pace + 0.35)
+            local shot_y = y + i * 12
+            local dx = target.x - x
+            local dy = target.y - shot_y
+            local distance = math.sqrt(dx * dx + dy * dy)
+            local angle = atan2(dy, dx) + i * 0.16
+            add(shots, kind, x, shot_y, angle, pace + 0.35, {
+                kind = "target",
+                duration = 0.36,
+                length = distance,
+            })
         end
     elseif family == "crossfire" then
         local upper = center_y - height * 0.22
@@ -188,7 +201,11 @@ function AttackWavePatterns.build(attack, phase, volley, arena, target, domain_a
         local drift = ((volley - 1) % 3 - 1) * spacing * 0.22
         for i = 1, count do
             local x = arena.left + spacing * i + drift
-            add(shots, kind, x, arena.top - 10, math.pi / 2, pace)
+            add(shots, kind, x, arena.top - 10, math.pi / 2, pace, {
+                kind = "falling",
+                duration = 0.48,
+                length = height + 20,
+            })
         end
     else
         local count = phase == 3 and 5 or 3
@@ -209,8 +226,16 @@ function AttackWavePatterns.build(attack, phase, volley, arena, target, domain_a
     -- the normal attack. They are sparse enough to preserve the base pattern's
     -- safe route while making the domain state visible through gameplay.
     if domain_active then
-        add(shots, "combo", arena.left + width * 0.28, arena.top - 10, math.pi / 3, pace + 0.2)
-        add(shots, "combo", arena.right - width * 0.28, arena.top - 10, 2 * math.pi / 3, pace + 0.2)
+        add(shots, "combo", arena.left + width * 0.28, arena.top - 10, math.pi / 3, pace + 0.2, {
+            kind = "falling",
+            duration = 0.48,
+            length = height * 1.25,
+        })
+        add(shots, "combo", arena.right - width * 0.28, arena.top - 10, 2 * math.pi / 3, pace + 0.2, {
+            kind = "falling",
+            duration = 0.48,
+            length = height * 1.25,
+        })
     end
 
     return shots, family
