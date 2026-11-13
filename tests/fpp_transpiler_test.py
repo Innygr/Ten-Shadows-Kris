@@ -14,7 +14,7 @@ class TranspilerTests(unittest.TestCase):
         retourner rien
     }
 }'''
-        expected = '''function main() {
+        expected = '''function main()
     if ready then
         print("bonjour")
     else
@@ -35,7 +35,7 @@ fonction get() {
     retourner data
 }'''
         expected = '''local data = { name = "Kris", alive = true }
-function get() {
+function get()
     return data
 end'''
         self.assertEqual(transpile(source), expected)
