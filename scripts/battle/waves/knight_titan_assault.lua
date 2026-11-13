@@ -49,14 +49,21 @@ function KnightTitanAssault:onStart()
             or attack_id == "titan_big_shots" or attack_id == "titan_big_shots_2"
             or attack_id == "titan_big_shots_3" or attack_id == "titan_desperation"
             or attack_id == "crystal_barrage" or pattern == "radial-pulse-barrage"
-            or pattern == "falling-columns" or pattern == "timed-pulse-rings" then
+            or pattern == "falling-columns" or pattern == "timed-pulse-rings"
+            or pattern == "dark-interval-pulses" or pattern == "orbiting-gaps"
+            or pattern == "updraft-sweep" or pattern == "gravity-inversion" then
             local count = (attack_id == "titan_desperation" or phase == 3) and 7 or 4
             spawnFromTop(self, arena, count, 3.0 + speed_bonus + volley * 0.2)
         elseif attack_id == "titan_knight_combo" or attack_id == "knight_combo"
             or attack_id == "cross_attack" or attack_id == "combination"
             or pattern == "crosscut-burst" or pattern == "gravity-arc"
             or pattern == "gravity-slam" or pattern == "feint-then-lunge"
-            or pattern == "ricochet-blades" or pattern == "pause-then-strike" then
+            or pattern == "ricochet-blades" or pattern == "pause-then-strike"
+            or pattern == "afterimage-pursuit" or pattern == "shieldbreaker-strike"
+            or pattern == "directional-blade-barrage" or pattern == "armored-artillery"
+            or pattern == "thread-lane-snare" or pattern == "crossing-thread-projectiles"
+            or pattern == "moving-target-slashes" or pattern == "shifting-safe-zones"
+            or pattern == "cyan-parry-window" then
             local y = MathUtils.random(arena.top + 12, arena.bottom - 54)
             spawnSweep(self, arena, y, phase == 3 and 4 or 3, 3.3 + speed_bonus, volley % 2 == 0)
             if volley % 2 == 0 then
@@ -66,7 +73,8 @@ function KnightTitanAssault:onStart()
             or attack_id == "sword_tunnel" or attack_id == "sword_tunnel_d1"
             or attack_id == "sword_tunnel_d2" or pattern == "timed-laser-grid"
             or pattern == "guardbreak-grid" or pattern == "closing-thread-grid"
-            or pattern == "thread-cage-crosscut" or pattern == "moving-hazard-lanes" then
+            or pattern == "thread-cage-crosscut" or pattern == "moving-hazard-lanes"
+            or pattern == "severed-thread-lanes" or pattern == "target-barricade" then
             local gap_y = MathUtils.random(arena.top + 25, arena.bottom - 25)
             for i = 1, 5 do
                 local y = arena.top + (i - 1) * ((arena.bottom - arena.top) / 4)
