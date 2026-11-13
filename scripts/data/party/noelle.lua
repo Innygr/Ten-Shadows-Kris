@@ -6,6 +6,7 @@ function character:init()
     self:setActor("noelle")
     self:setWeapon("glacier_ring")
     self:setArmor(1, "frost_guard")
+    self:setArmor(2, "winter_circlet")
     self.level = Game.chapter
     self.title = "Snowcaster"
     self.soul_priority = 1
