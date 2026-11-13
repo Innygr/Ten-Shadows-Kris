@@ -13,7 +13,12 @@ function KnightTitanAssault:onStart()
 
     if state then
         state.boss.hp = enemy.health
-        attack, frozen, domain_started, disrupted = state:chooseEnemyAttack()
+        local soul = Game.battle.soul
+        local active_soul_mode = soul and soul.ten_shadows_mode or nil
+        attack, frozen, domain_started, disrupted = state:chooseEnemyAttack(active_soul_mode)
+        if enemy then
+            enemy.ten_shadows_active_soul_mode = active_soul_mode
+        end
     end
 
     if enemy then

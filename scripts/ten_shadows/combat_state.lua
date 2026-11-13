@@ -507,7 +507,7 @@ function CombatState.new()
         return actions
     end
 
-    function state:chooseEnemyAttack()
+    function state:chooseEnemyAttack(active_soul_mode)
         local encounter = self.encounter
         local phase = self.boss.phase
         if encounter.phase ~= phase then
@@ -524,7 +524,12 @@ function CombatState.new()
         if frozen then self.boss.frozen_turns = self.boss.frozen_turns - 1 end
 
         local eligible, titan, knight, combo = {}, {}, {}, nil
-        local mode_attacks = self:getSoulModeAttacks()
+        -- SOUL-mode attack sets are valid only while the corresponding custom
+        -- SOUL is actually active in the arena. A saved menu choice alone is
+        -- not enough: if the current SOUL does not match, use the legacy pool.
+        local mode_is_active = active_soul_mode ~= nil
+            and active_soul_mode == self.soul_mode
+        local mode_attacks = mode_is_active and self:getSoulModeAttacks() or nil
         local attack_groups = mode_attacks
             and {mode_attacks.titan, mode_attacks.knight, mode_attacks.combo}
             or {CombatState.KNIGHT_ATTACKS}
@@ -609,7 +614,7 @@ function CombatState.new()
             elseif picked_source == "knight" then
                 encounter.last_source = "knight"
             end
-            picked.soul_mode = self.soul_mode
+            picked.soul_mode = mode_is_active and active_soul_mode or nil
             encounter.last_attack = picked.id
         end
 
