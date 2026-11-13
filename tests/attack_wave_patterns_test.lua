@@ -66,12 +66,6 @@ for lane = 1, 7 do
 end
 assert(changed_gap, "wall safe lane must move between volleys")
 
-local radial_shots, radial_family = Patterns.build(
-    {id = "red_titan_pulse_barrage", pattern = "radial-pulse-barrage", source = "titan"},
-    1, 1, arena, target, false
-)
-assert(radial_family == "radial" and #radial_shots == 12, "Red heartbeat radial patterns must fan out in twelve directions")
-
 local aimed_shots, aimed_family = Patterns.build(
     {id = "test_aimed", pattern = "aimed-projectile-volley", source = "knight"},
     2, 1, arena, target, false
@@ -82,61 +76,6 @@ assert(aimed_shots[1].warning.kind == "target", "aimed shot should mark the pred
 local falling_shots, falling_family = Patterns.build({id = "titan_swarm"}, 2, 1, arena, target, false)
 assert(falling_family == "falling", "Titan swarm should use the falling family")
 assert(falling_shots[1].warning.kind == "falling", "falling shot should telegraph its descent")
-
-local pulse_shots, pulse_family = Patterns.build(
-    {id = "red_titan_pulse_barrage", source = "titan", pattern = "radial-pulse-barrage"},
-    1, 1, arena, target, false
-)
-assert(pulse_family == "radial" and #pulse_shots == 12,
-    "Red heartbeat barrage must produce its twelve-shot radial pulse")
-for _, shot in ipairs(pulse_shots) do
-    assert(shot.kind == "titan" and shot.warning and shot.warning.duration == 0.24,
-        "Red heartbeat shots must be Titan-styled and telegraphed")
-end
-
-local orbit_shots = Patterns.build(
-    {id = "red_titan_orbit_break", source = "titan", pattern = "orbiting-gaps"},
-    1, 1, arena, target, false
-)
-assert(#orbit_shots == 9, "Red Orbit Break must leave one moving gap in its ten-point ring")
-local expected_orbit_radius = math.min(arena.right - arena.left, arena.bottom - arena.top) * 0.31
-for _, shot in ipairs(orbit_shots) do
-    local radius = math.sqrt((shot.x - 320)^2 + (shot.y - 221)^2)
-    assert(math.abs(radius - expected_orbit_radius) < 0.1, "Red Orbit Break shots must start on the ring")
-end
-
-local crosscut_shots, crosscut_family = Patterns.build(
-    {id = "red_knight_crosscut", source = "knight", pattern = "crosscut-burst"},
-    1, 1, arena, target, false
-)
-assert(crosscut_family == "crossfire" and #crosscut_shots == 10,
-    "Red Crosscut must send two opposing five-shot diagonals")
-assert(crosscut_shots[1].direction ~= crosscut_shots[2].direction,
-    "Red Crosscut must cross opposing directions")
-
-local afterimage_target = {
-    x = target.x, y = target.y,
-    previous = {x = 320, y = 230},
-}
-local afterimage_shots, afterimage_family = Patterns.build(
-    {id = "red_knight_afterimage", source = "knight", pattern = "afterimage-pursuit"},
-    1, 1, arena, afterimage_target, false
-)
-assert(afterimage_family == "aimed" and #afterimage_shots == 3,
-    "Red Afterimage must create a three-shot pursuit volley")
-assert(math.abs(afterimage_shots[2].direction) < 0.001,
-    "Red Afterimage's centre shot must target the previous SOUL position")
-
-local redline_shots, redline_family = Patterns.build(
-    {id = "red_knight_titan_crash", source = "combo", pattern = "redline-crash"},
-    1, 1, arena, target, false
-)
-assert(redline_family == "crossfire" and #redline_shots == 9,
-    "Redline must combine two four-shot lanes with a tracking finisher")
-local redline_kinds = {}
-for _, shot in ipairs(redline_shots) do redline_kinds[shot.kind] = true end
-assert(redline_kinds.knight and redline_kinds.titan and redline_kinds.combo,
-    "Redline must visibly combine Knight, Titan, and shared attacks")
 
 local execution_shots, execution_family = Patterns.build(
     {id = "cyan_knights_execution", source = "knight", pattern = "cyan-parry-window"},

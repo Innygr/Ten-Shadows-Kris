@@ -65,7 +65,7 @@ function RoaringKnightTitan:onHurt(damage, battler)
 end
 
 local SOUL_MODE_ACTIONS = {
-    ["RED SOUL"] = "red",
+    ["RED SOUL"] = "red", -- setSoulMode("red") intentionally restores the default attack pool.
     ["BLUE SOUL"] = "blue",
     ["GREEN SOUL"] = "green",
     ["YELLOW SOUL"] = "yellow",

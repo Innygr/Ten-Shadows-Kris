@@ -90,18 +90,6 @@ local function soulAttack(id, name, source, pattern, mechanic, phases, weight)
 end
 
 CombatState.SOUL_MODE_ATTACKS = {
-    red = {
-        label = "RED SOUL",
-        titan = {
-            soulAttack("red_titan_pulse_barrage", "TITAN · HEARTBEAT BARRAGE", "titan", "radial-pulse-barrage", "Weave between expanding pulse shots."),
-            soulAttack("red_titan_orbit_break", "TITAN · ORBIT BREAK", "titan", "orbiting-gaps", "Orbiting shots tighten, then open a moving escape gap.", {2, 3}),
-        },
-        knight = {
-            soulAttack("red_knight_crosscut", "KNIGHT · CROSSCUT", "knight", "crosscut-burst", "Avoid the opening sweep before crossing blade paths."),
-            soulAttack("red_knight_afterimage", "KNIGHT · AFTERIMAGE", "knight", "afterimage-pursuit", "Afterimages strike the SOUL's previous positions.", {2, 3}),
-        },
-        combo = {soulAttack("red_knight_titan_crash", "KNIGHT + TITAN · REDLINE", "combo", "redline-crash", "A crosscut and pulse burst land together.")},
-    },
     blue = {
         label = "BLUE SOUL",
         titan = {
@@ -224,7 +212,9 @@ function CombatState.new()
     function state:setSoulMode(mode)
         if mode ~= nil then
             mode = string.lower(tostring(mode))
-            if not CombatState.SOUL_MODE_ATTACKS[mode] then
+            -- Red is the default SOUL: selecting it restores the ordinary attack library.
+            if mode == "red" then mode = nil end
+            if mode ~= nil and not CombatState.SOUL_MODE_ATTACKS[mode] then
                 return false, "Unknown SOUL mode: " .. mode
             end
         end

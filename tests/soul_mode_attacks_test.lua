@@ -6,7 +6,7 @@ local function expect(actual, expected, label)
     end
 end
 
-local expected_modes = {"red", "blue", "green", "yellow", "purple", "orange", "cyan"}
+local expected_modes = {"blue", "green", "yellow", "purple", "orange", "cyan"}
 
 local function contains(group, id)
     for _, entry in ipairs(group) do
@@ -59,6 +59,15 @@ end
 
 -- Selecting a mode in the menu must not activate its attack set while a
 -- different SOUL is physically active in the arena.
+-- Red is the default SOUL and must always use the ordinary 37-attack library.
+local red_default = CombatState.new()
+expect(red_default:setSoulMode("red"), true, "selecting Red SOUL restores the default mode")
+expect(red_default.soul_mode, nil, "Red SOUL is represented by no special mode")
+local red_attack = red_default:chooseEnemyAttack("red")
+expect(red_attack.soul_mode, nil, "Red SOUL attacks are ordinary legacy attacks")
+expect(isModeAttack(CombatState.SOUL_MODE_ATTACKS.blue, red_attack.id), false,
+    "default Red attack does not come from a non-default SOUL pool")
+
 local mismatched = CombatState.new()
 expect(mismatched:setSoulMode("yellow"), true, "yellow mode can be selected")
 local attack = mismatched:chooseEnemyAttack("red")
@@ -66,7 +75,7 @@ expect(attack.soul_mode, nil, "red SOUL does not activate selected yellow attack
 expect(isModeAttack(CombatState.SOUL_MODE_ATTACKS.yellow, attack.id), false,
     "yellow-specific attacks are blocked while red SOUL is active")
 
--- A missing/ordinary SOUL type also falls back to the legacy attack pool.
+-- A missing SOUL type also falls back to the ordinary Red attack pool.
 local absent = CombatState.new()
 expect(absent:setSoulMode("cyan"), true, "cyan mode can be selected")
 attack = absent:chooseEnemyAttack(nil)

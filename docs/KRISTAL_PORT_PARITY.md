@@ -115,13 +115,12 @@ and has been tested in Kristal.
 
 ### Vessel SOUL-mode boss attacks
 
-- [x] Core data: separate Knight, Titan, and combined attack definitions for Red, Blue, Green, Yellow, Purple, Orange, and Cyan SOUL modes.
+- [x] Core data: separate Knight, Titan, and combined attack definitions for the six non-default modes: Blue, Green, Yellow, Purple, Orange, and Cyan. Red uses the ordinary Knight/Titan attack library.
 - [x] Core rules: selecting a Vessel mode switches the shared enemy scheduler to that mode's attack pool; Titan and Knight turns alternate, with a synchronized attack on the combo cadence.
 - [x] Core rules: a frozen Knight still yields a Titan attack from the selected mode.
-- [x] Kristal integration: Vessel's seven SOUL-mode menu choices call state:setSoulMode(mode) on the Knight + Titan enemy.
-- [x] Kristal foundation: all 21 SOUL-mode attack definitions route through the shared wave-pattern planner.
-- [ ] Kristal integration: implement bespoke mechanics for the 21 mode-specific Knight/Titan/combined Wave patterns using each definition's pattern key.
-- The five Red SOUL attacks now have dedicated pulse, orbit-gap, crosscut, afterimage, and combined redline geometry in the Kristal Wave planner; the other 16 SOUL-mode attacks still use shared families pending their bespoke mechanics.
+- [x] Kristal integration: Vessel's seven SOUL choices call state:setSoulMode(mode); choosing Red clears the special mode and restores the ordinary attack library.
+- [x] Kristal foundation: all 30 non-default SOUL-mode attack definitions route through the shared wave-pattern planner.
+- [ ] Kristal integration: implement bespoke mechanics for the 30 Blue, Green, Yellow, Purple, Orange, and Cyan Knight/Titan/combined Wave patterns using each definition's pattern key. The ordinary 37-attack library is the Red SOUL baseline, not a separate mode-specific attack set.
 - [ ] Kristal integration: playtest each SOUL mode and verify arena movement, hitboxes, timing, and difficulty scaling in the actual Kristal runtime.
 
 ### SOUL control and ejection
