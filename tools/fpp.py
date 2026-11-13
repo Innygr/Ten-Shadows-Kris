@@ -41,14 +41,14 @@ def transpile(source: str) -> str:
     def trim_trailing_whitespace():
         while output and output[-1].isspace():
             output.pop()
-    for kind, value in tokens:
+    for token_index, (kind, value) in enumerate(tokens):
         if kind in ("space", "line_comment", "string", "number"):
             output.append(value)
             continue
         if kind == "identifier":
             if value == "sinon":
                 trim_trailing_whitespace()
-                output.append("\n" + ("    " * len(blocks)) + "else")
+                output.append("\n" + ("    " * max(0, len(blocks) - 1)) + "else")
             else:
                 output.append(KEYWORDS.get(value, value))
             if value in ("fonction", "si", "sinon", "tant_que", "pour"):
@@ -58,11 +58,15 @@ def transpile(source: str) -> str:
             if pending_block in ("fonction", "si", "sinon", "tant_que", "pour"):
                 block_type = pending_block
                 trim_trailing_whitespace()
-                if block_type == "si":
-                    output.append(" then")
-                elif block_type in ("tant_que", "pour"):
-                    output.append(" do")
-                blocks.append(("block", block_type))
+                if block_type == "sinon":
+                    # The preceding "si" block remains open across an else branch.
+                    pass
+                else:
+                    if block_type == "si":
+                        output.append(" then")
+                    elif block_type in ("tant_que", "pour"):
+                        output.append(" do")
+                    blocks.append(("block", block_type))
                 pending_block = None
             else:
                 output.append("{")
@@ -71,7 +75,18 @@ def transpile(source: str) -> str:
         if value == "}":
             if not blocks:
                 raise FppError("Unmatched closing '}'")
-            block_kind, _ = blocks.pop()
+            block_kind, block_type = blocks[-1]
+            next_index = token_index + 1
+            while next_index < len(tokens) and tokens[next_index][0] in ("space", "line_comment"):
+                next_index += 1
+            next_is_else = (
+                next_index < len(tokens)
+                and tokens[next_index] == ("identifier", "sinon")
+            )
+            if block_kind == "block" and block_type == "si" and next_is_else:
+                # Keep the if block open so the else branch shares its final end.
+                continue
+            blocks.pop()
             output.append("end" if block_kind == "block" else "}")
             continue
         output.append(value)
