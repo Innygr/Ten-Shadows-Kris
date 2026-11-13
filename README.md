@@ -19,8 +19,9 @@ architecture contract.
 - scripts/battle/encounters/runtime_smoke_test.lua, runtime_dummy.lua, and runtime_smoke.lua
   provide a minimal encounter/enemy/wave path for the first runtime check.
 - scripts/objects/soul_ejection.lua: detached SOUL controller foundation.
-- scripts/ten_shadows/combat_state.lua: Lua-native combat rules for the six-member party,
-  TP, ACTs/spells, Ten Shadows, domains, shared Knight + Titan phases/statuses, and attack scheduling.
+- scripts/ten_shadows/combat_state.lua and attack_wave_patterns.lua: six-member party rules,
+  Knight + Titan scheduling, disruption handling, and six reusable projectile-pattern families.
+  The full bespoke boss-attack set and final battle presentation are still in progress.
 
 ## Build artifacts
 

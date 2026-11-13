@@ -66,4 +66,18 @@ function KnightTitanAssault:onStart()
     end, 6)
 end
 
+function KnightTitanAssault:onEnd(death)
+    super.onEnd(self, death)
+
+    if death then return end
+
+    local enemy = Game.battle.enemies and Game.battle.enemies[1] or nil
+    local state = enemy and enemy.ten_shadows_state or nil
+    if state then
+        -- Status durations are measured in enemy turns, not individual
+        -- volleys. Tick once after the complete Wave has ended.
+        state:tickEnemyTurnEffects()
+    end
+end
+
 return KnightTitanAssault

@@ -17,8 +17,9 @@ and has been tested in Kristal.
   connected to Kris's overworld controls, collapse/restore sequence, or character dialogue.
 - scripts/ten_shadows/flavor_text.lua: Lua-native flavor text registry with multiple variants per key, conditional entries, fallback text, and repeat avoidance. Registry logic is tested independently; battle dialogue is not wired to it yet.
 - scripts/ten_shadows/combat_state.lua: Lua-native party, TP, boss phase/status,
-  summon, ACT/spell, domain, and encounter-scheduling rules. Not yet connected to the
-  Kristal Encounter/Enemy/Wave/UI implementation.
+  summon, ACT/spell, domain, and encounter-scheduling rules. The Knight + Titan preview
+  enemy and Wave now consume the shared attack scheduler; player-action and full battle-UI
+  integration are still incomplete.
 - The manifest selects six party IDs: Kris, Susie, Ralsei, Noelle, Berdly, and Vessel.
   Their PartyMember definitions are in `scripts/data/party/`;
   custom spells are in `scripts/data/spells/`. Noelle uses the built-in Noelle actor; Berdly currently
@@ -69,7 +70,8 @@ and has been tested in Kristal.
 - [x] Core rules: WAKE KRIS restores Kris at 1 HP if Kris is down.
 - [x] Kristal integration: first custom spell classes exist for RUSH, BRIGHTEN, HEAL, REVIVESONG, ICE SHOCK, ICE WAVE, and TORNADO, with costs and core effects covered by Lua tests.
 - [ ] Kristal integration: verify spell menus, target selection, action completion, and battle turn consumption in Kristal.
-- [ ] Kristal integration: consume CHILL/frozen and disruption flags in the Knight + Titan enemy-turn scheduler.
+- [x] Kristal integration: consume Knight disruption on the next Knight-led turn, diverting that slot to the Titan; preserve disruption while the Knight is frozen.
+- [ ] Kristal integration: connect CHILL stacks from Noelle's spells to the enemy's frozen-turn state.
 
 ### Ten Shadows and domains
 
@@ -96,7 +98,8 @@ and has been tested in Kristal.
   no immediate same attack when alternatives exist, and phase scheduler reset.
 - [x] Core rules: Knight/Titan cannot become TIRED and cannot receive MERCY/SPARE.
 - [ ] Kristal integration: actual shared enemy health/phase transitions and crossed-out Mercy UI.
-- [ ] Kristal integration: all 37 attacks have a matching Kristal Wave, with the same phase access,
+- [x] Kristal foundation: the selected attack now routes through six reusable projectile families (radial, safe-lane wall, aimed, crossfire, falling, and sweep), with separate Knight/Titan/combined projectile visuals and phase-scaled density.
+- [ ] Kristal integration: all 37 attacks have a matching bespoke Kristal Wave, with the same phase access,
   timing, movement, hit rules, and difficulty variations.
 - [ ] Kristal integration: Titan swarm/centipedes and purification/courage pickups.
 - [ ] Kristal integration: Titan hands, closing gap, finger purification, and hand shots.
@@ -113,7 +116,8 @@ and has been tested in Kristal.
 - [x] Core rules: selecting a Vessel mode switches the shared enemy scheduler to that mode's attack pool; Titan and Knight turns alternate, with a synchronized attack on the combo cadence.
 - [x] Core rules: a frozen Knight still yields a Titan attack from the selected mode.
 - [ ] Kristal integration: connect Vessel mode changes to state:setSoulMode(mode).
-- [ ] Kristal integration: implement the 21 unique mode-specific Knight/Titan/combined Wave patterns using each definition's pattern key.
+- [x] Kristal foundation: all 21 SOUL-mode attack definitions route through the shared wave-pattern planner.
+- [ ] Kristal integration: implement bespoke mechanics for the 21 mode-specific Knight/Titan/combined Wave patterns using each definition's pattern key.
 - [ ] Kristal integration: playtest each SOUL mode and verify arena movement, hitboxes, timing, and difficulty scaling in the actual Kristal runtime.
 
 ### SOUL control and ejection
@@ -150,7 +154,7 @@ and has been tested in Kristal.
 2. Replace the placeholder enemy with the shared Knight + Titan encounter while keeping the
    project launchable at every step.
 3. Connect the combat-state rules to Kristal party actions, TP UI, items, enemy state, and waves.
-4. Port the full Knight/Titan wave library, including all 37 attack definitions.
+4. Expand the shared Knight/Titan wave-pattern families into bespoke implementations for all 37 attacks.
 5. Integrate SOUL ejection into the overworld and then into the boss encounter.
 6. Port route state, flavor text, sprites, and battle presentation.
 7. Test every action, phase transition, attack, status, and win/loss path in the actual

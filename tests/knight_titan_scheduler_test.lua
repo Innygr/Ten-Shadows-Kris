@@ -40,4 +40,18 @@ local frozen_attack, was_frozen = frozen_state:chooseEnemyAttack()
 assert(was_frozen and frozen_attack, "the Titan still attacks while the Knight is frozen")
 assert(frozen_state.knight_disrupted == 1, "disruption must remain pending while the Knight is frozen")
 
+-- The Knight domain lasts exactly three complete enemy turns.
+local domain_state = CombatState.new()
+domain_state.boss.phase = 3
+assert(domain_state:startKnightDomain(), "phase three must allow the Knight domain to start")
+domain_state:tickEnemyTurnEffects()
+assert(domain_state.knight_domain.active and domain_state.knight_domain.turns == 2,
+    "domain must persist for two turns after its first tick")
+domain_state:tickEnemyTurnEffects()
+assert(domain_state.knight_domain.active and domain_state.knight_domain.turns == 1,
+    "domain must persist for its final turn")
+domain_state:tickEnemyTurnEffects()
+assert(not domain_state.knight_domain.active and domain_state.knight_domain.turns == 0,
+    "domain must expire after three enemy turns")
+
 print("Knight + Titan attack scheduler tests passed.")

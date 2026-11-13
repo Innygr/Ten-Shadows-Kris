@@ -109,8 +109,9 @@ jobs:
           test -f scripts/ten_shadows/attack_wave_patterns.lua
           test -f tests/attack_wave_patterns_test.lua
           test -f tests/knight_titan_scheduler_test.lua
-          grep -q 'AttackWavePatterns' scripts/battle/waves/knight_titan_assault.lua
+          grep -q 'Patterns.build' scripts/battle/waves/knight_titan_assault.lua
           grep -q 'self:consumeKnightDisruption(false)' scripts/ten_shadows/combat_state.lua
+          grep -q 'state:tickEnemyTurnEffects()' scripts/battle/waves/knight_titan_assault.lua
           test -f scripts/battle/enemies/roaring_knight_titan.lua
           test -f scripts/ten_shadows/boss_phase.lua
           test -f tests/boss_phase_test.lua

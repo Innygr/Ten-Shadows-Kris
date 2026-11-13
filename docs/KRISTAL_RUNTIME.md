@@ -92,6 +92,26 @@ find . -type f -name '*.lua' -not -path './.git/*' -print0 |
   xargs -0 -n1 luac5.1 -p
 ```
 
+## Knight + Titan wave implementation
+
+The preview encounter now uses a shared, deterministic spawn planner at
+`scripts/ten_shadows/attack_wave_patterns.lua`. The selected scheduler entry is routed
+through six reusable attack families: radial bursts, safe-lane walls, aimed volleys,
+combined crossfire, falling shots, and horizontal sweeps. Projectiles are drawn with
+separate Knight (red), Titan (cyan), and combined (gold) styling. Phase three increases
+pattern density, and an active Knight domain layers two additional falling blades over
+the selected pattern.
+
+Tornado disruption is consumed on the next Knight-led scheduler slot. The Knight's action
+is diverted to a Titan-only attack instead of disappearing; disruption remains pending
+while the Knight is frozen. Status/domain durations tick once when the complete Wave ends,
+not after each projectile volley.
+
+These are shared pattern families rather than 37 bespoke recreations. The full attack
+library, specialized collision rules, Cyan parry behaviour, and in-game playtesting remain
+outstanding. The runtime smoke-test encounter remains the manifest's default until the
+preview encounter and its assets are verified in a real Kristal launch.
+
 ## First launch checklist
 
 1. For the standalone route, download and extract `Deltarune-Shadowbender-standalone-Love-11.5`,
