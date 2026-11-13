@@ -2,7 +2,11 @@ local character, super = Class(PartyMember, "vessel")
 
 function character:init()
     super.init(self)
-    self.name = "Vessel"
+    local identity = Mod.vessel_identity.get()
+    self.name = identity.name
+    self.gender = identity.gender
+    self.pronouns = identity.pronouns
+    self.presentation = identity.presentation
     self:setActor("vessel")
     self:setWeapon("soul_rapier")
     self:setArmor(1, "soul_anchor")

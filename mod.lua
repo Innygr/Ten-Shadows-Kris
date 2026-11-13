@@ -2,6 +2,9 @@ local PARTY_ROSTER = {"kris", "susie", "ralsei", "noelle", "berdly", "vessel"}
 local installSixPartySupport
 
 function Mod:init()
+    Mod.vessel_identity = modRequire("scripts/ten_shadows/vessel_identity")
+    Mod.vessel_identity.load()
+
     Mod.flavor_text = modRequire("scripts/ten_shadows/flavor_text")
 
     local BerdlyActions = modRequire("scripts/ten_shadows/berdly_actions")

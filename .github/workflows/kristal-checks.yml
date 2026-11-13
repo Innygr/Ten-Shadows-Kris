@@ -102,6 +102,9 @@ jobs:
       - name: Test Berdly actor configuration isolation
         run: lua5.1 tests/berdly_actor_test.lua
 
+      - name: Test Vessel identity profile and save import
+        run: lua5.1 tests/vessel_identity_test.lua
+
       - name: Test Vessel sprite configuration
         run: lua5.1 tests/vessel_actor_test.lua
 
@@ -161,6 +164,10 @@ jobs:
           grep -q 'self.can_freeze = false' scripts/battle/enemies/roaring_knight_titan.lua
           grep -q 'BossPhase.advance' scripts/battle/enemies/roaring_knight_titan.lua
           for member in kris susie ralsei noelle berdly vessel; do test -f "scripts/data/party/$member.lua"; done
+          test -f scripts/ten_shadows/vessel_identity.lua
+          test -f tests/vessel_identity_test.lua
+          grep -q "Mod.vessel_identity.load()" mod.lua
+          grep -q "self.pronouns = identity.pronouns" scripts/data/party/vessel.lua
           test -f scripts/data/actors/vessel.lua
           grep -q 'sprite.scale_y = 1.15' scripts/data/actors/vessel.lua
           grep -q 'function copyActorValue(value, seen)' scripts/data/actors/vessel.lua

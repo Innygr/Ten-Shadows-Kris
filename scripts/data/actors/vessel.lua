@@ -60,7 +60,11 @@ function actor:init()
         end
     end
 
-    self.name = "Vessel"
+    local identity = Mod and Mod.vessel_identity and Mod.vessel_identity.get() or {}
+    self.name = identity.name or "Vessel"
+    self.gender = identity.gender or "unspecified"
+    self.pronouns = identity.pronouns or "they/them"
+    self.presentation = identity.presentation or "androgynous"
     self.color = {1, 0.035, 0.08}
 end
 
