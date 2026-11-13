@@ -49,7 +49,7 @@ jobs:
           python3 tests/fpp_transpiler_test.py
           python3 tests/fpp_build_test.py
           python3 tests/fsharp_bridge_test.py
-          python3 tools/fsharp_bridge.py examples/hello.fs --to lua -o /tmp/fsharp-hello.lua
+          python3 tools/fsharp_bridge.py examples/hello.f# --to lua -o /tmp/fsharp-hello.lua
           luac5.1 -p /tmp/fsharp-hello.lua
           lua5.1 tests/boss_phase_test.lua
           lua5.1 tests/knight_titan_scheduler_test.lua
