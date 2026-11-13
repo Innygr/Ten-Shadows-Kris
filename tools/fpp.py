@@ -66,8 +66,6 @@ def transpile(source: str) -> str:
             output.append("end" if block_kind == "block" else "}")
             continue
         output.append(value)
-        if value not in ("(", ")"):
-            pending_block = None
 
     if blocks:
         raise FppError("Unclosed block or table brace")
