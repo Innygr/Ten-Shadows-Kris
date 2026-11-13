@@ -11,8 +11,9 @@ and has been tested in Kristal.
 ## Current Kristal foundation
 
 - mod.json and mod.lua now provide a project manifest and initialization hook.
-- scripts/battle/encounters/runtime_smoke_test.lua, runtime_dummy.lua, and runtime_smoke.lua
-  provide a minimal boot-to-battle smoke-test path. This is not the real boss encounter.
+- New files now start in `knight_titan_preview`: the shared Knight + Titan enemy and its
+  `knight_titan_assault` Wave are the default battle path. The older runtime smoke-test
+  encounter remains available as a separate engine diagnostic.
 - scripts/objects/soul_ejection.lua: detached SOUL movement/drawing controller. Not yet
   connected to Kris's overworld controls, collapse/restore sequence, or character dialogue.
 - scripts/ten_shadows/flavor_text.lua: Lua-native flavor text registry with multiple variants per key, conditional entries, fallback text, and repeat avoidance. Registry logic is tested independently; battle dialogue is not wired to it yet.
@@ -34,8 +35,9 @@ and has been tested in Kristal.
 - [x] Encounter registration path, enemy class, and a short no-projectile test wave.
 - [ ] Launch the project in Kristal v0.10.0-192-geaf9e0ef and confirm all six party members appear in the battle.
 - [ ] Confirm the six-member test wave ends cleanly and the battle can return to the menu without errors.
-- [x] Add a separate Knight + Titan preview encounter with one 260 HP enemy, disabled MERCY/TIRED/freeze, and phase CHECK/dialogue at 175 HP and 78 HP. It remains separate from the default smoke-test entry until dedicated art and a complete boss wave set exist.
-- [ ] Replace the temporary encounter with the shared Knight + Titan enemy and real battle flow.
+- [x] Add the Knight + Titan encounter with one 260 HP shared-health enemy, disabled MERCY/TIRED/freeze, phase CHECK/dialogue at 175 HP and 78 HP, and a scheduler-backed assault Wave.
+- [x] Make the Knight + Titan encounter the new-file starting encounter; keep the runtime smoke-test path as a separate diagnostic.
+- [ ] Verify the new-file fight, party actions, wave lifecycle, victory/loss transitions, and asset loading in Kristal v0.10.0.
 - [x] Add custom PartyMember definitions for all six party IDs in `scripts/data/party/` and set the manifest party roster.
 - [ ] Add dedicated Berdly and Knight/Titan sprites, then verify Kris → Susie → Ralsei → Noelle → Berdly → Vessel turn order and downed-member handling in Kristal.
 - [ ] Add a real overworld start/map and route progression after the battle runtime is stable.

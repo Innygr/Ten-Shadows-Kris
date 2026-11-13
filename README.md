@@ -16,13 +16,14 @@ architecture contract.
 ## Current Kristal foundation
 
 - mod.json and mod.lua provide the initial Kristal project configuration and load hook.
-- scripts/battle/encounters/runtime_smoke_test.lua, runtime_dummy.lua, and runtime_smoke.lua
-  provide a minimal encounter/enemy/wave path for the first runtime check.
-- scripts/objects/soul_ejection.lua: detached SOUL controller foundation.
-- scripts/ten_shadows/combat_state.lua, runtime_shadows.lua, and attack_wave_patterns.lua:
-  six-member party rules, live Knight + Titan ACT/status/SOUL-mode integration, disruption,
-  and six reusable projectile-pattern families. Bespoke attack mechanics and final presentation
-  are still in progress.
+- A new file now starts the Knight + Titan playtest encounter (`knight_titan_preview`), using
+  the shared 260 HP boss, six-member party, and Knight + Titan assault Wave.
+- `runtime_smoke_test.lua`, `runtime_dummy.lua`, and `runtime_smoke.lua` remain available as a
+  separate engine-integration diagnostic path.
+- `scripts/objects/soul_ejection.lua`: detached SOUL controller foundation.
+- `scripts/ten_shadows/combat_state.lua`, `runtime_shadows.lua`, and `attack_wave_patterns.lua`:
+  six-member party rules, boss ACT/status/SOUL-mode integration, disruption, and six reusable
+  projectile-pattern families. Bespoke attack mechanics and final presentation remain in progress.
 
 ## Build artifacts
 
@@ -43,10 +44,11 @@ package is only for installing into a working Kristal installation.
 The HTML/JavaScript browser prototype and documentation are source/reference material; they are
 not included in either game package.
 
-The initial runtime encounter is deliberately a placeholder, not the real Knight + Titan fight.
-The manifest includes all six project party members: Kris, Susie, Ralsei, Noelle, Berdly, and Vessel.
-Their in-game visibility and turn flow still need verification in a local Kristal launch. The current Berdly actor uses Kris as a temporary visual
-fallback until dedicated art is added.
+A new file now enters the Knight + Titan playtest directly. The boss still uses Kris's built-in
+actor as a temporary visual stand-in until dedicated Knight/Titan art is added, and the current
+six-member turn flow, boss presentation, and battle transitions still need verification in a
+local Kristal launch. The six project party members are Kris, Susie, Ralsei, Noelle, Berdly, and
+Vessel. Berdly's actor also remains a temporary visual fallback.
 
 ## Startup troubleshooting
 

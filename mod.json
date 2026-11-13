@@ -6,7 +6,7 @@
   "engineVer": "v0.10.0",
   "chapter": 2,
   "map": "test_room",
-  "encounter": "runtime_smoke_test",
+  "encounter": "knight_titan_preview",
   "party": [
     "kris",
     "susie",

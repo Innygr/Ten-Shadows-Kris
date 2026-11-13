@@ -24,10 +24,13 @@ Deltarune-Shadowbender/
 ├── scripts/
 │   ├── battle/
 │   │   ├── encounters/
+│   │   │   ├── knight_titan_preview.lua
 │   │   │   └── runtime_smoke_test.lua
 │   │   ├── enemies/
+│   │   │   ├── roaring_knight_titan.lua
 │   │   │   └── runtime_dummy.lua
 │   │   └── waves/
+│   │       ├── knight_titan_assault.lua
 │   │       └── runtime_smoke.lua
 │   ├── objects/
 │   │   └── soul_ejection.lua
@@ -37,14 +40,18 @@ Deltarune-Shadowbender/
 ```
 
 Kristal discovers encounter, enemy, and wave classes by their script folders and file IDs.
-The initial manifest starts runtime_smoke_test, which adds runtime_dummy, which selects the
-runtime_smoke wave. The test enemy reuses the engine's built-in Kris actor so this first
-integration does not depend on custom actor sprite files. It registers Inspect and Kris-only
-Signal ACTs, preserves CHECK and the standard X-ACT response, and uses a custom visible
-bullet for a short dodgeable attack. The test enemy also registers the party spell ACTs (RUSH, BRIGHTEN, HEAL, REVIVESONG,
-ICE SHOCK, ICE WAVE, and TORNADO), Chimera Shadow Garden, and all ten Ten Shadows
-summons with their TP costs. The six custom party definitions and seven custom spells
-must live in the mod registry directories: `scripts/data/party/` and `scripts/data/spells/`.
+On a new file, Kristal reads the manifest's `encounter` option and starts that encounter after
+loading the configured map. The manifest now selects `knight_titan_preview`, which creates the
+shared Roaring Knight + Titan enemy and its `knight_titan_assault` Wave. The boss uses the
+engine's built-in Kris actor as a temporary art placeholder; it does not require custom
+Knight/Titan sprite assets to load. The separate `runtime_smoke_test` encounter remains useful
+for diagnosing the engine's basic mod -> encounter -> enemy -> wave path.
+
+The smoke-test enemy registers Inspect and Kris-only Signal ACTs, preserves CHECK and standard
+X-ACT, and uses a custom visible bullet for a short dodgeable attack. The Knight + Titan fight
+has its own Kris Ten Shadows submenu, Vessel SOUL-mode menu, phase state, and boss-specific
+wave scheduler. The six custom party definitions and seven custom spells live in
+`scripts/data/party/` and `scripts/data/spells/`.
 
 ## Automated checks and artifacts
 
@@ -103,8 +110,8 @@ leaves the Titan's attack active and disrupting the Knight diverts its next acti
 Titan. Mahoraga is restored to Kris's party slot when the preview encounter ends.
 
 This is the first pass of action/state integration, not final balance or visual polish. The
-preview encounter is still separate from the manifest's smoke-test starting encounter, and
-these actions still need a hands-on Kristal v0.10.0 launch/playtest.
+preview encounter is now the manifest's new-file starting encounter so the fight can be
+playtested directly. The actions still need a hands-on Kristal v0.10.0 launch/playtest.
 
 ## Knight + Titan wave implementation
 
@@ -123,8 +130,9 @@ not after each projectile volley.
 
 These are shared pattern families rather than 37 bespoke recreations. The full attack
 library, specialized collision rules, Cyan parry behaviour, and in-game playtesting remain
-outstanding. The runtime smoke-test encounter remains the manifest's default until the
-preview encounter and its assets are verified in a real Kristal launch.
+outstanding. The Knight + Titan preview is now the manifest default to make the current
+fight available immediately; the runtime smoke-test encounter remains selectable for
+engine diagnostics. Dedicated Knight/Titan art is still outstanding.
 
 ## First launch checklist
 
@@ -133,14 +141,14 @@ preview encounter and its assets are verified in a real Kristal launch.
 2. For the mod-only route, install `Deltarune-Shadowbender-mod-only-Kristal-v0.10.0` into an
    existing Kristal v0.10.0 installation, then launch Kristal and select Deltarune: Shadowbender.
    Never open the mod-only ZIP or folder directly with LÖVE.
-3. Create a new file. The manifest should route into the runtime smoke-test encounter.
-4. Confirm the placeholder enemy, battle UI, and ACT menu load.
-5. Open Kris's ACT list and confirm all ten shadows plus Chimera Shadow Garden appear with their TP costs.
-6. Confirm Kris, Susie, Ralsei, Noelle, Berdly, and Vessel all appear in the six-member battle roster. Verify their turn order, action menus, and downed-member handling.
-7. Use CHECK, Inspect, Kris's Signal ACT, and the standard X-ACT; confirm each returns dialogue.
-8. Dodge the five slow bullets during the short attack wave, then confirm the wave exits cleanly.
-9. Finish the encounter and confirm Kristal returns without a Lua error.
-10. Record the exact engine build and any console traceback before changing the scaffold.
+3. Create a new file. The manifest should route directly into `knight_titan_preview`.
+4. Confirm the shared 260 HP Knight + Titan enemy, battle UI, and initial dialogue load.
+5. Confirm all six party members appear and can select actions; inspect the paged action UI.
+6. Open Kris's ACT list and confirm the Ten Shadows submenu and Chimera Shadow Garden appear.
+7. Open Vessel's ACT list and verify all seven SOUL-mode choices switch the boss attack scheduler.
+8. Dodge the six-volley Knight + Titan assault, then confirm the wave exits cleanly and the next turn starts.
+9. Exercise CHECK/Inspect, summons, domain duration, CHILL, and Knight disruption.
+10. Finish or lose the encounter and confirm Kristal returns without a Lua error. Record the exact engine build and any traceback.
 
 The repository work environment does not contain the user's Kristal/LÖVE runtime, so this
 launch checklist remains unverified here. Do not mark runtime checks complete based only on
@@ -159,8 +167,8 @@ an engine asset, not a file supplied by the mod folder.
 - The manifest selects all six party IDs. Kris, Susie, Ralsei, and Noelle use their matching
   built-in actors. Vessel has a dedicated gray/red-outline actor; Berdly has a dedicated actor
   identity, but still borrows Kris's animation frames and portrait assets as visual placeholders.
-- The temporary test enemy is not the Knight + Titan. It exists only to prove the engine's
-  mod -> encounter -> enemy -> wave loading path and ACT registration/dispatch.
+- The temporary test enemy is not the manifest target. It remains available as a separate
+  diagnostic for the engine's mod -> encounter -> enemy -> wave loading path and basic ACT dispatch.
 - The first custom spell set now has real Kristal spell classes: Susie's RUSH and BRIGHTEN;
   Ralsei's HEAL and REVIVESONG; Noelle's ICE SHOCK and ICE WAVE; and Berdly's TORNADO.
   Damage, healing, revival, and the temporary defense buff are implemented in the shared

@@ -44,6 +44,9 @@ jobs:
           print("Initial encounter:", manifest["encounter"])
           PY
 
+      - name: Verify new-file boss entry point
+        run: python3 tests/manifest_startup_test.py
+
       - name: Test TOASTER translator and missing-translator fallback
         run: |
           python3 tests/fpp_transpiler_test.py
