@@ -138,10 +138,14 @@ is diverted to a Titan-only attack instead of disappearing; disruption remains p
 while the Knight is frozen. Status/domain durations tick once when the complete Wave ends,
 not after each projectile volley.
 
-These are shared pattern families rather than 37 bespoke recreations. The full attack
-library, specialized collision rules, Cyan parry behaviour, and in-game playtesting remain
-outstanding. Lua tests now exercise both the pattern warning descriptors and the real
-projectile class's warning-to-hitbox transition with a minimal engine test double. The Knight + Titan preview is now the manifest default to make the current
+These are shared pattern families rather than 37 bespoke recreations. Cyan mode now creates
+a Cyan-coloured Soul that charges while confirm is held, then releases an expanding purge
+that removes active projectiles. The dedicated Knight's Execution volley carries a parry
+marker; a charged release near its armed slash staggers the Knight, exposes the shared boss,
+grants 12 TP, and unlocks a one-use Kris EXECUTION COUNTER ACT for 36 damage. A mistimed or
+undercharged release still purges the screen but does not grant the counter. Lua tests cover
+the pattern marker, the real projectile class, Soul input/charge behaviour, purge, parry,
+counter expiry, and encounter Soul factory. The Knight + Titan preview is now the manifest default to make the current
 fight available immediately; the runtime smoke-test encounter remains selectable for
 engine diagnostics. Dedicated Knight/Titan art is still outstanding.
 
@@ -156,11 +160,14 @@ engine diagnostics. Dedicated Knight/Titan art is still outstanding.
 4. Confirm the shared 260 HP Knight + Titan enemy, battle UI, and initial dialogue load.
 5. Confirm all six party members appear and can select actions; inspect the paged action UI.
 6. Open Kris's ACT list and confirm the Ten Shadows submenu and Chimera Shadow Garden appear.
-7. Open Vessel's ACT list and verify all seven SOUL-mode choices switch the boss attack scheduler.
-8. Use BRIGHTEN while Noelle, Berdly, and Vessel have actions queued; confirm their actions still resolve after the grouped ACT.
-9. Dodge the six-volley Knight + Titan assault, then confirm the wave exits cleanly and the next turn starts.
-10. Exercise CHECK/Inspect, summons, domain duration, CHILL, and Knight disruption.
-11. Finish or lose the encounter and confirm Kristal returns without a Lua error. Record the exact engine build and any traceback.
+7. Open Vessel's ACT list and select a SOUL mode; confirm the arena Soul's colour and type match.
+8. Switch to a different mode and verify its special attacks do not run while another Soul type is active.
+9. Select CYAN SOUL; hold confirm to charge, then release to purge the visible bullets.
+10. In Phase 2 or 3, time a charged release near Knight's Execution to stagger the Knight and unlock Kris's EXECUTION COUNTER.
+11. Use BRIGHTEN while Noelle, Berdly, and Vessel have actions queued; confirm their actions still resolve after the grouped ACT.
+12. Dodge the six-volley Knight + Titan assault, then confirm the wave exits cleanly and the next turn starts.
+13. Exercise CHECK/Inspect, summons, domain duration, CHILL, and Knight disruption.
+14. Finish or lose the encounter and confirm Kristal returns without a Lua error. Record the exact engine build and any traceback.
 
 The repository work environment does not contain the user's Kristal/LÖVE runtime, so this
 launch checklist remains unverified here. Do not mark runtime checks complete based only on

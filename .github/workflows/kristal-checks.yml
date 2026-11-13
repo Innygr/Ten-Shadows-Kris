@@ -58,6 +58,7 @@ jobs:
           lua5.1 tests/knight_titan_scheduler_test.lua
           lua5.1 tests/attack_wave_patterns_test.lua
           lua5.1 tests/shadow_projectile_test.lua
+          lua5.1 tests/cyan_soul_test.lua
           python3 tools/toaster.py examples/hello.fpp -o /tmp/fpp-hello.lua
           luac5.1 -p /tmp/fpp-hello.lua
 
@@ -116,11 +117,17 @@ jobs:
           test -f scripts/ten_shadows/attack_wave_patterns.lua
           test -f tests/attack_wave_patterns_test.lua
           test -f tests/shadow_projectile_test.lua
+          test -f tests/cyan_soul_test.lua
+          test -f scripts/objects/cyan_soul.lua
           test -f tests/brighten_act_test.lua
           test -f tests/knight_titan_scheduler_test.lua
           grep -q 'Patterns.build' scripts/battle/waves/knight_titan_assault.lua
           grep -q 'shot.warning' scripts/battle/waves/knight_titan_assault.lua
           grep -q 'function ShadowProjectile:arm()' scripts/battle/bullets/shadow_projectile.lua
+          grep -q 'function CyanSoul:releaseCharge()' scripts/objects/cyan_soul.lua
+          grep -q 'function state:parryExecution()' scripts/ten_shadows/combat_state.lua
+          grep -q 'cyan_knights_execution' scripts/ten_shadows/attack_wave_patterns.lua
+          grep -q 'EXECUTION COUNTER' scripts/battle/enemies/roaring_knight_titan.lua
           grep -q 'self:consumeKnightDisruption(false)' scripts/ten_shadows/combat_state.lua
           grep -q 'state:tickEnemyTurnEffects()' scripts/battle/waves/knight_titan_assault.lua
           grep -q 'Shadows.onEnemyTurnEnd(enemy)' scripts/battle/waves/knight_titan_assault.lua

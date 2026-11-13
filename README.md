@@ -27,7 +27,9 @@ architecture contract.
   six-member party rules, boss ACT/status/SOUL-mode integration, disruption, and six reusable
   projectile-pattern families. Wall, aimed, and falling attacks now telegraph their paths before
   projectiles become dangerous. BRIGHTEN resolves as one grouped ACT and preserves queued
-  Noelle, Berdly, and Vessel actions. Bespoke attack mechanics and final presentation remain in progress.
+  Noelle, Berdly, and Vessel actions. Cyan SOUL charges and purges bullets on release; a timed
+  Knight's Execution parry staggers the Knight and opens a one-use Kris counter ACT. SOUL-mode
+  attack sets only run while the matching coloured SOUL is active.
 
 ## Build artifacts
 
