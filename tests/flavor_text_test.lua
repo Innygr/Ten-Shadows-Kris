@@ -7,11 +7,15 @@ local function expect(actual, expected, label)
 end
 
 expect(FlavorText.has("roaring_knight.early"), true, "early key exists")
-expect(FlavorText.get("roaring_knight.early"), "You feel incoming dread.", "early text")
 expect(
-    FlavorText.get("roaring_knight.opening"),
-    "No one is holding back anymore... Do your best. The fate of the world is in your hands",
-    "opening text"
+    FlavorText.get("roaring_knight.early", {}, {random = function() return 1 end}),
+    "* The red SOUL flickers beside {vessel_name}.",
+    "early text retains the Vessel name placeholder"
+)
+expect(
+    FlavorText.get("roaring_knight.opening", {}, {random = function() return 1 end}),
+    "* The Knight raises its blade at {vessel_name}.",
+    "opening dialogue retains the Vessel name placeholder"
 )
 
 FlavorText.register("test.multiple", {
