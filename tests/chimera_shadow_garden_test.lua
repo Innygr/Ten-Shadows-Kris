@@ -41,13 +41,20 @@ love = {graphics = {
 local Garden = dofile("scripts/battle/objects/chimera_shadow_garden.lua")
 local visual = Garden(180, 142)
 assert(visual.width == 180 and visual.height == 142, "garden must use the arena's dimensions")
-assert(visual.time == 0 and visual.fade == 0, "garden animation must start at its opening frame")
+assert(visual.time == 0 and visual.fade == 1 and visual.opening == 0,
+    "an already-active garden must appear without replaying its opening bloom")
 assert(visual.layer == 0, "garden must inherit the arena mask's visual layer")
+local opening_visual = Garden(180, 142, true)
+assert(opening_visual.fade == 0 and opening_visual.opening == 1,
+    "first activation must start with an outward expansion bloom")
 
 DT = 0.25
 visual:update()
-assert(visual.time > 0 and visual.fade > 0, "garden animation must advance and fade in")
-visual:draw()
+opening_visual:update()
+assert(visual.time > 0, "garden idle animation must advance")
+assert(opening_visual.opening < 1 and opening_visual.opening > 0,
+    "the one-time opening bloom must animate outward")
+opening_visual:draw()
 
 local counts = {}
 for _, call in ipairs(draw_calls) do
@@ -57,7 +64,8 @@ assert(counts.push == 1 and counts.pop == 1, "garden draw must restore the graph
 assert((counts.rectangle or 0) >= 2, "garden must tint and frame the arena")
 assert((counts.ellipse or 0) >= 2, "garden must draw layered shadow pools")
 assert((counts.line or 0) >= 10, "garden must draw branching shadow roots")
-assert((counts.circle or 0) >= 30, "garden must draw the central seal and drifting motes")
+assert((counts.circle or 0) >= 33,
+    "garden must draw the expansion rings, central seal, and drifting motes")
 assert((counts.polygon or 0) >= 20, "garden must draw ten shadow petals and boundary marks")
 
 -- Ensure the live Wave attaches the effect to Arena.mask only while Kris's
@@ -68,9 +76,13 @@ local wave_source = wave_file:read("*a")
 wave_file:close()
 assert(wave_source:find("state.player_domain.active", 1, true),
     "the Knight + Titan Wave must check the active player domain")
+assert(wave_source:find("player_domain.visual_pending", 1, true),
+    "the first Wave must consume Kris's one-time opening animation flag")
 assert(wave_source:find("spawnObjectTo(arena.mask", 1, true),
     "the garden must be attached to the arena mask")
 assert(wave_source:find("scripts/battle/objects/chimera_shadow_garden", 1, true),
     "the live Wave must load the Chimera Shadow Garden object")
+assert(wave_source:find("GardenVisual(arena.width, arena.height, opening)", 1, true),
+    "the Wave must pass the opening animation state to the garden object")
 
 print("Chimera Shadow Garden visual and Wave integration tests passed.")

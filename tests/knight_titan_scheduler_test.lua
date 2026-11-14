@@ -71,6 +71,26 @@ local frozen_attack, was_frozen = frozen_state:chooseEnemyAttack()
 assert(was_frozen and frozen_attack, "the Titan still attacks while the Knight is frozen")
 assert(frozen_state.knight_disrupted == 1, "disruption must remain pending while the Knight is frozen")
 
+-- Kris's domain lasts three turns and asks only its first Wave to play the
+-- opening animation. The active field remains available to the next Waves.
+local player_domain_state = CombatState.new()
+assert(player_domain_state:expandChimeraDomain(true),
+    "Kris must be able to activate Chimera Shadow Garden")
+assert(player_domain_state.player_domain.active and player_domain_state.player_domain.turns == 3,
+    "Chimera Shadow Garden must start with three turns")
+assert(player_domain_state.player_domain.visual_pending,
+    "the first defending Wave must receive an opening animation")
+player_domain_state.player_domain.visual_pending = false
+player_domain_state:tickEnemyTurnEffects()
+assert(player_domain_state.player_domain.active and player_domain_state.player_domain.turns == 2,
+    "Kris's domain must persist through the first enemy turn")
+assert(not player_domain_state.player_domain.visual_pending,
+    "the opening animation must not replay on later turns")
+player_domain_state:tickEnemyTurnEffects()
+player_domain_state:tickEnemyTurnEffects()
+assert(not player_domain_state.player_domain.active and not player_domain_state.player_domain.visual_pending,
+    "Kris's domain and opening animation flag must clear after three enemy turns")
+
 -- The Knight domain lasts exactly three complete enemy turns.
 local domain_state = CombatState.new()
 domain_state.boss.phase = 3

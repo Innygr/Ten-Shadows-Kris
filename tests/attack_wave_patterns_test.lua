@@ -291,10 +291,27 @@ assert(twin_first[1].warning.length ~= twin_second[1].warning.length
     or twin_first[1].direction ~= twin_second[1].direction,
     "Twin Slashes crossing point must shift between volleys")
 
-local base_shots = Patterns.build({id = "twin_slashes"}, 3, 3, arena, target, false)
-local domain_shots = Patterns.build({id = "twin_slashes"}, 3, 3, arena, target, true)
-assert(#domain_shots == #base_shots + 2, "Knight domain must layer two extra falling blades")
-assert(domain_shots[#domain_shots].warning.kind == "falling",
+local base_shots = Patterns.build({id = "twin_slashes"}, 3, 3, arena, target, false, false)
+local knight_domain_shots = Patterns.build({id = "twin_slashes"}, 3, 3, arena, target, true, false)
+assert(#knight_domain_shots == #base_shots + 2,
+    "Knight domain must layer two extra falling blades")
+assert(knight_domain_shots[#knight_domain_shots].warning.kind == "falling",
     "Knight domain blades must telegraph their diagonal travel")
+
+-- Kris's domain is a separate modifier: it sends two marked root blades up
+-- from the lower edges, each with its own trajectory telegraph.
+local player_domain_shots = Patterns.build({id = "twin_slashes"}, 3, 3, arena, target, false, true)
+assert(#player_domain_shots == #base_shots + 2,
+    "Chimera Shadow Garden must add two root attacks without changing the Knight domain")
+for _, shot in ipairs(player_domain_shots) do
+    if shot.mechanic and shot.mechanic.kind == "chimera_domain_blade" then
+        assert(shot.kind == "combo" and shot.warning.kind == "target",
+            "Kris's root blades must be styled and telegraphed as combined attacks")
+        assert(shot.mechanic.root == 3 or shot.mechanic.root == 8,
+            "Each root blade must identify one of the garden's ten shadow roots")
+    end
+end
+assert(player_domain_shots[#player_domain_shots].mechanic.kind == "chimera_domain_blade",
+    "the final domain root attack must retain its dedicated projectile marker")
 
 print("Knight + Titan wave pattern coverage and telegraph tests passed.")

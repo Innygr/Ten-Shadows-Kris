@@ -24,13 +24,14 @@ local function diamond(cx, cy, radius, angle)
     love.graphics.polygon("fill", unpack(points))
 end
 
-function ChimeraShadowGarden:init(width, height)
+function ChimeraShadowGarden:init(width, height, opening)
     super.init(self)
 
     self.width = math.max(1, width or 142)
     self.height = math.max(1, height or 142)
     self.time = 0
-    self.fade = 0
+    self.opening = opening == true and 1 or 0
+    self.fade = opening == true and 0 or 1
     -- Children of Arena.mask share its visual layer; keep this object at the
     -- parent's local layer so it stays between the arena and live projectiles.
     self.layer = 0
@@ -38,7 +39,9 @@ end
 
 function ChimeraShadowGarden:update()
     local delta = DT or (1 / 30)
-    self.time = self.time + math.min(math.max(delta, 0), 0.1)
+    delta = math.min(math.max(delta, 0), 0.1)
+    self.time = self.time + delta
+    self.opening = math.max(0, self.opening - delta / 0.9)
     self.fade = math.min(1, self.fade + delta * 2.8)
     super.update(self)
 end
@@ -63,6 +66,29 @@ function ChimeraShadowGarden:draw()
     graphics.ellipse("fill", cx, cy, width * 0.44, height * 0.42)
     color(0.20, 0.045, 0.31, 0.13 * fade)
     graphics.ellipse("fill", cx, cy, width * 0.31, height * 0.30)
+
+    -- One-time expansion bloom: rings race outward from the centre while ten
+    -- spokes flare toward the boundary. Later waves keep the garden but do
+    -- not replay the opening animation.
+    if self.opening > 0 then
+        local progress = 1 - self.opening
+        local bloom_radius = radius * (0.18 + progress * 1.75)
+        local bloom_alpha = self.opening * 0.82
+        for ring = 0, 2 do
+            local ring_radius = bloom_radius * (1 + ring * 0.16)
+            color(0.68, 0.39, 0.94, bloom_alpha * (1 - ring * 0.22))
+            graphics.setLineWidth(ring == 0 and 3 or 1)
+            graphics.circle("line", cx, cy, ring_radius)
+        end
+        for index = 1, 10 do
+            local angle = (index - 1) * TAU / 10 + spin
+            local inner_x, inner_y = point(cx, cy, bloom_radius * 0.55, angle)
+            local outer_x, outer_y = point(cx, cy, bloom_radius * 1.08, angle)
+            color(0.72, 0.44, 0.98, bloom_alpha * 0.72)
+            graphics.setLineWidth(2)
+            graphics.line(inner_x, inner_y, outer_x, outer_y)
+        end
+    end
 
     -- Ten shadow roots connect the central seal to ten moving petal-shaped
     -- pools. Their offset and pulsing endpoints make the field feel alive.

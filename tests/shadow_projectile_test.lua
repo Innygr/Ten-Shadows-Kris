@@ -150,4 +150,27 @@ assert(draw_polygons > 0, "Titan hand projectile must draw its dedicated fist si
 assert(titan_hand.base_draw_count == 1,
     "Titan hand rendering must still call the base bullet draw")
 
+-- Chimera Shadow Garden root blades retain their dedicated marker through
+-- telegraphing and render with the leaf-shaped violet projectile.
+local domain_blade = ShadowProjectile(88, 96, math.pi / 2, 5, "combo", {
+    kind = "target",
+    duration = 0.44,
+    length = 96,
+}, {
+    kind = "chimera_domain_blade",
+    root = 3,
+    side = "left",
+})
+assert(domain_blade.is_chimera_domain_blade,
+    "Kris's domain root blade marker must survive projectile construction")
+assert(domain_blade.collider == nil and not domain_blade.armed,
+    "domain root blades must remain harmless until their warning completes")
+domain_blade:draw()
+assert(draw_lines >= 2, "domain root blade must add a violet tell over its trajectory")
+domain_blade.telegraph_timer.callback()
+assert(domain_blade.armed and domain_blade.collider.radius == 5,
+    "domain root blade must arm with its dedicated hitbox")
+domain_blade:draw()
+assert(draw_polygons >= 2, "domain root blade must render its leaf-shaped visual")
+
 print("Shadow projectile telegraph/arming and Titan hand rendering tests passed.")

@@ -207,7 +207,7 @@ function CombatState.new()
         dark_candy = 3,
         turn = 1,
         knight_disrupted = 0,
-        player_domain = {active = false, turns = 0, used = false},
+        player_domain = {active = false, turns = 0, used = false, visual_pending = false},
         knight_domain = {active = false, turns = 0},
         soul_mode = nil, -- nil keeps the original attack library until the Vessel selects a mode.
         titan = {light_radius = 38, base_light_radius = 38, brighten_turns = 0},
@@ -434,6 +434,7 @@ function CombatState.new()
         domain.active = true
         domain.turns = 3
         domain.used = true
+        domain.visual_pending = true
         return true
     end
 
@@ -464,6 +465,7 @@ function CombatState.new()
             if self.player_domain.turns <= 0 then
                 self.player_domain.active = false
                 self.player_domain.turns = 0
+                self.player_domain.visual_pending = false
             end
         end
         if self.knight_domain.active then

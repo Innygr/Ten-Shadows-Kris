@@ -130,7 +130,7 @@ function AttackWavePatterns.classify(attack)
 end
 
 -- arena = {left, right, top, bottom}; target = {x, y}
-function AttackWavePatterns.build(attack, phase, volley, arena, target, domain_active)
+function AttackWavePatterns.build(attack, phase, volley, arena, target, knight_domain_active, player_domain_active)
     assert(type(arena) == "table", "arena bounds are required")
     assert(arena.left and arena.right and arena.top and arena.bottom, "arena bounds are incomplete")
 
@@ -478,7 +478,7 @@ function AttackWavePatterns.build(attack, phase, volley, arena, target, domain_a
     -- The Knight's phase-three domain layers two diagonal falling blades over
     -- the normal attack. They are sparse enough to preserve the base pattern's
     -- safe route while making the domain state visible through gameplay.
-    if domain_active then
+    if knight_domain_active then
         add(shots, "combo", arena.left + width * 0.28, arena.top - 10, math.pi / 3, pace + 0.2, {
             kind = "falling",
             duration = 0.48,
@@ -489,6 +489,37 @@ function AttackWavePatterns.build(attack, phase, volley, arena, target, domain_a
             duration = 0.48,
             length = height * 1.25,
         })
+    end
+
+    -- Kris's Chimera Shadow Garden calls two of its ten roots into the attack:
+    -- paired petals rise from opposite lower edges and converge on offset
+    -- marks, leaving a central route. Each path is telegraphed before it arms.
+    if player_domain_active then
+        local left_x = arena.left + width * 0.12
+        local right_x = arena.right - width * 0.12
+        local launch_y = arena.bottom + 14
+        local target_y = arena.top + height * 0.32
+        local left_target_x = center_x - width * 0.13
+        local right_target_x = center_x + width * 0.13
+        local duration = phase == 3 and 0.36 or 0.44
+
+        local left_dx, left_dy = left_target_x - left_x, target_y - launch_y
+        local left_length = math.sqrt(left_dx * left_dx + left_dy * left_dy)
+        add(shots, "combo", left_x, launch_y, atan2(left_dy, left_dx),
+            left_length / 1.05, {
+                kind = "target", duration = duration, length = left_length,
+            }, {
+                kind = "chimera_domain_blade", root = 3, side = "left",
+            })
+
+        local right_dx, right_dy = right_target_x - right_x, target_y - launch_y
+        local right_length = math.sqrt(right_dx * right_dx + right_dy * right_dy)
+        add(shots, "combo", right_x, launch_y, atan2(right_dy, right_dx),
+            right_length / 1.05, {
+                kind = "target", duration = duration, length = right_length,
+            }, {
+                kind = "chimera_domain_blade", root = 8, side = "right",
+            })
     end
 
     return shots, family

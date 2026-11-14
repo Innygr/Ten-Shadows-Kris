@@ -11,6 +11,7 @@ function ShadowProjectile:init(x, y, direction, speed, kind, warning, mechanic)
 
     self.kind = COLORS[kind] and kind or "titan"
     self.mechanic = mechanic
+    self.is_chimera_domain_blade = type(mechanic) == "table" and mechanic.kind == "chimera_domain_blade"
     self.is_execution_slash = type(mechanic) == "table" and mechanic.kind == "execution_slash"
     self.is_titan_hand = type(mechanic) == "table" and mechanic.kind == "titan_hand"
     self.is_titan_big_shot = type(mechanic) == "table" and mechanic.kind == "titan_big_shot"
@@ -18,9 +19,10 @@ function ShadowProjectile:init(x, y, direction, speed, kind, warning, mechanic)
     self.is_crystal_shard = type(mechanic) == "table" and mechanic.kind == "crystal_shard"
     self.is_knight_titan_collision = type(mechanic) == "table" and mechanic.kind == "knight_titan_collision"
     self.big_shot_tier = self.is_titan_big_shot and mechanic.tier or nil
-    local radius = self.is_crystal_shard and 6
+    local radius = self.is_chimera_domain_blade and 5
+        or (self.is_crystal_shard and 6
         or ((self.is_titan_big_shot and (self.big_shot_tier == 3 and 9 or 8))
-        or (self.is_titan_desperation_shot and 8) or (self.is_titan_hand and 6 or 4))
+        or (self.is_titan_desperation_shot and 8) or (self.is_titan_hand and 6 or 4)))
     self.width = radius * 3
     self.height = radius * 3
     self.collider = CircleCollider(self, 0, 0, radius)
@@ -53,9 +55,10 @@ function ShadowProjectile:arm()
 
     self.armed = true
     self.telegraph = nil
-    local radius = self.is_crystal_shard and 6
+    local radius = self.is_chimera_domain_blade and 5
+        or (self.is_crystal_shard and 6
         or ((self.is_titan_big_shot and (self.big_shot_tier == 3 and 9 or 8))
-        or (self.is_titan_desperation_shot and 8) or (self.is_titan_hand and 6 or 4))
+        or (self.is_titan_desperation_shot and 8) or (self.is_titan_hand and 6 or 4)))
     self.collider = CircleCollider(self, 0, 0, radius)
     self.physics.speed = self.intended_speed
 end
@@ -65,6 +68,11 @@ function ShadowProjectile:draw()
 
     if self.telegraph then
         local length = self.telegraph.length
+        if self.is_chimera_domain_blade then
+            love.graphics.setLineWidth(10)
+            love.graphics.setColor(0.46, 0.16, 0.78, 0.36)
+            love.graphics.line(0, 0, length, 0)
+        end
         love.graphics.setLineWidth(6)
         love.graphics.setColor(color[1], color[2], color[3], 0.18)
         love.graphics.line(0, 0, length, 0)
@@ -85,6 +93,21 @@ function ShadowProjectile:draw()
             love.graphics.polygon("line", length, -5, length + 5, 0, length, 5, length - 5, 0)
         end
 
+        super.draw(self)
+        return
+    end
+
+    if self.is_chimera_domain_blade then
+        -- A violet leaf-shaped blade with a bright central vein identifies
+        -- the two root attacks summoned by Kris's domain.
+        love.graphics.setColor(0.42, 0.12, 0.72, 0.28)
+        love.graphics.circle("fill", 0, 0, 13)
+        love.graphics.setColor(0.58, 0.24, 0.88, 1)
+        love.graphics.polygon("fill", -10, 0, -3, -5, 2, -10, 5, -3, 10, 0,
+            5, 3, 2, 10, -3, 5)
+        love.graphics.setColor(0.94, 0.82, 1.0, 1)
+        love.graphics.line(-7, 0, 7, 0)
+        love.graphics.circle("fill", 0, 0, 2)
         super.draw(self)
         return
     end

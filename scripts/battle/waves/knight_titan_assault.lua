@@ -34,7 +34,10 @@ function KnightTitanAssault:onStart()
     -- three-turn Chimera Shadow Garden state remains active.
     if state and state.player_domain.active and arena and arena.mask then
         local GardenVisual = modRequire("scripts/battle/objects/chimera_shadow_garden")
-        self:spawnObjectTo(arena.mask, GardenVisual(arena.width, arena.height), 0, 0)
+        local opening = state.player_domain.visual_pending == true
+        state.player_domain.visual_pending = false
+        self:spawnObjectTo(arena.mask,
+            GardenVisual(arena.width, arena.height, opening), 0, 0)
     end
 
     if frozen then
@@ -65,7 +68,8 @@ function KnightTitanAssault:onStart()
             volley,
             arena,
             target,
-            state and state.knight_domain.active or false
+            state and state.knight_domain.active or false,
+            state and state.player_domain.active or false
         )
 
         for _, shot in ipairs(shots) do
