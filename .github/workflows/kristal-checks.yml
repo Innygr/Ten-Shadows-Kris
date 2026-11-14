@@ -90,6 +90,9 @@ jobs:
       - name: Test Ten Shadows effects and Attack scaling
         run: lua5.1 tests/runtime_shadows_test.lua
 
+      - name: Test Chimera Shadow Garden visuals
+        run: lua5.1 tests/chimera_shadow_garden_test.lua
+
       - name: Test combat balance and equipment blacklist
         run: lua5.1 tests/combat_balance_test.lua
 
@@ -126,6 +129,8 @@ jobs:
           test -f scripts/battle/encounters/runtime_smoke_test.lua
           test -f scripts/battle/encounters/knight_titan_preview.lua
           test -f scripts/battle/waves/knight_titan_assault.lua
+          test -f scripts/battle/objects/chimera_shadow_garden.lua
+          test -f tests/chimera_shadow_garden_test.lua
           test -f scripts/battle/bullets/shadow_projectile.lua
           test -f scripts/ten_shadows/attack_wave_patterns.lua
           test -f tests/attack_wave_patterns_test.lua

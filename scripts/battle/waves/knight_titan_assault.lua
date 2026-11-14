@@ -26,6 +26,17 @@ function KnightTitanAssault:onStart()
         enemy.ten_shadows_last_attack_disrupted = disrupted == true
     end
 
+    local arena = Game.battle.arena
+
+    -- Kris's domain is rendered inside the arena mask, below live projectiles.
+    -- The Wave owns this object, so it is removed automatically when the
+    -- current defending turn ends; the next wave recreates it while the
+    -- three-turn Chimera Shadow Garden state remains active.
+    if state and state.player_domain.active and arena and arena.mask then
+        local GardenVisual = modRequire("scripts/battle/objects/chimera_shadow_garden")
+        self:spawnObjectTo(arena.mask, GardenVisual(arena.width, arena.height), 0, 0)
+    end
+
     if frozen then
         self.time = 2
         return
@@ -37,7 +48,6 @@ function KnightTitanAssault:onStart()
 
     local Patterns = modRequire("scripts/ten_shadows/attack_wave_patterns")
     local phase = state and state.boss.phase or 1
-    local arena = Game.battle.arena
     local volley = 0
     local previous_target = nil
 
