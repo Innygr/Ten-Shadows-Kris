@@ -3,7 +3,10 @@ local Patterns = dofile("scripts/ten_shadows/attack_wave_patterns.lua")
 
 local arena = {left = 250, right = 390, top = 150, bottom = 292}
 local target = {x = 320, y = 230}
-local families = {radial = true, wall = true, aimed = true, crossfire = true, falling = true, sweep = true}
+local families = {
+    radial = true, wall = true, aimed = true, crossfire = true,
+    falling = true, sweep = true, twin_slash = true,
+}
 
 local function validate(attack, phase)
     local shots, family = Patterns.build(attack, phase, 2, arena, target, false)
@@ -87,6 +90,40 @@ assert(execution_shots[1].mechanic and execution_shots[1].mechanic.kind == "exec
     "Knight's Execution projectile must carry the parry marker")
 assert(execution_shots[1].warning and execution_shots[1].warning.kind == "target",
     "Knight's Execution slash must telegraph its path before launching")
+
+-- Twin Slashes is a distinct mirrored attack, not the generic side-sweep fallback.
+for phase = 1, 3 do
+    local twin_shots, twin_family = Patterns.build(
+        {id = "twin_slashes"},
+        phase,
+        1,
+        arena,
+        target,
+        false
+    )
+    assert(twin_family == "twin_slash", "Twin Slashes must use its dedicated pattern family")
+    assert(#twin_shots == 2, "Twin Slashes must create exactly two crossing blades")
+    assert(twin_shots[1].kind == "knight" and twin_shots[2].kind == "knight",
+        "Both Twin Slashes blades must retain Knight styling")
+    assert(twin_shots[1].warning.kind == "target" and twin_shots[2].warning.kind == "target",
+        "Both blades must telegraph their full trajectories")
+    assert(twin_shots[1].mechanic.kind == "twin_slash"
+        and twin_shots[2].mechanic.kind == "twin_slash",
+        "Both blades must be marked as the dedicated Twin Slashes mechanic")
+    assert(twin_shots[1].x < arena.left and twin_shots[2].x > arena.right,
+        "Twin Slashes must enter from opposite sides")
+    assert(math.sin(twin_shots[1].direction) > 0
+        and math.sin(twin_shots[2].direction) < 0,
+        "The mirrored blades must angle toward each other")
+    assert(twin_shots[1].warning.duration <= 0.6,
+        "Phase scaling must keep the tell readable")
+end
+
+local twin_first = Patterns.build({id = "twin_slashes"}, 2, 1, arena, target, false)
+local twin_second = Patterns.build({id = "twin_slashes"}, 2, 2, arena, target, false)
+assert(twin_first[1].warning.length ~= twin_second[1].warning.length
+    or twin_first[1].direction ~= twin_second[1].direction,
+    "Twin Slashes crossing point must shift between volleys")
 
 local base_shots = Patterns.build({id = "twin_slashes"}, 3, 3, arena, target, false)
 local domain_shots = Patterns.build({id = "twin_slashes"}, 3, 3, arena, target, true)

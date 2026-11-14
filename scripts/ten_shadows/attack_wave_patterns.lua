@@ -85,6 +85,7 @@ local function classify(attack)
     local source = inferSource(attack)
 
     if source == "combo" then return "crossfire" end
+    if id == "twin_slashes" then return "twin_slash" end
     if has(RADIAL_PATTERNS, pattern) then return "radial" end
     if has(WALL_IDS, id) or has(WALL_PATTERNS, pattern) then return "wall" end
     if has(AIMED_PATTERNS, pattern) then return "aimed" end
@@ -141,7 +142,42 @@ function AttackWavePatterns.build(attack, phase, volley, arena, target, domain_a
     local pace = 2.8 + (phase - 1) * 0.42 + (volley - 1) * 0.10
     local shots = {}
 
-    if attack and attack.id == "cyan_knights_execution" and volley == 3 then
+    if attack and attack.id == "twin_slashes" then
+        -- Two Knight blades enter from opposite sides and cross at a point
+        -- that shifts between upper and lower arena space on alternating volleys.
+        -- The visible tells make the crossing lanes readable before either blade arms.
+        local crossing_x = center_x + (volley % 2 == 0 and 1 or -1) * width * 0.08
+        local crossing_y = center_y + (volley % 2 == 0 and 1 or -1) * height * 0.09
+        local upper_y = center_y - height * 0.30
+        local lower_y = center_y + height * 0.30
+        local duration = phase == 1 and 0.48 or (phase == 2 and 0.43 or 0.38)
+
+        local left_x = arena.left - 10
+        local left_dx = crossing_x - left_x
+        local left_dy = crossing_y + height * 0.12 - upper_y
+        local left_distance = math.sqrt(left_dx * left_dx + left_dy * left_dy)
+        add(shots, "knight", left_x, upper_y, atan2(left_dy, left_dx), pace + 0.35, {
+            kind = "target",
+            duration = duration,
+            length = left_distance,
+        }, {
+            kind = "twin_slash",
+            lane = "left-to-lower",
+        })
+
+        local right_x = arena.right + 10
+        local right_dx = crossing_x - right_x
+        local right_dy = crossing_y - height * 0.12 - lower_y
+        local right_distance = math.sqrt(right_dx * right_dx + right_dy * right_dy)
+        add(shots, "knight", right_x, lower_y, atan2(right_dy, right_dx), pace + 0.35, {
+            kind = "target",
+            duration = duration,
+            length = right_distance,
+        }, {
+            kind = "twin_slash",
+            lane = "right-to-upper",
+        })
+    elseif attack and attack.id == "cyan_knights_execution" and volley == 3 then
         local from_right = phase % 2 == 0
         local x = from_right and (arena.right + 10) or (arena.left - 10)
         local y = math.max(arena.top + 14, math.min(arena.bottom - 14, target.y))
