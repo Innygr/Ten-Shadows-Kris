@@ -5,6 +5,14 @@
 
 local CombatState = {}
 
+-- How often the Knight and Titan coordinate a combined attack. The cadence
+-- tightens as the Roaring progresses, making each phase feel more unified.
+CombatState.COMBO_CADENCE = {
+    [1] = 5,
+    [2] = 4,
+    [3] = 3,
+}
+
 CombatState.PARTY = {
     {id = "kris",   name = "Kris",   max_hp = 290, role = "TEN SHADOWS"},
     {id = "susie",  name = "Susie",  max_hp = 350, role = "HEAVY HITTER"},
@@ -261,12 +269,17 @@ function CombatState.new()
         local dealt = math.floor(amount * multiplier + 0.5)
         self.boss.hp = math.max(0, self.boss.hp - dealt)
         local phase_changed = false
-        if self.boss.phase == 1 and self.boss.hp <= 175 then
-            self.boss.phase = 2
-            phase_changed = true
-        elseif self.boss.phase == 2 and self.boss.hp <= 78 then
-            self.boss.phase = 3
-            phase_changed = true
+        -- Large hits can cross both HP thresholds at once. Keep the combat
+        -- scheduler in lockstep with the encounter's phase controller.
+        while self.boss.phase < 3 do
+            local next_phase = self.boss.phase + 1
+            local threshold = next_phase == 2 and 175 or 78
+            if self.boss.hp <= threshold then
+                self.boss.phase = next_phase
+                phase_changed = true
+            else
+                break
+            end
         end
         if phase_changed then
             self.encounter.phase = self.boss.phase
@@ -571,7 +584,7 @@ function CombatState.new()
         local source
         if frozen then
             source = "titan"
-        elseif combo and encounter.turns % (phase == 3 and 3 or 4) == 0 then
+        elseif combo and encounter.turns % (CombatState.COMBO_CADENCE[phase] or 3) == 0 then
             source = "combo"
         elseif #titan > 0 and #knight > 0 then
             source = encounter.last_source == "titan" and "knight" or "titan"
