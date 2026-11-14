@@ -70,6 +70,24 @@ Mod = {
 }
 FlavorText.register("test.identity", {"{vessel_name} said {vessel_subject} were ready."})
 expect(FlavorText.get("test.identity"), "Rowan said they were ready.", "Vessel identity formatting")
+
+FlavorText.register("test.identity.repeat", {
+    "{vessel_name} watches the arena.",
+    "{vessel_name} waits for the next move.",
+})
+expect(
+    FlavorText.get("test.identity.repeat", {}, {random = function() return 1 end}),
+    "Rowan watches the arena.",
+    "formatted first variant"
+)
+expect(
+    FlavorText.get("test.identity.repeat", {}, {
+        previous = "Rowan watches the arena.",
+        random = function() return 1 end,
+    }),
+    "Rowan waits for the next move.",
+    "formatted previous line is avoided"
+)
 Mod = nil
 
 print("Flavor text tests passed.")

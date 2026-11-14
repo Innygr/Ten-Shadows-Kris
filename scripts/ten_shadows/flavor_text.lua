@@ -4,6 +4,13 @@
 local FlavorText = {}
 local entries = {}
 
+local function formatText(text)
+    if Mod and Mod.vessel_identity and Mod.vessel_identity.format then
+        return Mod.vessel_identity.format(text)
+    end
+    return text
+end
+
 local function validateEntry(entry)
     if type(entry) == "string" then
         return {text = entry}
@@ -55,7 +62,12 @@ function FlavorText.get(id, state, options)
             allowed = ok and not not result
         end
         if allowed then
-            candidates[#candidates + 1] = entry
+            -- Compare the resolved line with the previously displayed line.
+            -- Dynamic placeholders otherwise make the same line look different
+            -- before and after formatting, defeating the no-repeat selection.
+            candidates[#candidates + 1] = {
+                text = formatText(entry.text),
+            }
         end
     end
 
@@ -88,11 +100,7 @@ function FlavorText.get(id, state, options)
         error("Flavor text random selector returned an out-of-range index.", 2)
     end
 
-    local text = pool[pick].text
-    if Mod and Mod.vessel_identity and Mod.vessel_identity.format then
-        return Mod.vessel_identity.format(text)
-    end
-    return text
+    return pool[pick].text
 end
 
 function FlavorText.has(id)
