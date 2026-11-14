@@ -86,6 +86,7 @@ and has been tested in Kristal.
 - [ ] Kristal integration: custom summon animations/presentation and individual summon-specific Wave behaviours.
 - [x] Kristal integration: Chimera Shadow Garden can be activated once from Kris's ACT menu; it reduces Ten Shadows costs and boosts summon damage. The domain lasts three enemy turns.
 - [ ] Kristal integration: final Chimera visual presentation and dedicated end message.
+- [ ] Design / Kristal integration: **Kris + Vessel fusion Domain Expansion.** Vessel supplies and maintains the enclosing barrier; Kris supplies the Ten Shadows shadow environment. Within the shared Domain, shadow portals can open anywhere in the space and redirect party spells to emerge from another chosen location. Vessel's Granite Blast can likewise originate from anywhere in the Domain, rather than requiring a fixed firing position. This is one coordinated Domain, not two overlapping independent domains. Define TP cost, duration, portal targeting rules, spell compatibility, and counterplay before marking the mechanic implemented.
 
 ### Knight + Titan shared encounter
 
