@@ -151,6 +151,18 @@ function RoaringKnightTitan:onAct(battler, name)
         return Effects.brightenAct(state)
     end
 
+    if name == "FUSION DOMAIN" then
+        if not state or not state:expandFusionDomain(true) then
+            return "* Kris and Vessel cannot complete the Domain right now."
+        end
+        return {
+            "* DOMAIN EXPANSION — CHIMERA SHADOW GARDEN.",
+            "* Vessel closes the barrier as Kris floods it with shadows.",
+            "* Shadow portals can redirect party spells anywhere inside the Domain.",
+            "* Granite Blast can emerge from anywhere within the garden.",
+        }
+    end
+
     if name == "CHIMERA SHADOW GARDEN" then
         if not state or not state:expandChimeraDomain(true) then
             return "* The shadows cannot form the domain again."
@@ -158,6 +170,16 @@ function RoaringKnightTitan:onAct(battler, name)
         return {
             "* DOMAIN EXPANSION — CHIMERA SHADOW GARDEN.",
             "* The battlefield sinks into a sea of shadows. Ten Shadows are empowered.",
+        }
+    end
+
+    if name == "GRANITE BLAST" then
+        -- Vessel's inexplicable Ryu Ishigori technique: a direct 100% output
+        -- blast. The fusion Domain later lets its origin be selected anywhere.
+        self:hurt(58, battler)
+        return {
+            "* VESSEL FIRES GRANITE BLAST AT 100% OUTPUT!",
+            "* The concentrated blast deals 58 damage.",
         }
     end
 
