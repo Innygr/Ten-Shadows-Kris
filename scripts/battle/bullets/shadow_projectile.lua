@@ -13,9 +13,13 @@ function ShadowProjectile:init(x, y, direction, speed, kind, warning, mechanic)
     self.mechanic = mechanic
     self.is_execution_slash = type(mechanic) == "table" and mechanic.kind == "execution_slash"
     self.is_titan_hand = type(mechanic) == "table" and mechanic.kind == "titan_hand"
-    self.width = self.is_titan_hand and 18 or 12
-    self.height = self.is_titan_hand and 18 or 12
-    self.collider = CircleCollider(self, 0, 0, self.is_titan_hand and 6 or 4)
+    self.is_titan_big_shot = type(mechanic) == "table" and mechanic.kind == "titan_big_shot"
+    self.big_shot_tier = self.is_titan_big_shot and mechanic.tier or nil
+    local radius = self.is_titan_big_shot and (self.big_shot_tier == 3 and 9 or 8)
+        or (self.is_titan_hand and 6 or 4)
+    self.width = radius * 3
+    self.height = radius * 3
+    self.collider = CircleCollider(self, 0, 0, radius)
     self.physics.direction = direction
     self.intended_speed = speed
     self.physics.speed = speed
@@ -45,7 +49,9 @@ function ShadowProjectile:arm()
 
     self.armed = true
     self.telegraph = nil
-    self.collider = CircleCollider(self, 0, 0, self.is_titan_hand and 6 or 4)
+    local radius = self.is_titan_big_shot and (self.big_shot_tier == 3 and 9 or 8)
+        or (self.is_titan_hand and 6 or 4)
+    self.collider = CircleCollider(self, 0, 0, radius)
     self.physics.speed = self.intended_speed
 end
 
@@ -74,6 +80,20 @@ function ShadowProjectile:draw()
             love.graphics.polygon("line", length, -5, length + 5, 0, length, 5, length - 5, 0)
         end
 
+        super.draw(self)
+        return
+    end
+
+    if self.is_titan_big_shot then
+        local radius = self.big_shot_tier == 3 and 9 or 8
+        love.graphics.setColor(color[1], color[2], color[3], 0.22)
+        love.graphics.circle("fill", 0, 0, radius + 5)
+        love.graphics.setColor(color[1], color[2], color[3], 1)
+        love.graphics.circle("fill", 0, 0, radius)
+        love.graphics.setColor(0.88, 0.98, 1, 1)
+        love.graphics.circle("fill", 0, 0, radius * 0.48)
+        love.graphics.setLineWidth(2)
+        love.graphics.circle("line", 0, 0, radius + 2)
         super.draw(self)
         return
     end

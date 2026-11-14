@@ -100,6 +100,25 @@ warning:draw()
 assert(draw_circles > 0, "armed projectile should draw its normal body")
 assert(warning.base_draw_count == 2, "armed projectile should still call the base bullet draw")
 
+local titan_big_shot = ShadowProjectile(70, 80, 0, 4, "titan", {
+    kind = "target",
+    duration = 0.4,
+    length = 120,
+}, {
+    kind = "titan_big_shot",
+    tier = 3,
+})
+assert(titan_big_shot.is_titan_big_shot and titan_big_shot.big_shot_tier == 3,
+    "Titan Big Shot tier must survive projectile construction")
+assert(titan_big_shot.collider == nil and not titan_big_shot.armed,
+    "Titan Big Shots must remain harmless during their telegraph")
+titan_big_shot.telegraph_timer.callback()
+assert(titan_big_shot.armed and titan_big_shot.collider.radius == 9,
+    "Tier-three Big Shots must arm with the largest heavy-bolt hitbox")
+titan_big_shot:draw()
+assert(titan_big_shot.base_draw_count == 1,
+    "Big Shot rendering must still call the base bullet draw")
+
 local titan_hand = ShadowProjectile(70, 80, 0, 4, "titan", {
     kind = "lane",
     duration = 0.5,

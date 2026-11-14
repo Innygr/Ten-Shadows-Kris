@@ -86,6 +86,9 @@ local function classify(attack)
 
     if source == "combo" then return "crossfire" end
     if id == "titan_hands" then return "titan_hands" end
+    if id == "titan_big_shots" then return "big_shot_one" end
+    if id == "titan_big_shots_2" then return "big_shot_two" end
+    if id == "titan_big_shots_3" then return "big_shot_three" end
     if id == "twin_slashes" then return "twin_slash" end
     if has(RADIAL_PATTERNS, pattern) then return "radial" end
     if has(WALL_IDS, id) or has(WALL_PATTERNS, pattern) then return "wall" end
@@ -142,7 +145,85 @@ function AttackWavePatterns.build(attack, phase, volley, arena, target, domain_a
     local pace = 2.8 + (phase - 1) * 0.42 + (volley - 1) * 0.10
     local shots = {}
 
-    if attack and attack.id == "titan_hands" then
+    if attack and attack.id == "titan_big_shots" then
+        -- Big Shots 1: three heavy bolts converge on the current SOUL position
+        -- with a narrow fan. The center bolt is direct; the outer bolts force
+        -- a deliberate lateral dodge instead of a simple vertical retreat.
+        local from_right = volley % 2 == 0
+        local x = from_right and (arena.right + 18) or (arena.left - 18)
+        local base_y = math.max(arena.top + 18, math.min(arena.bottom - 18, target.y))
+        local base_angle = atan2(target.y - base_y, target.x - x)
+        local direction = from_right and math.pi or 0
+        local duration = phase == 2 and 0.48 or 0.42
+        for i = -1, 1 do
+            local angle = base_angle + i * 0.19
+            local length = math.sqrt(width * width + height * height) * 0.85
+            add(shots, "titan", x, base_y + i * 17, angle, pace + 0.55, {
+                kind = "target",
+                duration = duration,
+                length = length,
+            }, {
+                kind = "titan_big_shot",
+                tier = 1,
+                spread = i,
+            })
+        end
+    elseif attack and attack.id == "titan_big_shots_2" then
+        -- Big Shots 2: four corner-fired bolts cross around a shifting point.
+        -- Their diagonal paths create two readable crossing pairs with a
+        -- central pocket that moves between volleys.
+        local shift = ((volley + phase) % 2 == 0 and 1 or -1)
+        local cross_x = center_x + shift * width * 0.10
+        local cross_y = center_y - shift * height * 0.08
+        local corners = {
+            {arena.left - 18, arena.top + 12},
+            {arena.right + 18, arena.bottom - 12},
+            {arena.right + 18, arena.top + 12},
+            {arena.left - 18, arena.bottom - 12},
+        }
+        for i, corner in ipairs(corners) do
+            local dx = cross_x - corner[1]
+            local dy = cross_y - corner[2]
+            local angle = atan2(dy, dx)
+            add(shots, "titan", corner[1], corner[2], angle, pace + 0.48, {
+                kind = "target",
+                duration = phase == 2 and 0.46 or 0.40,
+                length = math.sqrt(dx * dx + dy * dy),
+            }, {
+                kind = "titan_big_shot",
+                tier = 2,
+                corner = i,
+            })
+        end
+    elseif attack and attack.id == "titan_big_shots_3" then
+        -- Big Shots 3: a heavy radial burst with one rotating missing wedge.
+        -- The open wedge is the intended escape route; its position changes
+        -- every volley so the player must read the tell before moving.
+        local count = 8
+        local gap = (volley * 2 + phase) % count
+        local rotation = (volley - 1) * 0.12 + (phase - 1) * 0.08
+        for i = 0, count - 1 do
+            if i ~= gap then
+                local angle = rotation + (math.pi * 2 * i / count)
+                local dx = math.cos(angle)
+                local dy = math.sin(angle)
+                local edge_x = dx >= 0 and arena.right or arena.left
+                local edge_y = dy >= 0 and arena.bottom or arena.top
+                local tx = center_x + dx * width * 0.62
+                local ty = center_y + dy * height * 0.62
+                local distance = math.sqrt((tx - center_x)^2 + (ty - center_y)^2)
+                add(shots, "titan", center_x, center_y, angle, pace + 0.58, {
+                    kind = "target",
+                    duration = phase == 3 and 0.38 or 0.44,
+                    length = distance,
+                }, {
+                    kind = "titan_big_shot",
+                    tier = 3,
+                    wedge = i,
+                })
+            end
+        end
+    elseif attack and attack.id == "titan_hands" then
         -- Each hand sweeps a four-lane band from an opposite side. Three
         -- knuckles travel per hand, leaving one moving gap in each band.
         -- The gaps are offset so the player can choose either lane without

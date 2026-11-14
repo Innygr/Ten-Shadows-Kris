@@ -6,6 +6,7 @@ local target = {x = 320, y = 230}
 local families = {
     radial = true, wall = true, aimed = true, crossfire = true,
     falling = true, sweep = true, twin_slash = true, titan_hands = true,
+    big_shot_one = true, big_shot_two = true, big_shot_three = true,
 }
 
 local function validate(attack, phase)
@@ -132,6 +133,42 @@ assert(missingFinger(hands_first, "left") ~= missingFinger(hands_second, "left")
     "Left-hand safe gap must move between volleys")
 assert(missingFinger(hands_first, "right") ~= missingFinger(hands_second, "right"),
     "Right-hand safe gap must move between volleys")
+
+-- Each Titan Big Shots tier has its own geometry and projectile count.
+local big_one, big_one_family = Patterns.build({id = "titan_big_shots"}, 2, 1, arena, target, false)
+assert(big_one_family == "big_shot_one" and #big_one == 3,
+    "Big Shots 1 must be a three-bolt aimed fan")
+for _, shot in ipairs(big_one) do
+    assert(shot.mechanic.kind == "titan_big_shot" and shot.mechanic.tier == 1,
+        "Big Shots 1 must use heavy Titan projectiles")
+    assert(shot.warning.kind == "target", "Big Shots 1 bolts must telegraph their trajectories")
+end
+assert(big_one[1].direction ~= big_one[2].direction
+    and big_one[2].direction ~= big_one[3].direction,
+    "Big Shots 1 must have a real spread")
+
+local big_two, big_two_family = Patterns.build({id = "titan_big_shots_2"}, 2, 1, arena, target, false)
+local big_two_later = Patterns.build({id = "titan_big_shots_2"}, 2, 2, arena, target, false)
+assert(big_two_family == "big_shot_two" and #big_two == 4,
+    "Big Shots 2 must be a four-corner crossing pattern")
+for _, shot in ipairs(big_two) do
+    assert(shot.mechanic.tier == 2 and shot.warning.kind == "target",
+        "Big Shots 2 must use tier-two heavy bolts with path tells")
+end
+assert(big_two[1].direction ~= big_two_later[1].direction
+    or big_two[1].warning.length ~= big_two_later[1].warning.length,
+    "Big Shots 2 crossing point must shift between volleys")
+
+local big_three, big_three_family = Patterns.build({id = "titan_big_shots_3"}, 3, 1, arena, target, false)
+local big_three_later = Patterns.build({id = "titan_big_shots_3"}, 3, 2, arena, target, false)
+assert(big_three_family == "big_shot_three" and #big_three == 7,
+    "Big Shots 3 must leave one gap in its eight-direction radial burst")
+for _, shot in ipairs(big_three) do
+    assert(shot.mechanic.tier == 3 and shot.warning.kind == "target",
+        "Big Shots 3 must use tier-three heavy bolts with direction tells")
+end
+assert(big_three[1].direction ~= big_three_later[1].direction,
+    "Big Shots 3 radial orientation must rotate between volleys")
 
 local execution_shots, execution_family = Patterns.build(
     {id = "cyan_knights_execution", source = "knight", pattern = "cyan-parry-window"},
