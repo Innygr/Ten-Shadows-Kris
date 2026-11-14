@@ -100,11 +100,12 @@ function ChimeraShadowGarden:draw()
         end
     end
 
-    -- Ten shadow roots connect the central seal to ten moving petal-shaped
-    -- pools. Their offset and pulsing endpoints make the field feel alive.
+    -- Ten shadow roots connect the central seal to anchored petal pools.
+    -- Their tips stay aligned with the gameplay launch points while the stems
+    -- sway, the seal rotates, and the surrounding motes keep the field alive.
     for index = 1, 10 do
-        local angle = (index - 1) * TAU / 10 + spin
-        local end_radius = radius * (0.72 + 0.035 * math.sin(self.time * 1.7 + index))
+        local angle = (index - 1) * TAU / 10
+        local end_radius = radius * 0.72
         local ex, ey = point(cx, cy, end_radius, angle)
         local bend_x, bend_y = point(cx, cy, radius * 0.43, angle + 0.16 * math.sin(self.time + index))
 

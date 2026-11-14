@@ -77,6 +77,32 @@ assert((counts.circle or 0) >= 33,
     "garden must draw the expansion rings, central seal, and drifting motes")
 assert((counts.polygon or 0) >= 20, "garden must draw ten shadow petals and boundary marks")
 
+-- Root tips are fixed to the same ten launch coordinates used by the attack
+-- planner, even after the garden's idle animation has advanced.
+for index = #draw_calls, 1, -1 do
+    table.remove(draw_calls, index)
+end
+visual:draw()
+local root_endpoints = {}
+for _, call in ipairs(draw_calls) do
+    if call.name == "line" and #call.args == 6 then
+        root_endpoints[#root_endpoints + 1] = {x = call.args[5], y = call.args[6]}
+    end
+end
+assert(#root_endpoints == 20, "each of ten roots must draw both of its stem layers")
+local root_radius = math.min(visual.width, visual.height) * 0.43 * 0.72
+for index = 1, 10 do
+    local angle = (index - 1) * math.pi * 2 / 10
+    local expected_x = visual.width / 2 + math.cos(angle) * root_radius
+    local expected_y = visual.height / 2 + math.sin(angle) * root_radius
+    for layer = 1, 2 do
+        local endpoint = root_endpoints[(index - 1) * 2 + layer]
+        assert(math.abs(endpoint.x - expected_x) < 0.001
+            and math.abs(endpoint.y - expected_y) < 0.001,
+            "animated garden root tips must remain aligned to the attack launch ring")
+    end
+end
+
 -- Ensure the live Wave attaches the effect to Arena.mask only while Kris's
 -- three-turn domain is active. This is also a guard against an unreferenced
 -- visual file accidentally passing the draw-only test.
