@@ -144,6 +144,9 @@ local function defaultSavePaths()
     if home then
         paths[#paths + 1] = home .. "/Library/Application Support/com.tobyfox.deltarune"
         paths[#paths + 1] = home .. "/Library/Application Support/DELTARUNE"
+        -- Native Linux ports use XDG config storage; .local/share is kept
+        -- as a compatibility fallback for older/custom builds.
+        paths[#paths + 1] = home .. "/.config/DELTARUNE"
         paths[#paths + 1] = home .. "/.local/share/DELTARUNE"
 
         local steam_roots = {

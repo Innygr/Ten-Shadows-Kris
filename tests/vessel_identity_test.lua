@@ -43,4 +43,28 @@ end
 local name, path = Identity.findDeltaruneName({"/fake/DELTARUNE"})
 io.open = original_open
 assert(name == "New Vessel" and path == "/fake/DELTARUNE/filech2_9" and #reads > 0)
+
+-- Native Linux ports may place saves in the XDG config directory.
+local original_getenv = os.getenv
+local searched = {}
+os.getenv = function(key)
+    if key == "HOME" then return "/home/test-user" end
+    return nil
+end
+io.open = function(path, mode)
+    assert(mode == "rb")
+    searched[#searched + 1] = path
+    return nil
+end
+Identity.findDeltaruneName()
+os.getenv = original_getenv
+io.open = original_open
+local found_native_path = false
+for _, searched_path in ipairs(searched) do
+    if searched_path == "/home/test-user/.config/DELTARUNE/filech5_9" then
+        found_native_path = true
+        break
+    end
+end
+assert(found_native_path, "Native Linux XDG Deltarune save path must be searched")
 print("Vessel identity profile and DELTARUNE Vessel-name import tests passed")
