@@ -137,6 +137,13 @@ jobs:
           test -f scripts/battle/waves/knight_titan_assault.lua
           test -f scripts/battle/objects/chimera_shadow_garden.lua
           test -f tests/chimera_shadow_garden_test.lua
+          test -f tests/fusion_domain_test.lua
+          grep -q 'function state:expandFusionDomain(skip_cost)' scripts/ten_shadows/combat_state.lua
+          grep -q 'function state:routePartySpell(spell, entry_portal, exit_portal)' scripts/ten_shadows/combat_state.lua
+          grep -q 'function state:createGraniteBlast(origin, target, output)' scripts/ten_shadows/combat_state.lua
+          grep -q 'name == "FUSION DOMAIN"' scripts/battle/enemies/roaring_knight_titan.lua
+          grep -q 'name == "GRANITE BLAST"' scripts/battle/enemies/roaring_knight_titan.lua
+          grep -q 'V-ACT' mod.lua
           test -f scripts/battle/bullets/shadow_projectile.lua
           test -f scripts/ten_shadows/attack_wave_patterns.lua
           test -f tests/attack_wave_patterns_test.lua
