@@ -221,11 +221,14 @@ jobs:
           manifest = json.load(open("mod.json", encoding="utf-8"))
           assert manifest["party"] == ["kris", "susie", "ralsei", "noelle", "berdly", "vessel"], manifest["party"]
           source = open("mod.lua", encoding="utf-8").read()
+          startup_source = open("scripts/ten_shadows/vessel_identity_startup.lua", encoding="utf-8").read()
           assert "local original_battle_transition_out = Battle.onTransitionOutState" in source
           assert "Shadows.onBattleEnd()" in source
           assert 'local PARTY_ROSTER = {"kris", "susie", "ralsei", "noelle", "berdly", "vessel"}' in source
-          assert 'local original_game_load = Game.load' in source
-          assert 'data.party[i] = id' in source
+          assert 'installGameLoadHook(Mod, Game, PARTY_ROSTER)' in source
+          assert 'local original_game_load = game_class.load' in startup_source
+          assert 'data.party[i] = id' in startup_source
+          assert 'mod._vessel_identity_game_load_hook' in startup_source
           assert 'installSixPartySupport()' in source
           assert 'Game:setPartyMembers(unpack(roster))' in source
           assert 'assert(#Game.party == 6 and Game.party[6].id == "vessel"' in source
@@ -278,8 +281,9 @@ jobs:
           done
           grep -q 'CHIMERA SHADOW GARDEN' scripts/battle/enemies/runtime_dummy.lua
           grep -q 'local PARTY_ROSTER = {"kris", "susie", "ralsei", "noelle", "berdly", "vessel"}' mod.lua
-          grep -q 'local original_game_load = Game.load' mod.lua
-          grep -q 'data.party\[i\] = id' mod.lua
+          grep -q 'installGameLoadHook(Mod, Game, PARTY_ROSTER)' mod.lua
+          grep -q 'local original_game_load = game_class.load' scripts/ten_shadows/vessel_identity_startup.lua
+          grep -q 'data.party\[i\] = id' scripts/ten_shadows/vessel_identity_startup.lua
           grep -q 'installSixPartySupport()' mod.lua
           grep -q 'Game:setPartyMembers(unpack(roster))' mod.lua
           grep -q 'local original_update_selected_boxes = DarkMenu.updateSelectedBoxes' mod.lua
