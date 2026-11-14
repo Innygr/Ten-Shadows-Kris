@@ -7,6 +7,7 @@ local families = {
     radial = true, wall = true, aimed = true, crossfire = true,
     falling = true, sweep = true, twin_slash = true, titan_hands = true,
     big_shot_one = true, big_shot_two = true, big_shot_three = true,
+    titan_desperation = true,
 }
 
 local function validate(attack, phase)
@@ -169,6 +170,28 @@ for _, shot in ipairs(big_three) do
 end
 assert(big_three[1].direction ~= big_three_later[1].direction,
     "Big Shots 3 radial orientation must rotate between volleys")
+
+local desperation_target = {x = 330, y = 238, previous = {x = 318, y = 226}}
+local desperation, desperation_family = Patterns.build(
+    {id = "titan_desperation"}, 3, 1, arena, desperation_target, false
+)
+assert(desperation_family == "titan_desperation" and #desperation == 5,
+    "Desperation Shots must create five dedicated heavy bolts")
+for index, shot in ipairs(desperation) do
+    assert(shot.kind == "titan" and shot.mechanic.kind == "titan_desperation_shot",
+        "Desperation Shots must retain Titan styling and its dedicated marker")
+    assert(shot.mechanic.lane == index and shot.mechanic.lead,
+        "Each desperation bolt must carry lane and movement-lead metadata")
+    assert(shot.warning.kind == "target" and shot.warning.duration <= 0.6,
+        "Every desperation bolt must show a readable trajectory tell")
+    assert(shot.x < arena.left or shot.x > arena.right,
+        "Desperation bolts must enter from the arena edges")
+end
+local desperation_next = Patterns.build(
+    {id = "titan_desperation"}, 3, 2, arena, desperation_target, false
+)
+assert(desperation[1].x ~= desperation_next[1].x,
+    "Desperation launch sides must alternate between volleys")
 
 local execution_shots, execution_family = Patterns.build(
     {id = "cyan_knights_execution", source = "knight", pattern = "cyan-parry-window"},

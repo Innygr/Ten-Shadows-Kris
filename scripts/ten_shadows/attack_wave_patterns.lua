@@ -86,6 +86,7 @@ local function classify(attack)
 
     if source == "combo" then return "crossfire" end
     if id == "titan_hands" then return "titan_hands" end
+    if id == "titan_desperation" then return "titan_desperation" end
     if id == "titan_big_shots" then return "big_shot_one" end
     if id == "titan_big_shots_2" then return "big_shot_two" end
     if id == "titan_big_shots_3" then return "big_shot_three" end
@@ -145,7 +146,31 @@ function AttackWavePatterns.build(attack, phase, volley, arena, target, domain_a
     local pace = 2.8 + (phase - 1) * 0.42 + (volley - 1) * 0.10
     local shots = {}
 
-    if attack and attack.id == "titan_big_shots" then
+    if attack and attack.id == "titan_desperation" then
+        -- Five heavy bolts alternate edges and lead the SOUL's recent movement.
+        local previous = target.previous or target
+        local lead_x = math.max(arena.left + 12, math.min(arena.right - 12,
+            target.x + (target.x - previous.x) * 1.15))
+        local lead_y = math.max(arena.top + 12, math.min(arena.bottom - 12,
+            target.y + (target.y - previous.y) * 1.15))
+        local spacing = height * 0.16
+        for i = 1, 5 do
+            local from_right = (i + volley) % 2 == 0
+            local x = from_right and (arena.right + 16) or (arena.left - 16)
+            local lane = i - 3
+            local y = center_y + lane * spacing * 0.52
+            local dx, dy = lead_x - x, lead_y - y
+            add(shots, "titan", x, y, atan2(dy, dx) + lane * 0.035, pace + 0.72, {
+                kind = "target",
+                duration = phase == 3 and 0.34 or 0.42,
+                length = math.sqrt(dx * dx + dy * dy),
+            }, {
+                kind = "titan_desperation_shot",
+                lane = i,
+                lead = true,
+            })
+        end
+    elseif attack and attack.id == "titan_big_shots" then
         -- Big Shots 1: three heavy bolts converge on the current SOUL position
         -- with a narrow fan. The center bolt is direct; the outer bolts force
         -- a deliberate lateral dodge instead of a simple vertical retreat.
