@@ -1,7 +1,7 @@
 -- Vessel uses a private copy of Kris's actor configuration, but renders it as a distinct SOUL form.
 local actor, super = Class(Actor, "vessel")
 
-local VESSEL_SHADER = [[
+local VESSEL_SHADER_SOURCE = [[
 extern number vessel_presentation;
 
 vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
@@ -38,6 +38,10 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
     return vec4(steel, pixel.a) * color;
 }
 ]]
+
+-- ShaderFX resolves string IDs through Assets.getShader(). Compile this
+-- inline source once and pass the resulting LÖVE shader object instead.
+local vessel_shader
 
 local function copyActorValue(value, seen)
     if type(value) ~= "table" then
@@ -95,7 +99,10 @@ function actor:onSpriteInit(sprite)
 
     if not sprite:getFX("vessel_gray_red_outline") then
         local presentation_values = {androgynous = 0, masculine = 1, feminine = 2}
-        sprite:addFX(ShaderFX(VESSEL_SHADER, {
+        if not vessel_shader then
+            vessel_shader = love.graphics.newShader(VESSEL_SHADER_SOURCE)
+        end
+        sprite:addFX(ShaderFX(vessel_shader, {
             vessel_presentation = function()
                 local identity = Mod and Mod.vessel_identity and Mod.vessel_identity.get() or {}
                 return presentation_values[identity.presentation] or 0

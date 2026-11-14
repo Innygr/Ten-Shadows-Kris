@@ -47,6 +47,14 @@ function ShaderFX(shader, uniforms, ...)
     return {shader = shader, uniforms = uniforms}
 end
 
+love = {
+    graphics = {
+        newShader = function(source)
+            return {source = source}
+        end,
+    },
+}
+
 local vessel = assert(dofile("scripts/data/actors/vessel.lua"))
 vessel:init()
 
@@ -99,9 +107,9 @@ assert(sprite.vessel_gray_red_outline.uniforms.vessel_presentation() == 1,
 current_presentation = "feminine"
 assert(sprite.vessel_gray_red_outline.uniforms.vessel_presentation() == 2,
     "Feminine presentation must select its shader palette")
-assert(sprite.vessel_gray_red_outline.shader:find("dot(pixel.rgb", 1, true),
+assert(sprite.vessel_gray_red_outline.shader.source:find("dot(pixel.rgb", 1, true),
     "Vessel shader must convert the sprite to grayscale")
-assert(sprite.vessel_gray_red_outline.shader:find("0.95, 0.035, 0.08", 1, true),
+assert(sprite.vessel_gray_red_outline.shader.source:find("0.95, 0.035, 0.08", 1, true),
     "Vessel shader must retain its red outline")
 
 -- Reinitialization must not stack shader effects or scale multipliers.
