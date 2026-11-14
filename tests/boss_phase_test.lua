@@ -17,6 +17,16 @@ local unchanged
 unchanged, message = BossPhase.advance(0, phase)
 assert(unchanged == 3 and message == nil, "phase three must not advance again")
 
+-- One hit may cross both thresholds; the boss must land directly in its
+-- final phase and announce the final state rather than waiting for another hit.
+local burst_phase, burst_message = BossPhase.advance(40, 1)
+assert(burst_phase == 3 and burst_message == BossPhase.TEXT[3],
+    "a single hit crossing both thresholds must advance directly to phase three")
+
+local boundary_phase, boundary_message = BossPhase.advance(175, 1)
+assert(boundary_phase == 2 and boundary_message == BossPhase.TEXT[2],
+    "exactly reaching the first threshold must advance only to phase two")
+
 assert(BossPhase.checkText(1):find("One shared health pool", 1, true), "phase one CHECK must explain shared HP")
 assert(BossPhase.checkText(2):find("second phase", 1, true), "phase two CHECK must update")
 assert(BossPhase.checkText(3):find("final phase", 1, true), "phase three CHECK must update")

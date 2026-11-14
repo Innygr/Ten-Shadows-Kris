@@ -16,9 +16,18 @@ BossPhase.TEXT = {
 
 function BossPhase.advance(health, phase)
     phase = phase or 1
-    local threshold = BossPhase.THRESHOLDS[phase + 1]
-    if threshold and health <= threshold then
-        return phase + 1, BossPhase.TEXT[phase + 1]
+    local previous_phase = phase
+
+    -- A single large hit can cross more than one threshold. Resolve all
+    -- crossed thresholds immediately so the shared boss never remains in an
+    -- outdated phase merely because no later hit arrives.
+    while BossPhase.THRESHOLDS[phase + 1]
+        and health <= BossPhase.THRESHOLDS[phase + 1] do
+        phase = phase + 1
+    end
+
+    if phase ~= previous_phase then
+        return phase, BossPhase.TEXT[phase]
     end
     return phase, nil
 end
