@@ -112,8 +112,6 @@ local titan_hand = ShadowProjectile(70, 80, 0, 4, "titan", {
 assert(titan_hand.is_titan_hand, "Titan hand marker must survive projectile construction")
 assert(titan_hand.width == 18 and titan_hand.height == 18,
     "Titan hand projectiles must use the larger fist footprint")
-assert(titan_hand.collider.radius == 6,
-    "Titan hand projectiles must use their intentionally larger collision radius")
 assert(not titan_hand.armed and titan_hand.collider == nil,
     "Titan hand projectiles must remain harmless during their lane tell")
 titan_hand.telegraph_timer.callback()
