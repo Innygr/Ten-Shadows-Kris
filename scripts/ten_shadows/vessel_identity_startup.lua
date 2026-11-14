@@ -24,6 +24,31 @@ function Startup.restoreEncounter(mod, encounter)
     end
 end
 
+function Startup.openIdentitySetup(world)
+    if not world or type(world.openMenu) ~= "function" then
+        return false
+    end
+
+    local menu = world:openMenu()
+    if not menu or type(menu.onButtonSelect) ~= "function"
+        or type(menu.buttons) ~= "table" or not menu.buttons[4] then
+        return false
+    end
+
+    -- Kristal's fourth DarkMenu button is CONFIG. Its callback creates the
+    -- DarkConfigMenu in menu.box, where the identity editor is installed.
+    menu:onButtonSelect(4)
+    if not menu.box or type(menu.box.openVesselIdentity) ~= "function" then
+        if type(menu.closeBox) == "function" then
+            menu:closeBox()
+        end
+        return false
+    end
+
+    menu.box:openVesselIdentity(true)
+    return true
+end
+
 function Startup.startPendingEncounter(mod, game)
     local encounter = mod and mod._pending_first_run_encounter
     if not encounter then return false end

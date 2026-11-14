@@ -23,6 +23,32 @@ assert(#starts == 1 and starts[1].encounter == "knight_titan_preview" and starts
 assert(mod._pending_first_run_encounter == nil)
 assert(not Startup.startPendingEncounter(mod, game), "The deferred encounter must only start once")
 
+-- First-run setup must open CONFIG and then the installed Vessel Identity editor.
+local identity_opened = false
+local config_menu = {
+    buttons = {{}, {}, {}, {}},
+    onButtonSelect = function(self, index)
+        assert(index == 4, "Startup must choose the CONFIG button")
+        self.box = {
+            openVesselIdentity = function(_, setup)
+                assert(setup == true, "Startup must request first-run setup mode")
+                identity_opened = true
+            end,
+        }
+    end,
+}
+local setup_world = {
+    openMenu = function()
+        return config_menu
+    end,
+}
+assert(Startup.openIdentitySetup(setup_world))
+assert(identity_opened, "First-run setup must open the Vessel Identity editor")
+
+local broken_world = {openMenu = function() return {buttons = {}} end}
+assert(not Startup.openIdentitySetup(broken_world),
+    "A missing CONFIG menu API must be reported instead of silently skipping setup")
+
 -- Returning players keep Kristal's normal new-file preview behavior.
 local returning = {
     info = {encounter = "knight_titan_preview"},

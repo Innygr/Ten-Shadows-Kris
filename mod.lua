@@ -412,15 +412,12 @@ function Mod:postInit(is_new_file)
         "Ten Shadows Kris: saved party did not load all six members, including Vessel")
 
     -- First-time players can import the Vessel name from their own Deltarune
-    -- save or enter a name and identity manually before continuing.
-    if is_new_file and not Mod.vessel_identity.hasSavedProfile() and Game.world then
-        local menu = Game.world:openMenu()
-        if menu and menu.onButtonSelect and menu.buttons and menu.buttons[4] then
-            menu:onButtonSelect(4)
-            if menu.box and menu.box.openVesselIdentity then
-                menu.box:openVesselIdentity(true)
-            end
-        end
+    -- save or enter a name and identity manually before continuing. Fail loudly
+    -- if the engine/menu integration is unavailable; otherwise the default
+    -- encounter would remain deferred with no way for the player to continue.
+    if is_new_file and not Mod.vessel_identity.hasSavedProfile() then
+        assert(Mod.vessel_identity_startup.openIdentitySetup(Game.world),
+            "Ten Shadows Kris: could not open first-run Vessel Identity setup")
     end
 end
 
