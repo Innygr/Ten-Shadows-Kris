@@ -116,9 +116,8 @@ assert(sprite.vessel_gray_red_outline.uniforms.vessel_presentation() == 2,
     "Feminine presentation must select its shader palette")
 assert(sprite.vessel_gray_red_outline.shader.source:find("vec2 px = 1.0 / love_ScreenSize.xy", 1, true),
     "Vessel outline sampling must use LÖVE 11.5's supported pixel-shader dimensions")
-local vessel_shader_code = sprite.vessel_gray_red_outline.shader.source:gsub("//[^\\n]*", "")
-assert(not vessel_shader_code:find("love_PixelSize", 1, true),
-    "Vessel shader code must not reference an undeclared pixel-size identifier")
+assert(not sprite.vessel_gray_red_outline.shader.source:find("love_PixelSize", 1, true),
+    "Vessel shader must not reference the undeclared pixel-size identifier")
 assert(sprite.vessel_gray_red_outline.shader.source:find("dot(pixel.rgb", 1, true),
     "Vessel shader must convert the sprite to grayscale")
 assert(sprite.vessel_gray_red_outline.shader.source:find("0.95, 0.035, 0.08", 1, true),
@@ -129,6 +128,29 @@ vessel:onSpriteInit(sprite)
 assert(sprite.scale_y == 1.15, "Repeated sprite initialization must not compound Vessel's scale")
 assert(sprite.vessel_gray_red_outline, "Vessel shader must remain installed after reinitialization")
 assert(shader_compile_count == 1, "Vessel shader should be compiled once and reused across sprite initialization")
+
+-- A graphics driver can reject an optional shader. Vessel initialization must
+-- keep working and retain its normal Kris-derived sprite when that happens.
+local original_new_shader = love.graphics.newShader
+love.graphics.newShader = function()
+    error("simulated shader compiler failure")
+end
+local fallback_actor = assert(dofile("scripts/data/actors/vessel.lua"))
+fallback_actor:init()
+local fallback_sprite = {
+    scale_y = 1,
+    getFX = function(self, id) return self[id] end,
+    addFX = function(self, effect, id) self[id] = effect end,
+}
+local fallback_ok, fallback_error = pcall(function()
+    fallback_actor:onSpriteInit(fallback_sprite)
+end)
+love.graphics.newShader = original_new_shader
+assert(fallback_ok, "a Vessel shader compile failure must not crash sprite creation: " .. tostring(fallback_error))
+assert(fallback_sprite.scale_y == 1.15,
+    "Vessel must retain its normal sprite setup when the optional shader is unavailable")
+assert(not fallback_sprite.vessel_gray_red_outline,
+    "Vessel must skip only the optional outline effect when shader compilation fails")
 
 local party_source = assert(io.open("scripts/data/party/vessel.lua", "r"))
 local party_text = party_source:read("*a")

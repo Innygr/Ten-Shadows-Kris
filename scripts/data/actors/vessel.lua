@@ -44,6 +44,7 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
 -- ShaderFX resolves string IDs through Assets.getShader(). Compile this
 -- inline source once and pass the resulting LÖVE shader object instead.
 local vessel_shader
+local vessel_shader_unavailable = false
 
 local function copyActorValue(value, seen)
     if type(value) ~= "table" then
@@ -101,15 +102,24 @@ function actor:onSpriteInit(sprite)
 
     if not sprite:getFX("vessel_gray_red_outline") then
         local presentation_values = {androgynous = 0, masculine = 1, feminine = 2}
-        if not vessel_shader then
-            vessel_shader = love.graphics.newShader(VESSEL_SHADER_SOURCE)
+        if not vessel_shader and not vessel_shader_unavailable then
+            local ok, compiled = pcall(love.graphics.newShader, VESSEL_SHADER_SOURCE)
+            if ok and compiled then
+                vessel_shader = compiled
+            else
+                vessel_shader_unavailable = true
+                local reason = ok and "LÖVE returned no shader" or tostring(compiled)
+                print("[Deltarune: Shadowbender] Vessel outline shader unavailable; continuing without the visual effect: " .. reason)
+            end
         end
-        sprite:addFX(ShaderFX(vessel_shader, {
-            vessel_presentation = function()
-                local identity = Mod and Mod.vessel_identity and Mod.vessel_identity.get() or {}
-                return presentation_values[identity.presentation] or 0
-            end,
-        }, false, 0), "vessel_gray_red_outline")
+        if vessel_shader then
+            sprite:addFX(ShaderFX(vessel_shader, {
+                vessel_presentation = function()
+                    local identity = Mod and Mod.vessel_identity and Mod.vessel_identity.get() or {}
+                    return presentation_values[identity.presentation] or 0
+                end,
+            }, false, 0), "vessel_gray_red_outline")
+        end
     end
 end
 
