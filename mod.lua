@@ -62,22 +62,10 @@ function Mod:init()
     end
 
     -- Game:load builds the map and can start the first encounter before
-    -- POSTINIT. Override saved rosters before the engine reads them.
-    local original_game_load = Game.load
-    Game.load = function(game, data, index, fade)
-        if data then
-            data.party = {}
-            for i, id in ipairs(PARTY_ROSTER) do data.party[i] = id end
-        end
-
-        -- Kristal starts mod.json's default encounter inside Game:load(), before
-        -- it emits postInit. On a first-ever profile, defer that encounter until
-        -- the player has finished Vessel identity setup.
-        local deferred_encounter = Mod.vessel_identity_startup.deferEncounter(Mod, data == nil)
-        local result = original_game_load(game, data, index, fade)
-        Mod.vessel_identity_startup.restoreEncounter(Mod, deferred_encounter)
-        return result
-    end
+    -- POSTINIT. Install this once: Kristal can re-enter Mod:init() when another
+    -- save is opened, and nested wrappers would otherwise accumulate.
+    assert(Mod.vessel_identity_startup.installGameLoadHook(Mod, Game, PARTY_ROSTER),
+        "Ten Shadows Kris: could not install the Game:load identity hook")
 
     -- Install battle/UI hooks before Game:load creates the initial encounter.
     installSixPartySupport()

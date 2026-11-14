@@ -24,6 +24,34 @@ function Startup.restoreEncounter(mod, encounter)
     end
 end
 
+function Startup.installGameLoadHook(mod, game_class, roster)
+    if type(mod) ~= "table" or type(game_class) ~= "table"
+        or type(game_class.load) ~= "function" or type(roster) ~= "table" then
+        return false
+    end
+    if mod._vessel_identity_game_load_hook then
+        return true
+    end
+
+    local original_game_load = game_class.load
+    game_class.load = function(game, data, index, fade)
+        if data then
+            data.party = {}
+            for i, id in ipairs(roster) do
+                data.party[i] = id
+            end
+        end
+
+        local deferred_encounter = Startup.deferEncounter(mod, data == nil)
+        local result = original_game_load(game, data, index, fade)
+        Startup.restoreEncounter(mod, deferred_encounter)
+        return result
+    end
+
+    mod._vessel_identity_game_load_hook = true
+    return true
+end
+
 function Startup.openIdentitySetup(world)
     if not world or type(world.openMenu) ~= "function" then
         return false

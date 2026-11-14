@@ -23,6 +23,33 @@ assert(#starts == 1 and starts[1].encounter == "knight_titan_preview" and starts
 assert(mod._pending_first_run_encounter == nil)
 assert(not Startup.startPendingEncounter(mod, game), "The deferred encounter must only start once")
 
+-- Game:load hooks must be idempotent and preserve encounter deferral ordering.
+local load_observed_encounter
+local game_class = {
+    load = function(_, data)
+        load_observed_encounter = hook_mod.info.encounter
+        return data and "saved" or "new"
+    end,
+}
+local hook_mod = {
+    info = {encounter = "first_run_preview"},
+    vessel_identity = {hasSavedProfile = function() return false end},
+}
+assert(Startup.installGameLoadHook(hook_mod, game_class, {"kris", "vessel"}))
+local installed_load = game_class.load
+assert(Startup.installGameLoadHook(hook_mod, game_class, {"wrong"}))
+assert(game_class.load == installed_load, "Repeated Mod:init must not wrap Game:load again")
+assert(game_class.load({}, nil) == "new")
+assert(load_observed_encounter == nil, "The default encounter must be hidden during Game:load")
+assert(hook_mod.info.encounter == "first_run_preview",
+    "The manifest encounter must be restored immediately after Game:load")
+assert(hook_mod._pending_first_run_encounter == "first_run_preview")
+
+local saved_data = {party = {"kris"}}
+assert(game_class.load({}, saved_data) == "saved")
+assert(#saved_data.party == 2 and saved_data.party[1] == "kris" and saved_data.party[2] == "vessel",
+    "Existing saves must receive the canonical party roster")
+
 -- First-run setup must open CONFIG and then the installed Vessel Identity editor.
 local identity_opened = false
 local config_menu = {
