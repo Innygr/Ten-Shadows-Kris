@@ -32,9 +32,19 @@ function ChimeraShadowGarden:init(width, height, opening)
     self.time = 0
     self.opening = opening == true and 1 or 0
     self.fade = opening == true and 0 or 1
+    self.active_roots = {}
     -- Children of Arena.mask share its visual layer; keep this object at the
     -- parent's local layer so it stays between the arena and live projectiles.
     self.layer = 0
+end
+
+function ChimeraShadowGarden:setActiveRoots(roots)
+    self.active_roots = {}
+    for _, root in ipairs(roots or {}) do
+        if type(root) == "number" and root >= 1 and root <= 10 then
+            self.active_roots[math.floor(root)] = true
+        end
+    end
 end
 
 function ChimeraShadowGarden:update()
@@ -107,12 +117,22 @@ function ChimeraShadowGarden:draw()
         graphics.line(cx, cy, bend_x, bend_y, ex, ey)
 
         local petal_x, petal_y = point(cx, cy, end_radius, angle)
+        local active = self.active_roots[index] == true
+        if active then
+            local flare = 0.5 + 0.5 * math.sin(self.time * 9)
+            color(0.72, 0.30, 1.0, (0.24 + flare * 0.20) * fade)
+            graphics.circle("fill", petal_x, petal_y, 11 + flare * 3)
+            color(0.91, 0.72, 1.0, 0.98 * fade)
+            graphics.setLineWidth(2)
+            graphics.circle("line", petal_x, petal_y, 8 + flare * 2)
+        end
         color(0.16, 0.055, 0.27, 0.82 * fade)
         diamond(petal_x, petal_y, math.min(width, height) * 0.075, angle)
-        color(0.58, 0.30, 0.78, 0.78 * fade)
-        graphics.circle("line", petal_x, petal_y, 4 + (index % 3))
+        color(active and 0.92 or 0.58, active and 0.70 or 0.30, active and 1.0 or 0.78,
+            (active and 0.98 or 0.78) * fade)
+        graphics.circle("line", petal_x, petal_y, (active and 7 or 4) + (index % 3))
         color(0.83, 0.65, 0.96, 0.86 * fade)
-        graphics.circle("fill", petal_x, petal_y, 1.5)
+        graphics.circle("fill", petal_x, petal_y, active and 2.4 or 1.5)
     end
 
     -- A three-ring seal marks the centre of the domain. The broken outer ring

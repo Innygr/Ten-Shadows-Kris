@@ -47,6 +47,15 @@ assert(visual.layer == 0, "garden must inherit the arena mask's visual layer")
 local opening_visual = Garden(180, 142, true)
 assert(opening_visual.fade == 0 and opening_visual.opening == 1,
     "first activation must start with an outward expansion bloom")
+opening_visual:setActiveRoots({2, 7})
+assert(opening_visual.active_roots[2] and opening_visual.active_roots[7],
+    "the two selected roots must be highlighted in the garden")
+assert(not opening_visual.active_roots[1],
+    "inactive roots must remain visually distinct")
+opening_visual:setActiveRoots({})
+assert(not next(opening_visual.active_roots),
+    "root highlights must clear when the next volley has no root attacks")
+opening_visual:setActiveRoots({2, 7})
 
 DT = 0.25
 visual:update()
@@ -84,5 +93,7 @@ assert(wave_source:find("scripts/battle/objects/chimera_shadow_garden", 1, true)
     "the live Wave must load the Chimera Shadow Garden object")
 assert(wave_source:find("GardenVisual(arena.width, arena.height, opening)", 1, true),
     "the Wave must pass the opening animation state to the garden object")
+assert(wave_source:find("garden_visual:setActiveRoots(active_roots)", 1, true),
+    "the Wave must highlight whichever roots launch the current volley")
 
 print("Chimera Shadow Garden visual and Wave integration tests passed.")

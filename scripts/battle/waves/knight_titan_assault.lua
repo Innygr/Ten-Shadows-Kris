@@ -32,12 +32,13 @@ function KnightTitanAssault:onStart()
     -- The Wave owns this object, so it is removed automatically when the
     -- current defending turn ends; the next wave recreates it while the
     -- three-turn Chimera Shadow Garden state remains active.
+    local garden_visual = nil
     if state and state.player_domain.active and arena and arena.mask then
         local GardenVisual = modRequire("scripts/battle/objects/chimera_shadow_garden")
         local opening = state.player_domain.visual_pending == true
         state.player_domain.visual_pending = false
-        self:spawnObjectTo(arena.mask,
-            GardenVisual(arena.width, arena.height, opening), 0, 0)
+        garden_visual = GardenVisual(arena.width, arena.height, opening)
+        self:spawnObjectTo(arena.mask, garden_visual, 0, 0)
     end
 
     if frozen then
@@ -71,6 +72,16 @@ function KnightTitanAssault:onStart()
             state and state.knight_domain.active or false,
             state and state.player_domain.active or false
         )
+
+        if garden_visual then
+            local active_roots = {}
+            for _, shot in ipairs(shots) do
+                if shot.mechanic and shot.mechanic.kind == "chimera_domain_blade" then
+                    active_roots[#active_roots + 1] = shot.mechanic.root
+                end
+            end
+            garden_visual:setActiveRoots(active_roots)
+        end
 
         for _, shot in ipairs(shots) do
             self:spawnBullet(

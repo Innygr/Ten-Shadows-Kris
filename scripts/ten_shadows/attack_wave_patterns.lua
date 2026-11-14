@@ -491,35 +491,45 @@ function AttackWavePatterns.build(attack, phase, volley, arena, target, knight_d
         })
     end
 
-    -- Kris's Chimera Shadow Garden calls two of its ten roots into the attack:
-    -- paired petals rise from opposite lower edges and converge on offset
-    -- marks, leaving a central route. Each path is telegraphed before it arms.
+    -- Kris's Chimera Shadow Garden calls two opposing roots into each
+    -- volley. Their pair rotates around all ten petals, so the pressure moves
+    -- around the arena rather than repeating the same lower-edge attack.
     if player_domain_active then
-        local left_x = arena.left + width * 0.12
-        local right_x = arena.right - width * 0.12
-        local launch_y = arena.bottom + 14
-        local target_y = arena.top + height * 0.32
-        local left_target_x = center_x - width * 0.13
-        local right_target_x = center_x + width * 0.13
+        local root_a = ((volley + phase - 2) % 10) + 1
+        local root_b = ((root_a + 4) % 10) + 1
+        local root_radius = math.min(width, height) * 0.43 * 0.72
+        local target_radius = math.min(width, height) * 0.14
         local duration = phase == 3 and 0.36 or 0.44
 
-        local left_dx, left_dy = left_target_x - left_x, target_y - launch_y
-        local left_length = math.sqrt(left_dx * left_dx + left_dy * left_dy)
-        add(shots, "combo", left_x, launch_y, atan2(left_dy, left_dx),
-            left_length / 1.05, {
-                kind = "target", duration = duration, length = left_length,
-            }, {
-                kind = "chimera_domain_blade", root = 3, side = "left",
-            })
+        local function rootPosition(index)
+            local angle = (index - 1) * (math.pi * 2 / 10)
+            return center_x + math.cos(angle) * root_radius,
+                center_y + math.sin(angle) * root_radius
+        end
 
-        local right_dx, right_dy = right_target_x - right_x, target_y - launch_y
-        local right_length = math.sqrt(right_dx * right_dx + right_dy * right_dy)
-        add(shots, "combo", right_x, launch_y, atan2(right_dy, right_dx),
-            right_length / 1.05, {
-                kind = "target", duration = duration, length = right_length,
+        local function addRootBlade(index, side)
+            local x, y = rootPosition(index)
+            local angle = (index - 1) * (math.pi * 2 / 10)
+            local perpendicular = angle + math.pi / 2
+            local direction = side == "a" and 1 or -1
+            local target_x = center_x + math.cos(perpendicular) * target_radius * direction
+            local target_y = center_y + math.sin(perpendicular) * target_radius * direction
+            local dx, dy = target_x - x, target_y - y
+            local length = math.sqrt(dx * dx + dy * dy)
+
+            add(shots, "combo", x, y, atan2(dy, dx), length / 1.05, {
+                kind = "target", duration = duration, length = length,
             }, {
-                kind = "chimera_domain_blade", root = 8, side = "right",
+                kind = "chimera_domain_blade",
+                root = index,
+                side = side,
+                target_x = target_x,
+                target_y = target_y,
             })
+        end
+
+        addRootBlade(root_a, "a")
+        addRootBlade(root_b, "b")
     end
 
     return shots, family

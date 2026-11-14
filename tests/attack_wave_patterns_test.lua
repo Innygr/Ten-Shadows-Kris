@@ -298,20 +298,56 @@ assert(#knight_domain_shots == #base_shots + 2,
 assert(knight_domain_shots[#knight_domain_shots].warning.kind == "falling",
     "Knight domain blades must telegraph their diagonal travel")
 
--- Kris's domain is a separate modifier: it sends two marked root blades up
--- from the lower edges, each with its own trajectory telegraph.
+-- Kris's domain is independent of the Knight's: two opposing roots launch
+-- leaf blades on every volley, rotating through the complete ten-root ring.
 local player_domain_shots = Patterns.build({id = "twin_slashes"}, 3, 3, arena, target, false, true)
 assert(#player_domain_shots == #base_shots + 2,
     "Chimera Shadow Garden must add two root attacks without changing the Knight domain")
+local marked_roots = {}
 for _, shot in ipairs(player_domain_shots) do
     if shot.mechanic and shot.mechanic.kind == "chimera_domain_blade" then
         assert(shot.kind == "combo" and shot.warning.kind == "target",
             "Kris's root blades must be styled and telegraphed as combined attacks")
-        assert(shot.mechanic.root == 3 or shot.mechanic.root == 8,
-            "Each root blade must identify one of the garden's ten shadow roots")
+        assert(shot.mechanic.root >= 1 and shot.mechanic.root <= 10,
+            "each root blade must identify one of the ten garden roots")
+        marked_roots[#marked_roots + 1] = shot.mechanic.root
     end
 end
+assert(#marked_roots == 2, "each garden volley must call exactly two roots")
+assert(marked_roots[2] == ((marked_roots[1] + 4) % 10) + 1,
+    "the two roots in a volley must be opposite each other")
 assert(player_domain_shots[#player_domain_shots].mechanic.kind == "chimera_domain_blade",
     "the final domain root attack must retain its dedicated projectile marker")
+
+local seen_roots = {}
+for volley = 1, 10 do
+    local shots = Patterns.build({id = "twin_slashes"}, 2, volley, arena, target, false, true)
+    local roots = {}
+    for _, shot in ipairs(shots) do
+        if shot.mechanic and shot.mechanic.kind == "chimera_domain_blade" then
+            roots[#roots + 1] = shot
+        end
+    end
+    assert(#roots == 2, "every garden volley must fire two root blades")
+    assert(roots[2].mechanic.root == ((roots[1].mechanic.root + 4) % 10) + 1,
+        "root pair must remain diametrically opposed")
+    assert(not seen_roots[roots[1].mechanic.root],
+        "the primary root should not repeat before all ten roots have acted")
+    seen_roots[roots[1].mechanic.root] = true
+
+    for _, shot in ipairs(roots) do
+        local angle = (shot.mechanic.root - 1) * math.pi * 2 / 10
+        local root_radius = math.min(arena.right - arena.left, arena.bottom - arena.top) * 0.43 * 0.72
+        local expected_x = (arena.left + arena.right) / 2 + math.cos(angle) * root_radius
+        local expected_y = (arena.top + arena.bottom) / 2 + math.sin(angle) * root_radius
+        assert(math.abs(shot.x - expected_x) < 0.001 and math.abs(shot.y - expected_y) < 0.001,
+            "root blade must launch from the matching garden petal")
+        assert(shot.warning.duration <= 0.6 and shot.speed > 0,
+            "root blade must have a readable tell and a valid travel speed")
+    end
+end
+for root = 1, 10 do
+    assert(seen_roots[root], "all ten garden roots must participate over ten volleys")
+end
 
 print("Knight + Titan wave pattern coverage and telegraph tests passed.")
