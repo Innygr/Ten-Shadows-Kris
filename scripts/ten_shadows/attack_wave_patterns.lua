@@ -163,13 +163,17 @@ function AttackWavePatterns.build(attack, phase, volley, arena, target, domain_a
         }
         for index, entry in ipairs(entries) do
             local dx, dy = collision_x - entry[2], collision_y - entry[3]
+            local distance = math.sqrt(dx * dx + dy * dy)
+            -- Scale speed to path length so every projectile reaches the
+            -- shared collision point at the same moment.
+            local synchronized_flight_time = 1.15
             add(shots, entry[1], entry[2], entry[3], atan2(dy, dx),
-                pace + (entry[1] == "titan" and 0.42 or 0.30), {
-                    kind = "target", duration = duration,
-                    length = math.sqrt(dx * dx + dy * dy),
+                distance / synchronized_flight_time, {
+                    kind = "target", duration = duration, length = distance,
                 }, {
                     kind = "knight_titan_collision", source = entry[1],
-                    collision_x = collision_x, collision_y = collision_y, path = index,
+                    collision_x = collision_x, collision_y = collision_y,
+                    flight_time = synchronized_flight_time, path = index,
                 })
         end
     elseif attack and attack.id == "crystal_barrage" then

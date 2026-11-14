@@ -185,6 +185,8 @@ for phase = 1, 3 do
         assert(type(shot.mechanic.collision_x) == "number"
             and type(shot.mechanic.collision_y) == "number",
             "All paths must identify the shared collision point")
+        assert(math.abs(shot.speed * shot.mechanic.flight_time - shot.warning.length) < 0.001,
+            "Each path must reach the shared point at the synchronized arrival time")
         if shot.kind == "knight" then knights = knights + 1 end
         if shot.kind == "titan" then titans = titans + 1 end
     end
