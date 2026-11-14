@@ -106,6 +106,8 @@ jobs:
         run: lua5.1 tests/vessel_identity_test.lua
       - name: Test Vessel identity menu and first-run setup
         run: lua5.1 tests/vessel_identity_menu_test.lua
+      - name: Test Vessel first-run encounter ordering
+        run: lua5.1 tests/vessel_identity_startup_test.lua
 
       - name: Test Vessel sprite configuration
         run: lua5.1 tests/vessel_actor_test.lua
@@ -168,6 +170,8 @@ jobs:
           for member in kris susie ralsei noelle berdly vessel; do test -f "scripts/data/party/$member.lua"; done
           test -f scripts/ten_shadows/vessel_identity.lua
           test -f tests/vessel_identity_test.lua
+          test -f scripts/ten_shadows/vessel_identity_startup.lua
+          test -f tests/vessel_identity_startup_test.lua
           grep -q "Mod.vessel_identity.load()" mod.lua
           grep -q "self.pronouns = identity.pronouns" scripts/data/party/vessel.lua
           test -f scripts/data/actors/vessel.lua

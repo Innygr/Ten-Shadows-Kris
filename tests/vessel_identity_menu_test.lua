@@ -1,7 +1,7 @@
 local saved = {name = "Vessel", gender = "unspecified", pronouns = "they/them", presentation = "androgynous"}
 local saves = 0
-local member = {}
 local actor = {}
+local member = {actor = actor}
 local key_pressed
 local child_added
 
@@ -39,11 +39,13 @@ Game = {
     world = {closeMenu = function() end},
     getSoulColor = function() return 1, 0, 0 end,
 }
-Registry = {getActor = function(id)
-    assert(id == "vessel")
-    return actor
+Registry = {getActor = function()
+    error("Identity editor must update the party member's live actor instance")
 end}
 Mod = {
+    vessel_identity_startup = {
+        startPendingEncounter = function() return false end,
+    },
     vessel_identity = {
         get = function()
             local copy = {}
@@ -102,7 +104,8 @@ assert(menu._identity_draft.name == "Imported", "Import row should copy the dete
 -- Gender selection updates the default pronoun set.
 menu._identity_selected = 3
 press("right")
-assert(menu._identity_draft.gender == "male" and menu._identity_draft.pronouns == "he/him")
+assert(menu._identity_draft.gender == "male" and menu._identity_draft.pronouns == "he/him"
+    and menu._identity_draft.presentation == "masculine")
 
 -- Custom pronouns are accepted through Kristal's native FileNamer control.
 menu._identity_selected = 4
@@ -114,7 +117,8 @@ assert(menu._identity_draft.pronouns == "xe/xem" and menu._identity_namer == nil
 -- Visual presentation is a separate editable setting.
 menu._identity_selected = 5
 press("right")
-assert(menu._identity_draft.presentation == "masculine")
+assert(menu._identity_draft.presentation == "feminine",
+    "Manual presentation selection should remain independent after gender defaults are applied")
 
 -- Saving persists and immediately updates the party member and actor.
 menu._identity_selected = 6
@@ -123,7 +127,7 @@ assert(saves == 1 and saved.name == "Imported")
 assert(member.name == "Imported" and actor.name == "Imported")
 assert(member.gender == "male" and actor.gender == "male")
 assert(member.pronouns == "xe/xem" and actor.pronouns == "xe/xem")
-assert(member.presentation == "masculine" and actor.presentation == "masculine")
+assert(member.presentation == "feminine" and actor.presentation == "feminine")
 assert(menu.state == "MAIN" and menu.currently_selected == 6)
 
 -- First-run setup can be skipped, but doing so writes a profile and closes it.

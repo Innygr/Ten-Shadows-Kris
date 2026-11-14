@@ -48,7 +48,9 @@ local function applyProfile(profile)
         member.presentation = profile.presentation
     end
 
-    local actor = Registry.getActor("vessel")
+    -- The party member owns the actor instance used by its overworld and
+    -- battle sprites. Update that instance instead of the registry prototype.
+    local actor = member and member.actor
     if actor then
         actor.name = profile.name
         actor.gender = profile.gender
@@ -119,6 +121,7 @@ local function saveIdentity(menu)
         if Game.world then
             Game.world:closeMenu()
         end
+        Mod.vessel_identity_startup.startPendingEncounter(Mod, Game)
     else
         closeIdentity(menu)
     end
@@ -150,6 +153,13 @@ local function adjustIdentityValue(menu, direction)
     if selected == 3 then
         draft.gender = cycle(GENDERS, draft.gender, direction)
         draft.pronouns = PRONOUNS[draft.gender]
+        local default_presentation = {
+            unspecified = "androgynous",
+            male = "masculine",
+            female = "feminine",
+            nonbinary = "androgynous",
+        }
+        draft.presentation = default_presentation[draft.gender]
     elseif selected == 5 then
         draft.presentation = cycle(PRESENTATIONS, draft.presentation, direction)
     end

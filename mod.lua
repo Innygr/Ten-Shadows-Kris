@@ -5,6 +5,8 @@ function Mod:init()
     Mod.vessel_identity = modRequire("scripts/ten_shadows/vessel_identity")
     Mod.vessel_identity.load()
 
+    Mod.vessel_identity_startup = modRequire("scripts/ten_shadows/vessel_identity_startup")
+
     local VesselIdentityMenu = modRequire("scripts/ten_shadows/vessel_identity_menu")
     VesselIdentityMenu.install()
 
@@ -67,7 +69,14 @@ function Mod:init()
             data.party = {}
             for i, id in ipairs(PARTY_ROSTER) do data.party[i] = id end
         end
-        return original_game_load(game, data, index, fade)
+
+        -- Kristal starts mod.json's default encounter inside Game:load(), before
+        -- it emits postInit. On a first-ever profile, defer that encounter until
+        -- the player has finished Vessel identity setup.
+        local deferred_encounter = Mod.vessel_identity_startup.deferEncounter(Mod, data == nil)
+        local result = original_game_load(game, data, index, fade)
+        Mod.vessel_identity_startup.restoreEncounter(Mod, deferred_encounter)
+        return result
     end
 
     -- Install battle/UI hooks before Game:load creates the initial encounter.
