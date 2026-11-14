@@ -86,7 +86,11 @@ and has been tested in Kristal.
 - [ ] Kristal integration: custom summon animations/presentation and individual summon-specific Wave behaviours.
 - [x] Kristal integration: Chimera Shadow Garden can be activated once from Kris's ACT menu; it reduces Ten Shadows costs and boosts summon damage. The domain lasts three enemy turns.
 - [ ] Kristal integration: final Chimera visual presentation and dedicated end message.
-- [ ] Design / Kristal integration: **Kris + Vessel fusion Domain Expansion.** Vessel supplies and maintains the enclosing barrier; Kris supplies the Ten Shadows shadow environment. Within the shared Domain, shadow portals can open anywhere in the space and redirect party spells to emerge from another chosen location. Vessel's Granite Blast can likewise originate from anywhere in the Domain, rather than requiring a fixed firing position. This is one coordinated Domain, not two overlapping independent domains. Define TP cost, duration, portal targeting rules, spell compatibility, and counterplay before marking the mechanic implemented.
+- [x] Core rules: **Kris + Vessel fusion Domain Expansion** requires both characters standing, costs 60 TP, lasts three enemy turns, and consumes the same once-per-battle Domain use as Chimera Shadow Garden. Vessel supplies the barrier; Kris supplies the Ten Shadows environment.
+- [x] Core rules: shadow-portal spell routing copies a spell descriptor, moves its launch point to a chosen exit portal, and preserves its original target. Portal entry/exit coordinates are arena-local inputs.
+- [x] Core rules: Vessel's Granite Blast has a 100%-output attack descriptor whose origin can be selected anywhere inside the active fusion Domain.
+- [x] Kristal ACT integration: Kris's ACT menu offers FUSION DOMAIN when Vessel is standing; otherwise it retains the ordinary CHIMERA SHADOW GARDEN option. Vessel has a V-ACT submenu with GRANITE BLAST (50 TP, 58 damage).
+- [ ] Kristal runtime integration: connect the portal-routing descriptors to actual spell/projectile movement and add visible portal effects, target-position selection, and Granite Blast charge/launch presentation.
 
 ### Knight + Titan shared encounter
 
