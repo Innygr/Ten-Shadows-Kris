@@ -25,13 +25,14 @@ assert(not Startup.startPendingEncounter(mod, game), "The deferred encounter mus
 
 -- Game:load hooks must be idempotent and preserve encounter deferral ordering.
 local load_observed_encounter
+local hook_mod
 local game_class = {
     load = function(_, data)
         load_observed_encounter = hook_mod.info.encounter
         return data and "saved" or "new"
     end,
 }
-local hook_mod = {
+hook_mod = {
     info = {encounter = "first_run_preview"},
     vessel_identity = {hasSavedProfile = function() return false end},
 }
