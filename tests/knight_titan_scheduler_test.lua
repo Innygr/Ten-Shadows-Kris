@@ -51,6 +51,41 @@ for _, entry in ipairs(CombatState.KNIGHT_ATTACKS) do valid[entry.id] = true end
 assert(valid[attack.id], "phase two attack must belong to the shared Knight/Titan attack registry")
 assert(valid[phase_three_attack.id], "phase three attack must belong to the shared Knight/Titan attack registry")
 
+-- Phase three opens with one guaranteed Roaring signature attack on the
+-- first Knight-led turn. The phase controller updates boss.phase directly,
+-- so the scheduler must detect that transition as well as damageBoss().
+local roaring_intro = CombatState.new()
+roaring_intro.boss.hp = 78
+roaring_intro.boss.phase = 3
+local phase_three_titan = roaring_intro:chooseEnemyAttack()
+assert(phase_three_titan and string.sub(phase_three_titan.id, 1, 6) == "titan_",
+    "phase three must preserve the Titan's opening turn before the Knight's signature")
+assert(roaring_intro.encounter.roaring_pending,
+    "the phase-three signature must remain pending until a Knight-led slot")
+local signature_attack = roaring_intro:chooseEnemyAttack()
+assert(signature_attack and signature_attack.id == "black_flash",
+    "the first Knight-led phase-three slot must guarantee The Roaring")
+assert(not roaring_intro.encounter.roaring_pending,
+    "The Roaring intro must only be guaranteed once")
+
+-- A selected custom SOUL mode keeps its own attack pool. The pending Roaring
+-- intro survives until the player returns to the ordinary red-SOUL library.
+local mode_intro = CombatState.new()
+mode_intro.boss.hp = 78
+mode_intro.boss.phase = 3
+assert(mode_intro:setSoulMode("blue"), "blue SOUL must be selectable before the phase-three intro")
+local blue_titan = mode_intro:chooseEnemyAttack("blue")
+local blue_knight = mode_intro:chooseEnemyAttack("blue")
+assert(blue_titan and blue_knight and blue_knight.soul_mode == "blue",
+    "the active blue SOUL must retain its own Titan and Knight attacks")
+assert(blue_knight.id ~= "black_flash" and mode_intro.encounter.roaring_pending,
+    "the Roaring intro must not override a custom SOUL-mode attack pool")
+assert(mode_intro:setSoulMode("red"), "red SOUL must restore the standard attack library")
+mode_intro:chooseEnemyAttack()
+local restored_signature = mode_intro:chooseEnemyAttack()
+assert(restored_signature and restored_signature.id == "black_flash",
+    "the pending Roaring intro must trigger when the standard attack pool returns")
+
 -- Disrupting a Knight-led action transfers that action slot to the Titan.
 local disrupted_state = CombatState.new()
 disrupted_state.encounter.last_source = "titan"

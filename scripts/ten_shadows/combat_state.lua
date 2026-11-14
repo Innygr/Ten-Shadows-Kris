@@ -214,6 +214,7 @@ function CombatState.new()
         encounter = {
             phase = 1, last_class = "", last_source = "",
             last_attack = "", turns = 0, phase_counts = {[1]=0,[2]=0,[3]=0},
+            roaring_pending = false,
         },
     }
 
@@ -288,6 +289,7 @@ function CombatState.new()
             self.encounter.last_attack = ""
             self.encounter.turns = 0
             self.encounter.phase_counts[self.boss.phase] = 0
+            self.encounter.roaring_pending = self.boss.phase == 3
         end
         return dealt, phase_changed
     end
@@ -546,6 +548,10 @@ function CombatState.new()
             encounter.last_attack = ""
             encounter.turns = 0
             encounter.phase_counts[phase] = 0
+            -- The encounter controller may update the boss phase directly
+            -- after a hit. Detect that transition here as well as in
+            -- damageBoss so the phase-three signature attack is never skipped.
+            encounter.roaring_pending = phase == 3
         end
         encounter.turns = encounter.turns + 1
 
@@ -621,6 +627,19 @@ function CombatState.new()
             if #fresh > 0 then pool = fresh end
         end
 
+        -- The Roaring is the signature of phase three. On the first available
+        -- Knight-led slot, guarantee its radial pattern once. A custom Vessel
+        -- SOUL mode keeps its own attack pool and leaves this intro pending.
+        if phase == 3 and encounter.roaring_pending and not frozen
+            and not knight_disrupted and source == "knight" and not mode_is_active then
+            for _, attack in ipairs(knight) do
+                if attack.id == "black_flash" then
+                    pool = {attack}
+                    break
+                end
+            end
+        end
+
         local total = 0
         for _, attack in ipairs(pool) do total = total + (attack.weight or 1) end
         local roll = math.random() * total
@@ -645,6 +664,9 @@ function CombatState.new()
             end
             picked.soul_mode = mode_is_active and active_soul_mode or nil
             encounter.last_attack = picked.id
+            if picked.id == "black_flash" then
+                encounter.roaring_pending = false
+            end
         end
 
         local domain_started = false
