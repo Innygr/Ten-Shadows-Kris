@@ -43,14 +43,21 @@ Registry = {
     end,
 }
 
+local compiled_shader
+local shader_compile_count = 0
+
 function ShaderFX(shader, uniforms, ...)
+    assert(shader == compiled_shader,
+        "Vessel must pass a compiled LÖVE shader object to ShaderFX, not GLSL source text or an asset ID")
     return {shader = shader, uniforms = uniforms}
 end
 
 love = {
     graphics = {
         newShader = function(source)
-            return {source = source}
+            shader_compile_count = shader_compile_count + 1
+            compiled_shader = {source = source}
+            return compiled_shader
         end,
     },
 }
@@ -116,6 +123,7 @@ assert(sprite.vessel_gray_red_outline.shader.source:find("0.95, 0.035, 0.08", 1,
 vessel:onSpriteInit(sprite)
 assert(sprite.scale_y == 1.15, "Repeated sprite initialization must not compound Vessel's scale")
 assert(sprite.vessel_gray_red_outline, "Vessel shader must remain installed after reinitialization")
+assert(shader_compile_count == 1, "Vessel shader should be compiled once and reused across sprite initialization")
 
 local party_source = assert(io.open("scripts/data/party/vessel.lua", "r"))
 local party_text = party_source:read("*a")
