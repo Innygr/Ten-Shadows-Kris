@@ -8,7 +8,7 @@ local families = {
     falling = true, sweep = true, twin_slash = true, titan_hands = true,
     big_shot_one = true, big_shot_two = true, big_shot_three = true,
     titan_desperation = true, crystal_barrage = true, knight_titan_collision = true,
-    the_roaring = true,
+    the_roaring = true, roaring_fire = true,
 }
 
 local function validate(attack, phase)
@@ -36,6 +36,11 @@ local function validate(attack, phase)
                 "The Roaring spokes need radial trajectory tells")
             assert(shot.mechanic and shot.mechanic.kind == "roaring_shard",
                 "The Roaring spokes need their dedicated projectile marker")
+        elseif family == "roaring_fire" then
+            assert(shot.warning and shot.warning.kind == "lane",
+                "Roaring Fire needs a clearly marked horizontal corridor")
+            assert(shot.mechanic and shot.mechanic.kind == "roaring_flame",
+                "Roaring Fire needs its dedicated ember projectile marker")
         end
 
         if shot.warning then
@@ -391,5 +396,55 @@ local roar_gaps_one = roaringGaps(roar_one)
 local roar_gaps_two = roaringGaps(roar_two)
 assert(roar_gaps_one[1] ~= roar_gaps_two[1],
     "The Roaring's safe route must rotate between volleys")
+
+-- Roaring Fire is a paired edge-to-edge flame curtain. Both sides omit the
+-- same rotating lane, creating one continuous horizontal route through the box.
+for phase = 1, 3 do
+    local previous_safe_lane = nil
+    for volley = 1, 5 do
+        local fire, family = Patterns.build({id = "roaring_fire"}, phase, volley, arena, target, false)
+        assert(family == "roaring_fire" and #fire == 8,
+            "Roaring Fire must launch four paired flame lanes, leaving one of five open")
+        local left_count, right_count = 0, 0
+        local present = {}
+        local safe_lane = nil
+        for _, shot in ipairs(fire) do
+            local marker = shot.mechanic
+            assert(marker.kind == "roaring_flame" and marker.safe_lane,
+                "each flame must carry its dedicated marker and safe-lane index")
+            assert(shot.warning.kind == "lane" and shot.warning.length == (arena.right - arena.left) + 36,
+                "each fire stream must telegraph its full path across the arena")
+            assert(shot.warning.duration <= 0.4,
+                "Roaring Fire's lane tell must remain readable and responsive")
+            safe_lane = marker.safe_lane
+            present[marker.lane] = present[marker.lane] or {}
+            present[marker.lane][marker.side] = true
+            if marker.side == "left" then
+                left_count = left_count + 1
+                assert(shot.x < arena.left and shot.direction == 0,
+                    "left flames must travel from the left edge into the arena")
+            else
+                right_count = right_count + 1
+                assert(shot.x > arena.right and math.abs(shot.direction - math.pi) < 0.001,
+                    "right flames must travel from the right edge into the arena")
+            end
+        end
+        assert(left_count == 4 and right_count == 4,
+            "both edges must contribute four flames")
+        assert(safe_lane and not present[safe_lane],
+            "the designated fire lane must stay completely clear")
+        for lane = 1, 5 do
+            if lane ~= safe_lane then
+                assert(present[lane] and present[lane].left and present[lane].right,
+                    "every occupied lane must have a matching flame from both sides")
+            end
+        end
+        assert(safe_lane ~= previous_safe_lane or volley == 1,
+            "Roaring Fire's open corridor must rotate between consecutive volleys")
+        previous_safe_lane = safe_lane
+    end
+end
+assert(Patterns.classify({id = "roaring_fire"}) == "roaring_fire",
+    "Roaring Fire must not fall through to the generic falling attack family")
 
 print("Knight + Titan wave pattern coverage and telegraph tests passed.")

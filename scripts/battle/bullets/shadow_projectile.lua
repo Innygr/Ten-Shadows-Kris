@@ -13,6 +13,7 @@ function ShadowProjectile:init(x, y, direction, speed, kind, warning, mechanic)
     self.mechanic = mechanic
     self.is_chimera_domain_blade = type(mechanic) == "table" and mechanic.kind == "chimera_domain_blade"
     self.is_roaring_shard = type(mechanic) == "table" and mechanic.kind == "roaring_shard"
+    self.is_roaring_flame = type(mechanic) == "table" and mechanic.kind == "roaring_flame"
     self.is_execution_slash = type(mechanic) == "table" and mechanic.kind == "execution_slash"
     self.is_titan_hand = type(mechanic) == "table" and mechanic.kind == "titan_hand"
     self.is_titan_big_shot = type(mechanic) == "table" and mechanic.kind == "titan_big_shot"
@@ -20,7 +21,7 @@ function ShadowProjectile:init(x, y, direction, speed, kind, warning, mechanic)
     self.is_crystal_shard = type(mechanic) == "table" and mechanic.kind == "crystal_shard"
     self.is_knight_titan_collision = type(mechanic) == "table" and mechanic.kind == "knight_titan_collision"
     self.big_shot_tier = self.is_titan_big_shot and mechanic.tier or nil
-    local radius = self.is_roaring_shard and 6
+    local radius = (self.is_roaring_shard or self.is_roaring_flame) and 6
         or (self.is_chimera_domain_blade and 5
         or (self.is_crystal_shard and 6
         or ((self.is_titan_big_shot and (self.big_shot_tier == 3 and 9 or 8))
@@ -57,7 +58,7 @@ function ShadowProjectile:arm()
 
     self.armed = true
     self.telegraph = nil
-    local radius = self.is_roaring_shard and 6
+    local radius = (self.is_roaring_shard or self.is_roaring_flame) and 6
         or (self.is_chimera_domain_blade and 5
         or (self.is_crystal_shard and 6
         or ((self.is_titan_big_shot and (self.big_shot_tier == 3 and 9 or 8))
@@ -81,6 +82,13 @@ function ShadowProjectile:draw()
             love.graphics.line(0, 0, length, 0)
             love.graphics.setLineWidth(4)
             love.graphics.setColor(0.82, 0.08, 0.16, 0.48)
+            love.graphics.line(0, 0, length, 0)
+        elseif self.is_roaring_flame then
+            love.graphics.setLineWidth(11)
+            love.graphics.setColor(0.68, 0.12, 0.025, 0.48)
+            love.graphics.line(0, 0, length, 0)
+            love.graphics.setLineWidth(4)
+            love.graphics.setColor(1.0, 0.46, 0.08, 0.72)
             love.graphics.line(0, 0, length, 0)
         end
         love.graphics.setLineWidth(6)
@@ -117,6 +125,20 @@ function ShadowProjectile:draw()
         love.graphics.line(-4, -2, 4, 2)
         love.graphics.setColor(1.0, 0.66, 0.70, 1)
         love.graphics.circle("fill", 0, 0, 1.8)
+        super.draw(self)
+        return
+    end
+
+    if self.is_roaring_flame then
+        -- A bright orange ember with a yellow core distinguishes fire streams
+        -- from the Knight's dark-red Roaring shards.
+        love.graphics.setColor(0.95, 0.20, 0.025, 0.30)
+        love.graphics.circle("fill", 0, 0, 12)
+        love.graphics.setColor(1.0, 0.34, 0.035, 1)
+        love.graphics.polygon("fill", -7, 2, -3, -5, 1, -11, 4, -4,
+            8, 0, 5, 7, -1, 10, -6, 6)
+        love.graphics.setColor(1.0, 0.83, 0.28, 1)
+        love.graphics.polygon("fill", -3, 3, 0, -3, 3, 1, 2, 6, -2, 7)
         super.draw(self)
         return
     end

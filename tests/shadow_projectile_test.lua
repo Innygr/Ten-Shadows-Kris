@@ -202,4 +202,28 @@ roaring_shard:draw()
 assert(draw_polygons > polygons_before_roar,
     "The Roaring shard must render its dark angular silhouette")
 
+-- Roaring Fire streams have their own ember silhouette and share the safe
+-- warning window without inheriting the larger radial shard's hitbox.
+local roaring_flame = ShadowProjectile(18, 64, 0, 6, "knight", {
+    kind = "lane", duration = 0.38, length = 176,
+}, {
+    kind = "roaring_flame", side = "left", lane = 2, safe_lane = 4,
+})
+assert(roaring_flame.is_roaring_flame,
+    "Roaring Fire marker must survive projectile construction")
+assert(not roaring_flame.armed and roaring_flame.collider == nil
+    and roaring_flame.physics.speed == 0,
+    "Roaring Fire flames must remain harmless during the lane warning")
+roaring_flame:draw()
+assert(draw_lines >= 6,
+    "Roaring Fire telegraph must add a bright orange path over the standard lane tell")
+roaring_flame.telegraph_timer.callback()
+assert(roaring_flame.armed and roaring_flame.collider.radius == 6
+    and roaring_flame.physics.speed == 6,
+    "Roaring Fire must arm with its dedicated ember hitbox and configured speed")
+local fire_polygons_before = draw_polygons
+roaring_flame:draw()
+assert(draw_polygons >= fire_polygons_before + 2,
+    "Roaring Fire must render a layered orange-and-gold flame silhouette")
+
 print("Shadow projectile telegraph/arming and Titan hand rendering tests passed.")

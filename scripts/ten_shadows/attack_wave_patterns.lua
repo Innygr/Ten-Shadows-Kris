@@ -18,7 +18,6 @@ local FALLING_IDS = {
     titan_big_shots_3 = true,
     titan_desperation = true,
     falling_swords = true,
-    roaring_fire = true,
     black_flash = true,
 }
 
@@ -86,6 +85,7 @@ local function classify(attack)
 
     if id == "titan_knight_combo" then return "knight_titan_collision" end
     if id == "black_flash" then return "the_roaring" end
+    if id == "roaring_fire" then return "roaring_fire" end
     if source == "combo" then return "crossfire" end
     if id == "titan_hands" then return "titan_hands" end
     if id == "titan_desperation" then return "titan_desperation" end
@@ -149,7 +149,36 @@ function AttackWavePatterns.build(attack, phase, volley, arena, target, knight_d
     local pace = 2.8 + (phase - 1) * 0.42 + (volley - 1) * 0.10
     local shots = {}
 
-    if attack and attack.id == "black_flash" then
+    if attack and attack.id == "roaring_fire" then
+        -- Roaring Fire sends paired flame streams from both sides of the box.
+        -- The same horizontal lane is omitted on both sides, leaving one
+        -- moving corridor that the player can cross or hold while the embers pass.
+        local lanes = 5
+        local safe_lane = ((volley + phase - 2) % lanes) + 1
+        local duration = phase == 3 and 0.34 or 0.40
+        local left_x = arena.left - 18
+        local right_x = arena.right + 18
+        local travel = width + 36
+
+        for lane = 1, lanes do
+            if lane ~= safe_lane then
+                local y = arena.top + height * lane / (lanes + 1)
+                local speed = pace + 0.20 + (lane % 2) * 0.12
+                add(shots, "knight", left_x, y, 0, speed, {
+                    kind = "lane", duration = duration, length = travel,
+                }, {
+                    kind = "roaring_flame", side = "left", lane = lane,
+                    safe_lane = safe_lane,
+                })
+                add(shots, "knight", right_x, y, math.pi, speed, {
+                    kind = "lane", duration = duration, length = travel,
+                }, {
+                    kind = "roaring_flame", side = "right", lane = lane,
+                    safe_lane = safe_lane,
+                })
+            end
+        end
+    elseif attack and attack.id == "black_flash" then
         -- The Roaring sends a ten-spoke burst from the arena's centre. Two
         -- opposite spokes are always left open; the safe pair rotates each
         -- volley so the player can read the tell and choose a route.
