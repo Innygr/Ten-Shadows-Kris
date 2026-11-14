@@ -48,7 +48,13 @@ end
 -- turn, so Vessel name/pronouns and the current boss phase stay up to date.
 function RoaringKnightTitan:getEncounterText()
     local phase = self.ten_shadows_phase or 1
-    local id = phase == 1 and "roaring_knight.early" or "roaring_knight.battle"
+    local id
+    if phase == 1 and not self._shown_initial_flavor then
+        id = "roaring_knight.early"
+        self._shown_initial_flavor = true
+    else
+        id = "roaring_knight.battle"
+    end
     local fallback = super.getEncounterText(self)
     local text = Mod and Mod.flavor_text and Mod.flavor_text.get(id, {
         phase = phase,

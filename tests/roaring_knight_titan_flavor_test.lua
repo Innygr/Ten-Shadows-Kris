@@ -56,7 +56,11 @@ enemy:init()
 
 local early = enemy:getEncounterText()
 assert(early == "* The red SOUL flickers beside Rowan.",
-    "Phase-one encounter text must use the saved Vessel name")
+    "The opening encounter text must use the saved Vessel name")
+
+local phase_one_followup = enemy:getEncounterText()
+assert(phase_one_followup == "* The Titan watches Rowan's red SOUL.",
+    "The opening flavor line must only appear once; later phase-one turns use battle flavor")
 
 local dialogue = enemy:getEnemyDialogue()
 assert(dialogue == "* The Knight raises its blade at Rowan."
