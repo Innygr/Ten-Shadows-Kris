@@ -8,7 +8,7 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
     vec4 pixel = Texel(texture, texture_coords);
     if (pixel.a < 0.01) {
         // LÖVE 11.5 exposes the current render target dimensions through
-        // love_ScreenSize; love_PixelSize is not a built-in shader variable.
+        // love_ScreenSize, which provides a one-render-pixel texture offset.
         vec2 px = 1.0 / love_ScreenSize.xy;
         float around = 0.0;
         around = max(around, Texel(texture, texture_coords + vec2(-px.x, 0.0)).a);

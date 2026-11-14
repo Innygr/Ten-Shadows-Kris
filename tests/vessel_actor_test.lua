@@ -116,8 +116,9 @@ assert(sprite.vessel_gray_red_outline.uniforms.vessel_presentation() == 2,
     "Feminine presentation must select its shader palette")
 assert(sprite.vessel_gray_red_outline.shader.source:find("vec2 px = 1.0 / love_ScreenSize.xy", 1, true),
     "Vessel outline sampling must use LÖVE 11.5's supported pixel-shader dimensions")
-assert(not sprite.vessel_gray_red_outline.shader.source:find("love_PixelSize", 1, true),
-    "Vessel shader must not reference the undeclared love_PixelSize identifier")
+local vessel_shader_code = sprite.vessel_gray_red_outline.shader.source:gsub("//[^\\n]*", "")
+assert(not vessel_shader_code:find("love_PixelSize", 1, true),
+    "Vessel shader code must not reference an undeclared pixel-size identifier")
 assert(sprite.vessel_gray_red_outline.shader.source:find("dot(pixel.rgb", 1, true),
     "Vessel shader must convert the sprite to grayscale")
 assert(sprite.vessel_gray_red_outline.shader.source:find("0.95, 0.035, 0.08", 1, true),
