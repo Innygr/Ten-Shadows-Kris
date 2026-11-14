@@ -16,6 +16,7 @@ function ShadowProjectile:init(x, y, direction, speed, kind, warning, mechanic)
     self.is_titan_big_shot = type(mechanic) == "table" and mechanic.kind == "titan_big_shot"
     self.is_titan_desperation_shot = type(mechanic) == "table" and mechanic.kind == "titan_desperation_shot"
     self.is_crystal_shard = type(mechanic) == "table" and mechanic.kind == "crystal_shard"
+    self.is_knight_titan_collision = type(mechanic) == "table" and mechanic.kind == "knight_titan_collision"
     self.big_shot_tier = self.is_titan_big_shot and mechanic.tier or nil
     local radius = self.is_crystal_shard and 6
         or ((self.is_titan_big_shot and (self.big_shot_tier == 3 and 9 or 8))
@@ -84,6 +85,17 @@ function ShadowProjectile:draw()
             love.graphics.polygon("line", length, -5, length + 5, 0, length, 5, length - 5, 0)
         end
 
+        super.draw(self)
+        return
+    end
+
+    if self.is_knight_titan_collision then
+        love.graphics.setColor(color[1], color[2], color[3], 0.24)
+        love.graphics.circle("fill", 0, 0, 12)
+        love.graphics.setColor(color[1], color[2], color[3], 1)
+        love.graphics.polygon("fill", 0, -9, 3, -3, 9, 0, 3, 3, 0, 9, -3, 3, -9, 0, -3, -3)
+        love.graphics.setColor(1, 1, 1, 0.95)
+        love.graphics.circle("fill", 0, 0, 2.5)
         super.draw(self)
         return
     end

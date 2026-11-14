@@ -7,7 +7,7 @@ local families = {
     radial = true, wall = true, aimed = true, crossfire = true,
     falling = true, sweep = true, twin_slash = true, titan_hands = true,
     big_shot_one = true, big_shot_two = true, big_shot_three = true,
-    titan_desperation = true, crystal_barrage = true,
+    titan_desperation = true, crystal_barrage = true, knight_titan_collision = true,
 }
 
 local function validate(attack, phase)
@@ -170,6 +170,31 @@ for _, shot in ipairs(big_three) do
 end
 assert(big_three[1].direction ~= big_three_later[1].direction,
     "Big Shots 3 radial orientation must rotate between volleys")
+
+-- Knight + Titan Collision synchronizes two Knight diagonals and two Titan lances.
+for phase = 1, 3 do
+    local collision, family = Patterns.build({id = "titan_knight_combo"}, phase, 1, arena, target, false)
+    assert(family == "knight_titan_collision" and #collision == 4,
+        "Collision must use its dedicated four-path pattern")
+    local knights, titans = 0, 0
+    for _, shot in ipairs(collision) do
+        assert(shot.mechanic.kind == "knight_titan_collision",
+            "Collision paths must carry their coordinated marker")
+        assert(shot.warning.kind == "target" and shot.warning.duration <= 0.6,
+            "Every converging path needs a readable tell")
+        assert(type(shot.mechanic.collision_x) == "number"
+            and type(shot.mechanic.collision_y) == "number",
+            "All paths must identify the shared collision point")
+        if shot.kind == "knight" then knights = knights + 1 end
+        if shot.kind == "titan" then titans = titans + 1 end
+    end
+    assert(knights == 2 and titans == 2, "Both bosses must contribute two paths")
+end
+local collision_a = Patterns.build({id = "titan_knight_combo"}, 2, 1, arena, target, false)
+local collision_b = Patterns.build({id = "titan_knight_combo"}, 2, 2, arena, target, false)
+assert(collision_a[1].mechanic.collision_x ~= collision_b[1].mechanic.collision_x
+    or collision_a[1].mechanic.collision_y ~= collision_b[1].mechanic.collision_y,
+    "Collision point must shift between volleys")
 
 -- Crystal Barrage is a falling shard curtain with a rotating safe lane.
 local crystals, crystal_family = Patterns.build({id = "crystal_barrage"}, 2, 1, arena, target, false)

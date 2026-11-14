@@ -84,6 +84,7 @@ local function classify(attack)
     local pattern = attack and attack.pattern or id
     local source = inferSource(attack)
 
+    if id == "titan_knight_combo" then return "knight_titan_collision" end
     if source == "combo" then return "crossfire" end
     if id == "titan_hands" then return "titan_hands" end
     if id == "titan_desperation" then return "titan_desperation" end
@@ -147,7 +148,31 @@ function AttackWavePatterns.build(attack, phase, volley, arena, target, domain_a
     local pace = 2.8 + (phase - 1) * 0.42 + (volley - 1) * 0.10
     local shots = {}
 
-    if attack and attack.id == "crystal_barrage" then
+    if attack and attack.id == "titan_knight_combo" then
+        -- Knight diagonals and Titan vertical lances converge on one marked
+        -- point. Its alternating offset makes the crossing geometry shift.
+        local shift = ((volley + phase) % 2 == 0 and 1 or -1)
+        local collision_x = center_x + shift * width * (0.10 + phase * 0.025)
+        local collision_y = center_y - shift * height * (0.08 + phase * 0.025)
+        local duration = phase == 3 and 0.36 or 0.44
+        local entries = {
+            {"knight", arena.left - 16, arena.top + height * 0.18},
+            {"knight", arena.right + 16, arena.bottom - height * 0.18},
+            {"titan", center_x, arena.top - 16},
+            {"titan", center_x, arena.bottom + 16},
+        }
+        for index, entry in ipairs(entries) do
+            local dx, dy = collision_x - entry[2], collision_y - entry[3]
+            add(shots, entry[1], entry[2], entry[3], atan2(dy, dx),
+                pace + (entry[1] == "titan" and 0.42 or 0.30), {
+                    kind = "target", duration = duration,
+                    length = math.sqrt(dx * dx + dy * dy),
+                }, {
+                    kind = "knight_titan_collision", source = entry[1],
+                    collision_x = collision_x, collision_y = collision_y, path = index,
+                })
+        end
+    elseif attack and attack.id == "crystal_barrage" then
         -- Seven descending crystal lanes leave one rotating opening. The
         -- staggered shard speeds create a flowing curtain rather than a flat wall.
         local lanes = 7

@@ -119,6 +119,15 @@ titan_big_shot:draw()
 assert(titan_big_shot.base_draw_count == 1,
     "Big Shot rendering must still call the base bullet draw")
 
+local collision_shot = ShadowProjectile(72, 82, 0, 4, "knight", nil, {
+    kind = "knight_titan_collision", source = "knight", path = 1,
+    collision_x = 320, collision_y = 220,
+})
+assert(collision_shot.is_knight_titan_collision,
+    "Collision marker must survive projectile construction")
+collision_shot:draw()
+assert(draw_polygons > 0, "Collision projectile must render its convergence flare")
+
 local titan_hand = ShadowProjectile(70, 80, 0, 4, "titan", {
     kind = "lane",
     duration = 0.5,
