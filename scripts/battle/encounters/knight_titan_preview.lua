@@ -20,6 +20,14 @@ function KnightTitanPreview:init()
     self:addEnemy("roaring_knight_titan")
 end
 
+function KnightTitanPreview:getInitialEncounterText()
+    local fallback = super.getInitialEncounterText(self)
+    if Mod and Mod.flavor_text then
+        return Mod.flavor_text.get("roaring_knight.early", {}, {fallback = fallback})
+    end
+    return fallback
+end
+
 function KnightTitanPreview:onBattleEnd()
     local Shadows = modRequire("scripts/ten_shadows/runtime_shadows")
     Shadows.onBattleEnd()

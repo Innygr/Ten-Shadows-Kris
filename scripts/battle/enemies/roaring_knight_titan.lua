@@ -48,13 +48,17 @@ end
 -- turn, so Vessel name/pronouns and the current boss phase stay up to date.
 function RoaringKnightTitan:getEncounterText()
     local phase = self.ten_shadows_phase or 1
-    local id
-    if phase == 1 and not self._shown_initial_flavor then
-        id = "roaring_knight.early"
-        self._shown_initial_flavor = true
-    else
-        id = "roaring_knight.battle"
+
+    -- onHurt installs a one-turn battle-box announcement alongside the enemy
+    -- speech-bubble override. Preserve the encounter-text half until it is read.
+    if self._phase_encounter_text then
+        local text = self._phase_encounter_text
+        self._phase_encounter_text = nil
+        self._previous_flavor_text = text
+        return text
     end
+
+    local id = "roaring_knight.battle"
     local fallback = super.getEncounterText(self)
     local text = Mod and Mod.flavor_text and Mod.flavor_text.get(id, {
         phase = phase,
@@ -103,6 +107,7 @@ function RoaringKnightTitan:onHurt(damage, battler)
             self.ten_shadows_state.boss.hp = self.health
         end
         self.dialogue_override = phase_text
+        self._phase_encounter_text = phase_text
         self.text = {phase_text}
     end
 end

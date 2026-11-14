@@ -54,13 +54,22 @@ local Boss = dofile("scripts/battle/enemies/roaring_knight_titan.lua")
 local enemy = setmetatable({}, {__index = Boss})
 enemy:init()
 
-local early = enemy:getEncounterText()
-assert(early == "* The red SOUL flickers beside Rowan.",
-    "The opening encounter text must use the saved Vessel name")
+Encounter = {
+    init = function() end,
+    getInitialEncounterText = function(self) return self.text end,
+    addEnemy = function(self, id) self.added_enemy = id end,
+}
+local Preview = dofile("scripts/battle/encounters/knight_titan_preview.lua")
+local preview = setmetatable({}, {__index = Preview})
+preview:init()
+assert(preview.added_enemy == "roaring_knight_titan")
+local initial_text = preview:getInitialEncounterText()
+assert(initial_text == "* The red SOUL flickers beside Rowan.",
+    "The real first-turn encounter hook must use the saved Vessel name")
 
 local phase_one_followup = enemy:getEncounterText()
 assert(phase_one_followup == "* The Titan watches Rowan's red SOUL.",
-    "The opening flavor line must only appear once; later phase-one turns use battle flavor")
+    "Subsequent phase-one turns must use battle flavor, not repeat the initial line")
 
 local dialogue = enemy:getEnemyDialogue()
 assert(dialogue == "* The Knight raises its blade at Rowan."
@@ -95,4 +104,13 @@ assert(phase_dialogue == BossPhase.TEXT[2],
 assert(enemy.dialogue_override == nil,
     "The phase transition override must be consumed exactly once")
 
-print("Roaring Knight dialogue, phase overrides, and per-phase flavor use the saved, live Vessel identity")
+local phase_encounter_text = enemy:getEncounterText()
+assert(phase_encounter_text == BossPhase.TEXT[2],
+    "The phase announcement must also take priority in the battle text box")
+assert(enemy._phase_encounter_text == nil,
+    "The phase battle-box announcement must only appear once")
+local phase_two_followup = enemy:getEncounterText()
+assert(phase_two_followup == "* The Titan studies xem from behind the armour.",
+    "After the phase announcement, phase-two flavor resumes")
+
+print("Roaring Knight initial encounter text, dialogue, phase overrides, and live Vessel identity passed")
