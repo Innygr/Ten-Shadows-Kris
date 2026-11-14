@@ -54,7 +54,9 @@ for _, mode in ipairs(expected_modes) do
 
     state:chooseEnemyAttack(mode)
     attack = state:chooseEnemyAttack(mode)
-    expect(contains(definitions.combo, attack.id), true, mode .. " schedules the combined attack on turn four")
+    expect(contains(definitions.combo, attack.id), false, mode .. " keeps turn four as a solo attack in phase one")
+    attack = state:chooseEnemyAttack(mode)
+    expect(contains(definitions.combo, attack.id), true, mode .. " schedules the combined attack on turn five")
 end
 
 -- Selecting a mode in the menu must not activate its attack set while a
