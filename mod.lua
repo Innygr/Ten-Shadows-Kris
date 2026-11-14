@@ -491,14 +491,31 @@ function Mod:onBattleEnemySelect(reason, selected)
             end}
         end
         if not boss_state or not boss_state.player_domain.used then
-            root[#root + 1] = {"CHIMERA SHADOW GARDEN", "Expand Kris's domain; empower Ten Shadows.", 60, function(item)
-                battle:pushAction("ACT", enemy, item)
-            end}
+            local vessel = boss_state and boss_state:getMember("vessel")
+            if vessel and vessel.hp > 0 then
+                root[#root + 1] = {"FUSION DOMAIN", "Vessel forms the barrier; Kris supplies the shadows.", 60, function(item)
+                    battle:pushAction("ACT", enemy, item)
+                end}
+            else
+                root[#root + 1] = {"CHIMERA SHADOW GARDEN", "Expand Kris's domain; empower Ten Shadows.", 60, function(item)
+                    battle:pushAction("ACT", enemy, item)
+                end}
+            end
         end
         root[#root + 1] = {"CHECK", "Check the target.", 0, function(item)
             battle:pushAction("ACT", enemy, item)
         end}
     elseif chara == "vessel" then
+        root[#root + 1] = {"V-ACT", "Vessel's unique techniques.", 0, function()
+            local entries = {
+                {"GRANITE BLAST", "Fire a concentrated blast at 100% output.", 50, function(item)
+                    battle:pushAction("ACT", enemy, item)
+                end},
+            }
+            addMenu(battle, enemy, entries, function()
+                addMenu(battle, enemy, root, nil)
+            end)
+        end}
         root[#root + 1] = {"SOUL MODE", "Choose the Vessel's SOUL mode.", 0, function()
             local entries = {}
             for _, mode in ipairs(SOUL_MODES) do
