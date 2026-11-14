@@ -9,17 +9,18 @@ local COLORS = {
 function ShadowProjectile:init(x, y, direction, speed, kind, warning, mechanic)
     super.init(self, x, y)
 
-    self.width = 12
-    self.height = 12
-    self.collider = CircleCollider(self, 0, 0, 4)
+    self.kind = COLORS[kind] and kind or "titan"
+    self.mechanic = mechanic
+    self.is_execution_slash = type(mechanic) == "table" and mechanic.kind == "execution_slash"
+    self.is_titan_hand = type(mechanic) == "table" and mechanic.kind == "titan_hand"
+    self.width = self.is_titan_hand and 18 or 12
+    self.height = self.is_titan_hand and 18 or 12
+    self.collider = CircleCollider(self, 0, 0, self.is_titan_hand and 6 or 4)
     self.physics.direction = direction
     self.intended_speed = speed
     self.physics.speed = speed
     self.rotation = direction
     self.damage = 2
-    self.kind = COLORS[kind] and kind or "titan"
-    self.mechanic = mechanic
-    self.is_execution_slash = type(mechanic) == "table" and mechanic.kind == "execution_slash"
     self.armed = true
     self.telegraph = nil
 
@@ -44,7 +45,7 @@ function ShadowProjectile:arm()
 
     self.armed = true
     self.telegraph = nil
-    self.collider = CircleCollider(self, 0, 0, 4)
+    self.collider = CircleCollider(self, 0, 0, self.is_titan_hand and 6 or 4)
     self.physics.speed = self.intended_speed
 end
 
@@ -73,6 +74,25 @@ function ShadowProjectile:draw()
             love.graphics.polygon("line", length, -5, length + 5, 0, length, 5, length - 5, 0)
         end
 
+        super.draw(self)
+        return
+    end
+
+    if self.is_titan_hand then
+        -- A compact, direction-facing fist silhouette makes the Titan's
+        -- sweeping knuckles visually distinct from ordinary Titan shots.
+        love.graphics.setColor(color[1], color[2], color[3], 0.28)
+        love.graphics.circle("fill", 0, 0, 10)
+        love.graphics.setColor(color[1], color[2], color[3], 1)
+        love.graphics.polygon("fill", -9, -6, 3, -7, 9, -3, 9, 3, 3, 7, -9, 6)
+        love.graphics.circle("fill", 4, -5, 3)
+        love.graphics.circle("fill", 7, -2, 3)
+        love.graphics.circle("fill", 7, 2, 3)
+        love.graphics.circle("fill", 4, 5, 3)
+        love.graphics.setColor(1, 1, 1, 0.9)
+        love.graphics.line(-6, -3, 2, -3)
+        love.graphics.line(-6, 0, 2, 0)
+        love.graphics.line(-6, 3, 2, 3)
         super.draw(self)
         return
     end

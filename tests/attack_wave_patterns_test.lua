@@ -5,7 +5,7 @@ local arena = {left = 250, right = 390, top = 150, bottom = 292}
 local target = {x = 320, y = 230}
 local families = {
     radial = true, wall = true, aimed = true, crossfire = true,
-    falling = true, sweep = true, twin_slash = true,
+    falling = true, sweep = true, twin_slash = true, titan_hands = true,
 }
 
 local function validate(attack, phase)
@@ -24,6 +24,10 @@ local function validate(attack, phase)
             assert(shot.warning and shot.warning.kind == "target", "aimed shots need trajectory/target telegraphs")
         elseif family == "falling" then
             assert(shot.warning and shot.warning.kind == "falling", "falling shots need vertical telegraphs")
+        elseif family == "titan_hands" then
+            assert(shot.warning and shot.warning.kind == "lane", "Titan hand shots need horizontal lane tells")
+            assert(shot.mechanic and shot.mechanic.kind == "titan_hand",
+                "Titan hand shots need their dedicated visual/collision marker")
         end
 
         if shot.warning then
@@ -79,6 +83,55 @@ assert(aimed_shots[1].warning.kind == "target", "aimed shot should mark the pred
 local falling_shots, falling_family = Patterns.build({id = "titan_swarm"}, 2, 1, arena, target, false)
 assert(falling_family == "falling", "Titan swarm should use the falling family")
 assert(falling_shots[1].warning.kind == "falling", "falling shot should telegraph its descent")
+
+-- Titan's Hands sweeps two offset four-lane bands from opposite sides.
+for phase = 1, 3 do
+    local hand_shots, hand_family = Patterns.build(
+        {id = "titan_hands"},
+        phase,
+        1,
+        arena,
+        target,
+        false
+    )
+    assert(hand_family == "titan_hands", "Titan's Hands must use its dedicated family")
+    assert(#hand_shots == 6, "Each of the two hands must leave one gap among four lanes")
+    local left_count, right_count = 0, 0
+    local left_gap, right_gap = {}, {}
+    for _, shot in ipairs(hand_shots) do
+        assert(shot.kind == "titan", "Titan hands must retain Titan projectile styling")
+        assert(shot.warning.duration <= 0.6, "Titan hand tells must remain readable")
+        if shot.mechanic.side == "left" then
+            left_count = left_count + 1
+            assert(shot.x < arena.left and shot.direction == 0,
+                "Left hand must sweep inward from the left edge")
+            left_gap[shot.mechanic.finger] = false
+        else
+            right_count = right_count + 1
+            assert(shot.x > arena.right and math.abs(shot.direction - math.pi) < 0.001,
+                "Right hand must sweep inward from the right edge")
+            right_gap[shot.mechanic.finger] = false
+        end
+    end
+    assert(left_count == 3 and right_count == 3,
+        "Both hands must fire three knuckles while preserving an opening")
+end
+
+local hands_first = Patterns.build({id = "titan_hands"}, 2, 1, arena, target, false)
+local hands_second = Patterns.build({id = "titan_hands"}, 2, 2, arena, target, false)
+local function missingFinger(shots, side)
+    local present = {}
+    for _, shot in ipairs(shots) do
+        if shot.mechanic.side == side then present[shot.mechanic.finger] = true end
+    end
+    for finger = 1, 4 do
+        if not present[finger] then return finger end
+    end
+end
+assert(missingFinger(hands_first, "left") ~= missingFinger(hands_second, "left"),
+    "Left-hand safe gap must move between volleys")
+assert(missingFinger(hands_first, "right") ~= missingFinger(hands_second, "right"),
+    "Right-hand safe gap must move between volleys")
 
 local execution_shots, execution_family = Patterns.build(
     {id = "cyan_knights_execution", source = "knight", pattern = "cyan-parry-window"},

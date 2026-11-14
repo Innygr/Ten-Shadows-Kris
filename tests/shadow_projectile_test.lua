@@ -1,6 +1,7 @@
 -- Exercise the real bullet class with a tiny Kristal-compatible test double.
 local draw_lines = 0
 local draw_circles = 0
+local draw_polygons = 0
 
 love = {
     graphics = {
@@ -8,7 +9,7 @@ love = {
         setLineWidth = function() end,
         line = function() draw_lines = draw_lines + 1 end,
         circle = function() draw_circles = draw_circles + 1 end,
-        polygon = function() end,
+        polygon = function() draw_polygons = draw_polygons + 1 end,
     }
 }
 
@@ -99,4 +100,28 @@ warning:draw()
 assert(draw_circles > 0, "armed projectile should draw its normal body")
 assert(warning.base_draw_count == 2, "armed projectile should still call the base bullet draw")
 
-print("Shadow projectile telegraph/arming tests passed.")
+local titan_hand = ShadowProjectile(70, 80, 0, 4, "titan", {
+    kind = "lane",
+    duration = 0.5,
+    length = 168,
+}, {
+    kind = "titan_hand",
+    side = "left",
+    finger = 2,
+})
+assert(titan_hand.is_titan_hand, "Titan hand marker must survive projectile construction")
+assert(titan_hand.width == 18 and titan_hand.height == 18,
+    "Titan hand projectiles must use the larger fist footprint")
+assert(titan_hand.collider.radius == 6,
+    "Titan hand projectiles must use their intentionally larger collision radius")
+assert(not titan_hand.armed and titan_hand.collider == nil,
+    "Titan hand projectiles must remain harmless during their lane tell")
+titan_hand.telegraph_timer.callback()
+assert(titan_hand.armed and titan_hand.collider.radius == 6,
+    "Titan hand must retain its larger hitbox when the tell completes")
+titan_hand:draw()
+assert(draw_polygons > 0, "Titan hand projectile must draw its dedicated fist silhouette")
+assert(titan_hand.base_draw_count == 1,
+    "Titan hand rendering must still call the base bullet draw")
+
+print("Shadow projectile telegraph/arming and Titan hand rendering tests passed.")

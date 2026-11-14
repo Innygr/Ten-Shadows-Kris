@@ -85,6 +85,7 @@ local function classify(attack)
     local source = inferSource(attack)
 
     if source == "combo" then return "crossfire" end
+    if id == "titan_hands" then return "titan_hands" end
     if id == "twin_slashes" then return "twin_slash" end
     if has(RADIAL_PATTERNS, pattern) then return "radial" end
     if has(WALL_IDS, id) or has(WALL_PATTERNS, pattern) then return "wall" end
@@ -93,7 +94,6 @@ local function classify(attack)
     if has(FALLING_IDS, id) or pattern == "falling-columns" or pattern == "updraft-sweep" then
         return "falling"
     end
-    if id == "titan_hands" then return "sweep" end
     return "sweep"
 end
 
@@ -142,7 +142,51 @@ function AttackWavePatterns.build(attack, phase, volley, arena, target, domain_a
     local pace = 2.8 + (phase - 1) * 0.42 + (volley - 1) * 0.10
     local shots = {}
 
-    if attack and attack.id == "twin_slashes" then
+    if attack and attack.id == "titan_hands" then
+        -- Each hand sweeps a four-lane band from an opposite side. Three
+        -- knuckles travel per hand, leaving one moving gap in each band.
+        -- The gaps are offset so the player can choose either lane without
+        -- having to cross a fully sealed wall.
+        local upper_center = center_y - height * 0.23
+        local lower_center = center_y + height * 0.23
+        local spacing = height * 0.11
+        local left_x = arena.left - 14
+        local right_x = arena.right + 14
+        local safe_upper = ((volley + phase - 2) % 4) + 1
+        local safe_lower = ((volley + phase) % 4) + 1
+        local duration = phase == 1 and 0.50 or (phase == 2 and 0.44 or 0.38)
+        local hand_speed = pace * 0.82 + 0.25
+
+        for finger = 1, 4 do
+            local y = upper_center + (finger - 2.5) * spacing
+            if finger ~= safe_upper then
+                add(shots, "titan", left_x, y, 0, hand_speed, {
+                    kind = "lane",
+                    duration = duration,
+                    length = width + 28,
+                }, {
+                    kind = "titan_hand",
+                    side = "left",
+                    finger = finger,
+                })
+            end
+        end
+
+        for finger = 1, 4 do
+            local y = lower_center + (finger - 2.5) * spacing
+            if finger ~= safe_lower then
+                add(shots, "titan", right_x, y, math.pi, hand_speed, {
+                    kind = "lane",
+                    duration = duration,
+                    length = width + 28,
+                }, {
+                    kind = "titan_hand",
+                    side = "right",
+                    finger = finger,
+                })
+            end
+        end
+    elseif attack and attack.id == "twin_slashes" then
         -- Two Knight blades enter from opposite sides and cross at a point
         -- that shifts between upper and lower arena space on alternating volleys.
         -- The visible tells make the crossing lanes readable before either blade arms.
