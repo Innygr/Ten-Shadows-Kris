@@ -93,6 +93,9 @@ jobs:
       - name: Test Chimera Shadow Garden visuals
         run: lua5.1 tests/chimera_shadow_garden_test.lua
 
+      - name: Test THE ROARING safe-route visual
+        run: lua5.1 tests/roaring_core_visual_test.lua
+
       - name: Test combat balance and equipment blacklist
         run: lua5.1 tests/combat_balance_test.lua
 

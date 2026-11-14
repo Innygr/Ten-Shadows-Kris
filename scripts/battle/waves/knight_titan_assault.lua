@@ -41,6 +41,15 @@ function KnightTitanAssault:onStart()
         self:spawnObjectTo(arena.mask, garden_visual, 0, 0)
     end
 
+    -- THE ROARING gets a small animated core marker so the two open spokes
+    -- are readable before the radial burst reaches the arena edges.
+    local roaring_visual = nil
+    if attack and attack.id == "black_flash" and arena and arena.mask then
+        local RoaringCoreVisual = modRequire("scripts/battle/objects/roaring_core")
+        roaring_visual = RoaringCoreVisual(arena.width, arena.height)
+        self:spawnObjectTo(arena.mask, roaring_visual, 0, 0)
+    end
+
     if frozen then
         self.time = 2
         return
@@ -81,6 +90,20 @@ function KnightTitanAssault:onStart()
                 end
             end
             garden_visual:setActiveRoots(active_roots)
+        end
+
+        if roaring_visual then
+            for _, shot in ipairs(shots) do
+                local marker = shot.mechanic
+                if marker and marker.kind == "roaring_shard" then
+                    roaring_visual:setSafeWedges(
+                        marker.safe_wedge,
+                        marker.opposite_wedge,
+                        marker.rotation
+                    )
+                    break
+                end
+            end
         end
 
         for _, shot in ipairs(shots) do

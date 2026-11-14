@@ -175,6 +175,7 @@ function AttackWavePatterns.build(attack, phase, volley, arena, target, knight_d
                 }, {
                     kind = "roaring_shard",
                     spoke = spoke,
+                    rotation = rotation,
                     safe_wedge = safe_wedge,
                     opposite_wedge = opposite_wedge,
                 })
