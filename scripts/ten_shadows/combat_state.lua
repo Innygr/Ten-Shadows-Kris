@@ -208,6 +208,9 @@ function CombatState.new()
         turn = 1,
         knight_disrupted = 0,
         player_domain = {active = false, turns = 0, used = false, visual_pending = false},
+        -- The fusion domain is one coordinated expansion: Vessel maintains
+        -- the barrier while Kris supplies the Ten Shadows environment.
+        fusion_domain = {active = false, turns = 0, used = false, portal_routes = 0},
         knight_domain = {active = false, turns = 0},
         soul_mode = nil, -- nil keeps the original attack library until the Vessel selects a mode.
         titan = {light_radius = 38, base_light_radius = 38, brighten_turns = 0},
@@ -440,6 +443,91 @@ function CombatState.new()
         return true
     end
 
+    -- A joint Domain Expansion uses the existing Chimera duration and TP
+    -- cost, but requires both Kris and Vessel to be standing. It is one
+    -- barrier/one shadow garden, not two competing domains.
+    function state:expandFusionDomain(skip_cost)
+        local domain = self.fusion_domain
+        local kris = self:getMember("kris")
+        local vessel = self:getMember("vessel")
+        if domain.used or domain.active or self.player_domain.used or self.player_domain.active then
+            return false, "The Domain has already been expanded."
+        end
+        if not kris or kris.hp <= 0 or not vessel or vessel.hp <= 0 then
+            return false, "Kris and Vessel must both be able to maintain the Domain."
+        end
+        -- The shared ACT menu may have already deducted the 60 TP.
+        if not skip_cost and not self:spendTP(60) then
+            return false, "Not enough TP."
+        end
+        domain.active = true
+        domain.turns = 3
+        domain.used = true
+        domain.portal_routes = 0
+        self.player_domain.active = true
+        self.player_domain.turns = 3
+        self.player_domain.used = true
+        self.player_domain.visual_pending = true
+        return true
+    end
+
+    -- Redirect a party spell through a pair of shadow portals. The spell's
+    -- target remains unchanged; its launch point is moved to the exit portal.
+    -- Coordinates are arena-local and are supplied by the battle/UI layer.
+    function state:routePartySpell(spell, entry_portal, exit_portal)
+        if not self.fusion_domain.active then
+            return false, "The fusion Domain is not active."
+        end
+        local function valid_portal(portal)
+            return type(portal) == "table"
+                and type(portal.x) == "number"
+                and type(portal.y) == "number"
+        end
+        if type(spell) ~= "table" or not valid_portal(entry_portal)
+            or not valid_portal(exit_portal) then
+            return false, "A spell and two valid portal positions are required."
+        end
+        local routed = {}
+        for key, value in pairs(spell) do routed[key] = value end
+        routed.origin_x = exit_portal.x
+        routed.origin_y = exit_portal.y
+        routed.shadow_portal = {
+            entry = {x = entry_portal.x, y = entry_portal.y},
+            exit = {x = exit_portal.x, y = exit_portal.y},
+        }
+        routed.redirected_by_shadow_portal = true
+        self.fusion_domain.portal_routes = self.fusion_domain.portal_routes + 1
+        return routed
+    end
+
+    -- Granite Blast is Vessel's signature ranged V-ACT. Its origin can be
+    -- selected anywhere inside the shared Domain, independent of Vessel's
+    -- physical position. output is a normalized charge fraction (1 = 100%).
+    function state:createGraniteBlast(origin, target, output)
+        if not self.fusion_domain.active then
+            return false, "Granite Blast can be freely placed only inside the fusion Domain."
+        end
+        local function valid_point(point)
+            return type(point) == "table"
+                and type(point.x) == "number"
+                and type(point.y) == "number"
+        end
+        if not valid_point(origin) or not valid_point(target) then
+            return false, "Granite Blast needs an origin and target position."
+        end
+        local charge = math.max(0, math.min(1, tonumber(output) or 1))
+        return {
+            kind = "granite_blast",
+            source = "vessel",
+            origin_x = origin.x,
+            origin_y = origin.y,
+            target_x = target.x,
+            target_y = target.y,
+            output = charge,
+            redirected_by_shadow_portal = true,
+        }
+    end
+
     function state:startKnightDomain()
         if self.boss.phase ~= 3 or self.knight_domain.active then return false end
         self.knight_domain.active = true
@@ -468,6 +556,13 @@ function CombatState.new()
                 self.player_domain.active = false
                 self.player_domain.turns = 0
                 self.player_domain.visual_pending = false
+            end
+        end
+        if self.fusion_domain.active then
+            self.fusion_domain.turns = self.fusion_domain.turns - 1
+            if self.fusion_domain.turns <= 0 then
+                self.fusion_domain.active = false
+                self.fusion_domain.turns = 0
             end
         end
         if self.knight_domain.active then
