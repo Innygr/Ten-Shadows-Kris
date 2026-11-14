@@ -103,17 +103,30 @@ function FlavorText.count(id)
     return entries[id] and #entries[id] or 0
 end
 
--- Confirmed Roaring Knight encounter text.
+-- Roaring Knight + Titan encounter text. Identity tokens are expanded
+-- when a line is selected, so changing Vessel Identity also changes dialogue.
 FlavorText.register("roaring_knight.early", {
-    "You feel incoming dread."
+    "* The red SOUL flickers beside {vessel_name}."
 })
 
 FlavorText.register("roaring_knight.opening", {
-    "No one is holding back anymore... Do your best. The fate of the world is in your hands"
+    "* The Knight raises its blade at {vessel_name}.",
+    "* The Titan studies {vessel_object} from behind the armour.",
 })
 
 FlavorText.register("roaring_knight.battle", {
-    "All the winds blow fiercely."
+    {
+        text = "* The Titan watches {vessel_name}'s red SOUL.",
+        when = function(state) return (state.phase or 1) == 1 end,
+    },
+    {
+        text = "* The Titan studies {vessel_object} from behind the armour.",
+        when = function(state) return (state.phase or 1) == 2 end,
+    },
+    {
+        text = "* The Knight waits to see whether {vessel_subject} will yield.",
+        when = function(state) return (state.phase or 1) >= 3 end,
+    },
 })
 
 FlavorText.register("items.odd_radio.inspect", {

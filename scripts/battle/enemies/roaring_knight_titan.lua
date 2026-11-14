@@ -43,6 +43,37 @@ function RoaringKnightTitan:init()
     self:registerAct("Inspect", "Read the shared boss status")
 end
 
+-- Pull flavor from the data-driven registry rather than leaving the
+-- registry disconnected from the actual battle loop. Selection occurs each
+-- turn, so Vessel name/pronouns and the current boss phase stay up to date.
+function RoaringKnightTitan:getEncounterText()
+    local phase = self.ten_shadows_phase or 1
+    local id = phase == 1 and "roaring_knight.early" or "roaring_knight.battle"
+    local fallback = super.getEncounterText(self)
+    local text = Mod and Mod.flavor_text and Mod.flavor_text.get(id, {
+        phase = phase,
+        hp = self.health,
+        max_hp = self.max_health,
+    }, {
+        previous = self._previous_flavor_text,
+        fallback = fallback,
+    }) or fallback
+    self._previous_flavor_text = text
+    return text
+end
+
+function RoaringKnightTitan:getEnemyDialogue()
+    local fallback = super.getEnemyDialogue(self)
+    local text = Mod and Mod.flavor_text and Mod.flavor_text.get("roaring_knight.opening", {
+        phase = self.ten_shadows_phase or 1,
+    }, {
+        previous = self._previous_enemy_dialogue,
+        fallback = fallback,
+    }) or fallback
+    self._previous_enemy_dialogue = text
+    return text
+end
+
 function RoaringKnightTitan:onHurt(damage, battler)
     super.onHurt(self, damage, battler)
 
