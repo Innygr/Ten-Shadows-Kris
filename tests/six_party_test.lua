@@ -7,6 +7,7 @@ end
 
 local manifest = read("mod.json")
 local source = read("mod.lua")
+local startup = read("scripts/ten_shadows/vessel_identity_startup.lua")
 local vessel = read("scripts/data/party/vessel.lua")
 local berdly = read("scripts/data/party/berdly.lua")
 
@@ -16,10 +17,14 @@ for _, id in ipairs(expected) do
     assert(source:find('"' .. id .. '"', 1, true), "mod.lua roster is missing " .. id)
 end
 
-assert(source:find("local original_game_load = Game.load", 1, true),
-    "six-member save migration must wrap Game:load during Mod:init")
-assert(source:find("data.party[i] = id", 1, true),
+assert(source:find("installGameLoadHook(Mod, Game, PARTY_ROSTER)", 1, true),
+    "Mod:init must install the centralized Game:load hook")
+assert(startup:find("local original_game_load = game_class.load", 1, true),
+    "the startup helper must wrap Game:load exactly once")
+assert(startup:find("data.party[i] = id", 1, true),
     "existing saves must be migrated to the complete six-member roster")
+assert(startup:find("mod._vessel_identity_game_load_hook", 1, true),
+    "the Game:load wrapper must be guarded against repeated Mod:init calls")
 assert(source:find("installSixPartySupport()", 1, true),
     "battle hooks must be installed before the initial Game:load")
 
