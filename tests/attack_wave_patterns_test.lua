@@ -7,7 +7,7 @@ local families = {
     radial = true, wall = true, aimed = true, crossfire = true,
     falling = true, sweep = true, twin_slash = true, titan_hands = true,
     big_shot_one = true, big_shot_two = true, big_shot_three = true,
-    titan_desperation = true,
+    titan_desperation = true, crystal_barrage = true,
 }
 
 local function validate(attack, phase)
@@ -170,6 +170,32 @@ for _, shot in ipairs(big_three) do
 end
 assert(big_three[1].direction ~= big_three_later[1].direction,
     "Big Shots 3 radial orientation must rotate between volleys")
+
+-- Crystal Barrage is a falling shard curtain with a rotating safe lane.
+local crystals, crystal_family = Patterns.build({id = "crystal_barrage"}, 2, 1, arena, target, false)
+local crystals_next = Patterns.build({id = "crystal_barrage"}, 2, 2, arena, target, false)
+assert(crystal_family == "crystal_barrage" and #crystals == 6,
+    "Crystal Barrage must create six shards and leave one of seven lanes open")
+for _, shard in ipairs(crystals) do
+    assert(shard.kind == "knight" and shard.mechanic.kind == "crystal_shard",
+        "Crystal Barrage shards must use their dedicated visual marker")
+    assert(shard.direction == math.pi / 2 and shard.warning.kind == "falling",
+        "Crystal Barrage shards must descend with vertical telegraphs")
+    assert(shard.warning.duration <= 0.6 and shard.warning.length > 0,
+        "Crystal Barrage must telegraph each descending lane")
+end
+local function crystalLanePresent(shots, lane)
+    for _, shard in ipairs(shots) do
+        if shard.mechanic.lane == lane then return true end
+    end
+    return false
+end
+local first_gap, next_gap
+for lane = 1, 7 do
+    if not crystalLanePresent(crystals, lane) then first_gap = lane end
+    if not crystalLanePresent(crystals_next, lane) then next_gap = lane end
+end
+assert(first_gap ~= next_gap, "Crystal Barrage safe lane must rotate between volleys")
 
 local desperation_target = {x = 330, y = 238, previous = {x = 318, y = 226}}
 local desperation, desperation_family = Patterns.build(

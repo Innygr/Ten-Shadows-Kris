@@ -87,6 +87,7 @@ local function classify(attack)
     if source == "combo" then return "crossfire" end
     if id == "titan_hands" then return "titan_hands" end
     if id == "titan_desperation" then return "titan_desperation" end
+    if id == "crystal_barrage" then return "crystal_barrage" end
     if id == "titan_big_shots" then return "big_shot_one" end
     if id == "titan_big_shots_2" then return "big_shot_two" end
     if id == "titan_big_shots_3" then return "big_shot_three" end
@@ -146,7 +147,29 @@ function AttackWavePatterns.build(attack, phase, volley, arena, target, domain_a
     local pace = 2.8 + (phase - 1) * 0.42 + (volley - 1) * 0.10
     local shots = {}
 
-    if attack and attack.id == "titan_desperation" then
+    if attack and attack.id == "crystal_barrage" then
+        -- Seven descending crystal lanes leave one rotating opening. The
+        -- staggered shard speeds create a flowing curtain rather than a flat wall.
+        local lanes = 7
+        local safe_lane = ((volley + phase - 2) % lanes) + 1
+        local spacing = width / (lanes + 1)
+        local drift = ((volley - 1) % 2 == 0 and -1 or 1) * spacing * 0.18
+        for lane = 1, lanes do
+            if lane ~= safe_lane then
+                local x = arena.left + spacing * lane + drift
+                local y = arena.top - 14 - ((lane + volley) % 3) * 9
+                add(shots, "knight", x, y, math.pi / 2, pace + 0.22 + (lane % 3) * 0.12, {
+                    kind = "falling",
+                    duration = phase == 3 and 0.36 or 0.44,
+                    length = height + 28,
+                }, {
+                    kind = "crystal_shard",
+                    lane = lane,
+                    volley = volley,
+                })
+            end
+        end
+    elseif attack and attack.id == "titan_desperation" then
         -- Five heavy bolts alternate edges and lead the SOUL's recent movement.
         local previous = target.previous or target
         local lead_x = math.max(arena.left + 12, math.min(arena.right - 12,

@@ -15,9 +15,11 @@ function ShadowProjectile:init(x, y, direction, speed, kind, warning, mechanic)
     self.is_titan_hand = type(mechanic) == "table" and mechanic.kind == "titan_hand"
     self.is_titan_big_shot = type(mechanic) == "table" and mechanic.kind == "titan_big_shot"
     self.is_titan_desperation_shot = type(mechanic) == "table" and mechanic.kind == "titan_desperation_shot"
+    self.is_crystal_shard = type(mechanic) == "table" and mechanic.kind == "crystal_shard"
     self.big_shot_tier = self.is_titan_big_shot and mechanic.tier or nil
-    local radius = (self.is_titan_big_shot and (self.big_shot_tier == 3 and 9 or 8))
-        or (self.is_titan_desperation_shot and 8) or (self.is_titan_hand and 6 or 4)
+    local radius = self.is_crystal_shard and 6
+        or ((self.is_titan_big_shot and (self.big_shot_tier == 3 and 9 or 8))
+        or (self.is_titan_desperation_shot and 8) or (self.is_titan_hand and 6 or 4))
     self.width = radius * 3
     self.height = radius * 3
     self.collider = CircleCollider(self, 0, 0, radius)
@@ -50,8 +52,9 @@ function ShadowProjectile:arm()
 
     self.armed = true
     self.telegraph = nil
-    local radius = self.is_titan_big_shot and (self.big_shot_tier == 3 and 9 or 8)
-        or (self.is_titan_hand and 6 or 4)
+    local radius = self.is_crystal_shard and 6
+        or ((self.is_titan_big_shot and (self.big_shot_tier == 3 and 9 or 8))
+        or (self.is_titan_desperation_shot and 8) or (self.is_titan_hand and 6 or 4))
     self.collider = CircleCollider(self, 0, 0, radius)
     self.physics.speed = self.intended_speed
 end
@@ -81,6 +84,17 @@ function ShadowProjectile:draw()
             love.graphics.polygon("line", length, -5, length + 5, 0, length, 5, length - 5, 0)
         end
 
+        super.draw(self)
+        return
+    end
+
+    if self.is_crystal_shard then
+        love.graphics.setColor(0.36, 0.86, 1.0, 0.25)
+        love.graphics.circle("fill", 0, 0, 11)
+        love.graphics.setColor(0.56, 0.93, 1.0, 1)
+        love.graphics.polygon("fill", 0, -10, 5, -2, 3, 7, 0, 10, -3, 7, -5, -2)
+        love.graphics.setColor(0.94, 1.0, 1.0, 1)
+        love.graphics.line(0, -7, 0, 6)
         super.draw(self)
         return
     end
