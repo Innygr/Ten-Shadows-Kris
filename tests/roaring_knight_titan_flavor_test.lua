@@ -27,7 +27,7 @@ function modRequire(path)
     error("Unexpected module: " .. tostring(path))
 end
 
-local EnemyBattler = {
+EnemyBattler = {
     init = function() end,
     setActor = function() end,
     registerAct = function() end,
