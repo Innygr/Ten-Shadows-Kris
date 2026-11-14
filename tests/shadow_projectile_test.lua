@@ -173,4 +173,33 @@ assert(domain_blade.armed and domain_blade.collider.radius == 5,
 domain_blade:draw()
 assert(draw_polygons >= 2, "domain root blade must render its leaf-shaped visual")
 
+-- The Roaring's dark shards keep a safe tell, dedicated hitbox, and
+-- separate final-phase silhouette.
+local roaring_shard = ShadowProjectile(92, 104, math.pi / 4, 6, "knight", {
+    kind = "target",
+    duration = 0.40,
+    length = 124,
+}, {
+    kind = "roaring_shard",
+    spoke = 2,
+    safe_wedge = 1,
+    opposite_wedge = 6,
+})
+assert(roaring_shard.is_roaring_shard,
+    "The Roaring marker must survive projectile construction")
+assert(not roaring_shard.armed and roaring_shard.collider == nil
+    and roaring_shard.physics.speed == 0,
+    "The Roaring shard must remain harmless during its tell")
+roaring_shard:draw()
+assert(draw_lines >= 4,
+    "The Roaring shard must layer its dark-red warning over the standard trajectory")
+roaring_shard.telegraph_timer.callback()
+assert(roaring_shard.armed and roaring_shard.collider.radius == 6
+    and roaring_shard.physics.speed == 6,
+    "The Roaring shard must arm with its dedicated hitbox and speed")
+local polygons_before_roar = draw_polygons
+roaring_shard:draw()
+assert(draw_polygons > polygons_before_roar,
+    "The Roaring shard must render its dark angular silhouette")
+
 print("Shadow projectile telegraph/arming and Titan hand rendering tests passed.")

@@ -85,6 +85,7 @@ local function classify(attack)
     local source = inferSource(attack)
 
     if id == "titan_knight_combo" then return "knight_titan_collision" end
+    if id == "black_flash" then return "the_roaring" end
     if source == "combo" then return "crossfire" end
     if id == "titan_hands" then return "titan_hands" end
     if id == "titan_desperation" then return "titan_desperation" end
@@ -148,7 +149,38 @@ function AttackWavePatterns.build(attack, phase, volley, arena, target, knight_d
     local pace = 2.8 + (phase - 1) * 0.42 + (volley - 1) * 0.10
     local shots = {}
 
-    if attack and attack.id == "titan_knight_combo" then
+    if attack and attack.id == "black_flash" then
+        -- The Roaring sends a ten-spoke burst from the arena's centre. Two
+        -- opposite spokes are always left open; the safe pair rotates each
+        -- volley so the player can read the tell and choose a route.
+        local spokes = 10
+        local safe_wedge = (volley + phase - 3) % spokes
+        local opposite_wedge = (safe_wedge + spokes / 2) % spokes
+        local rotation = (volley - 1) * 0.035
+
+        for spoke = 0, spokes - 1 do
+            if spoke ~= safe_wedge and spoke ~= opposite_wedge then
+                local angle = rotation + spoke * math.pi * 2 / spokes
+                local dx, dy = math.cos(angle), math.sin(angle)
+                local horizontal = dx > 0 and (arena.right - center_x) / dx
+                    or (dx < 0 and (arena.left - center_x) / dx or math.huge)
+                local vertical = dy > 0 and (arena.bottom - center_y) / dy
+                    or (dy < 0 and (arena.top - center_y) / dy or math.huge)
+                local length = math.min(horizontal, vertical) + 18
+
+                add(shots, "knight", center_x, center_y, angle, pace + 0.72, {
+                    kind = "target",
+                    duration = 0.40,
+                    length = length,
+                }, {
+                    kind = "roaring_shard",
+                    spoke = spoke,
+                    safe_wedge = safe_wedge,
+                    opposite_wedge = opposite_wedge,
+                })
+            end
+        end
+    elseif attack and attack.id == "titan_knight_combo" then
         -- Knight diagonals and Titan vertical lances converge on one marked
         -- point. Its alternating offset makes the crossing geometry shift.
         local shift = ((volley + phase) % 2 == 0 and 1 or -1)

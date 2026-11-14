@@ -12,6 +12,7 @@ function ShadowProjectile:init(x, y, direction, speed, kind, warning, mechanic)
     self.kind = COLORS[kind] and kind or "titan"
     self.mechanic = mechanic
     self.is_chimera_domain_blade = type(mechanic) == "table" and mechanic.kind == "chimera_domain_blade"
+    self.is_roaring_shard = type(mechanic) == "table" and mechanic.kind == "roaring_shard"
     self.is_execution_slash = type(mechanic) == "table" and mechanic.kind == "execution_slash"
     self.is_titan_hand = type(mechanic) == "table" and mechanic.kind == "titan_hand"
     self.is_titan_big_shot = type(mechanic) == "table" and mechanic.kind == "titan_big_shot"
@@ -19,10 +20,11 @@ function ShadowProjectile:init(x, y, direction, speed, kind, warning, mechanic)
     self.is_crystal_shard = type(mechanic) == "table" and mechanic.kind == "crystal_shard"
     self.is_knight_titan_collision = type(mechanic) == "table" and mechanic.kind == "knight_titan_collision"
     self.big_shot_tier = self.is_titan_big_shot and mechanic.tier or nil
-    local radius = self.is_chimera_domain_blade and 5
+    local radius = self.is_roaring_shard and 6
+        or (self.is_chimera_domain_blade and 5
         or (self.is_crystal_shard and 6
         or ((self.is_titan_big_shot and (self.big_shot_tier == 3 and 9 or 8))
-        or (self.is_titan_desperation_shot and 8) or (self.is_titan_hand and 6 or 4)))
+        or (self.is_titan_desperation_shot and 8) or (self.is_titan_hand and 6 or 4))))
     self.width = radius * 3
     self.height = radius * 3
     self.collider = CircleCollider(self, 0, 0, radius)
@@ -55,10 +57,11 @@ function ShadowProjectile:arm()
 
     self.armed = true
     self.telegraph = nil
-    local radius = self.is_chimera_domain_blade and 5
+    local radius = self.is_roaring_shard and 6
+        or (self.is_chimera_domain_blade and 5
         or (self.is_crystal_shard and 6
         or ((self.is_titan_big_shot and (self.big_shot_tier == 3 and 9 or 8))
-        or (self.is_titan_desperation_shot and 8) or (self.is_titan_hand and 6 or 4)))
+        or (self.is_titan_desperation_shot and 8) or (self.is_titan_hand and 6 or 4))))
     self.collider = CircleCollider(self, 0, 0, radius)
     self.physics.speed = self.intended_speed
 end
@@ -71,6 +74,13 @@ function ShadowProjectile:draw()
         if self.is_chimera_domain_blade then
             love.graphics.setLineWidth(10)
             love.graphics.setColor(0.46, 0.16, 0.78, 0.36)
+            love.graphics.line(0, 0, length, 0)
+        elseif self.is_roaring_shard then
+            love.graphics.setLineWidth(10)
+            love.graphics.setColor(0.13, 0.008, 0.025, 0.55)
+            love.graphics.line(0, 0, length, 0)
+            love.graphics.setLineWidth(4)
+            love.graphics.setColor(0.82, 0.08, 0.16, 0.48)
             love.graphics.line(0, 0, length, 0)
         end
         love.graphics.setLineWidth(6)
@@ -93,6 +103,20 @@ function ShadowProjectile:draw()
             love.graphics.polygon("line", length, -5, length + 5, 0, length, 5, length - 5, 0)
         end
 
+        super.draw(self)
+        return
+    end
+
+    if self.is_roaring_shard then
+        -- Dark, angular fragments mark the final-phase Roaring burst.
+        love.graphics.setColor(0.10, 0.008, 0.025, 1)
+        love.graphics.polygon("fill", 0, -9, 3, -3, 8, 0, 3, 3,
+            0, 9, -3, 3, -8, 0, -3, -3)
+        love.graphics.setColor(0.78, 0.055, 0.14, 1)
+        love.graphics.setLineWidth(2)
+        love.graphics.line(-4, -2, 4, 2)
+        love.graphics.setColor(1.0, 0.66, 0.70, 1)
+        love.graphics.circle("fill", 0, 0, 1.8)
         super.draw(self)
         return
     end

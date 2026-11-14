@@ -8,6 +8,7 @@ local families = {
     falling = true, sweep = true, twin_slash = true, titan_hands = true,
     big_shot_one = true, big_shot_two = true, big_shot_three = true,
     titan_desperation = true, crystal_barrage = true, knight_titan_collision = true,
+    the_roaring = true,
 }
 
 local function validate(attack, phase)
@@ -30,6 +31,11 @@ local function validate(attack, phase)
             assert(shot.warning and shot.warning.kind == "lane", "Titan hand shots need horizontal lane tells")
             assert(shot.mechanic and shot.mechanic.kind == "titan_hand",
                 "Titan hand shots need their dedicated visual/collision marker")
+        elseif family == "the_roaring" then
+            assert(shot.warning and shot.warning.kind == "target",
+                "The Roaring spokes need radial trajectory tells")
+            assert(shot.mechanic and shot.mechanic.kind == "roaring_shard",
+                "The Roaring spokes need their dedicated projectile marker")
         end
 
         if shot.warning then
@@ -349,5 +355,41 @@ end
 for root = 1, 10 do
     assert(seen_roots[root], "all ten garden roots must participate over ten volleys")
 end
+
+-- The Roaring is the phase-three signature burst: eight telegraphed
+-- spokes leave two opposite safe wedges, and that opening rotates per volley.
+local roar_one, roar_family = Patterns.build({id = "black_flash"}, 3, 1, arena, target, false)
+local roar_two, roar_family_two = Patterns.build({id = "black_flash"}, 3, 2, arena, target, false)
+assert(roar_family == "the_roaring" and roar_family_two == "the_roaring",
+    "The Roaring must use its dedicated final-phase pattern")
+assert(#roar_one == 8 and #roar_two == 8,
+    "The Roaring must fire eight spokes while leaving two opposite gaps")
+local function roaringGaps(shots)
+    local present = {}
+    for _, shot in ipairs(shots) do
+        assert(shot.kind == "knight" and shot.mechanic.kind == "roaring_shard",
+            "The Roaring must use Knight-styled dedicated shards")
+        assert(shot.warning.kind == "target" and shot.warning.duration == 0.40,
+            "Every Roaring shard must show a short trajectory tell")
+        assert(shot.x == (arena.left + arena.right) / 2
+            and shot.y == (arena.top + arena.bottom) / 2,
+            "Roaring spokes must radiate from the arena centre")
+        assert(shot.warning.length > 0 and shot.speed > 0,
+            "Roaring spokes must reach beyond the arena edge")
+        present[shot.mechanic.spoke] = true
+    end
+    local missing = {}
+    for spoke = 0, 9 do
+        if not present[spoke] then missing[#missing + 1] = spoke end
+    end
+    assert(#missing == 2, "The Roaring must leave exactly two safe spokes")
+    assert((missing[1] + 5) % 10 == missing[2],
+        "The Roaring's safe spokes must be opposite")
+    return missing
+end
+local roar_gaps_one = roaringGaps(roar_one)
+local roar_gaps_two = roaringGaps(roar_two)
+assert(roar_gaps_one[1] ~= roar_gaps_two[1],
+    "The Roaring's safe route must rotate between volleys")
 
 print("Knight + Titan wave pattern coverage and telegraph tests passed.")
