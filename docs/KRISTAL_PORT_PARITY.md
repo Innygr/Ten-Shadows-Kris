@@ -16,7 +16,7 @@ and has been tested in Kristal.
   encounter remains available as a separate engine diagnostic.
 - scripts/objects/soul_ejection.lua: detached SOUL movement/drawing controller. Not yet
   connected to Kris's overworld controls, collapse/restore sequence, or character dialogue.
-- scripts/ten_shadows/flavor_text.lua: Lua-native flavor text registry with multiple variants per key, conditional entries, fallback text, and repeat avoidance. Registry logic is tested independently; battle dialogue is not wired to it yet.
+- scripts/ten_shadows/flavor_text.lua: Lua-native flavor text registry with multiple variants per key, conditional entries, fallback text, and repeat avoidance. It is wired into the Knight + Titan encounter's first-turn text, per-turn battle-box flavor, and identity-aware enemy dialogue. Phase conditions select the right line, and phase-transition announcements retain priority in both engine text channels. Story/route-state dialogue conditions are not wired yet.
 - scripts/ten_shadows/combat_state.lua: Lua-native party, TP, boss phase/status,
   summon, ACT/spell, domain, and encounter-scheduling rules. The Knight + Titan preview
   enemy and Wave now consume the shared attack scheduler; player-action and full battle-UI
@@ -141,8 +141,9 @@ and has been tested in Kristal.
 
 - [ ] Port the Weird Route: Ice counters/flags/history without inventing route activation conditions.
 - [x] Port the flavor-text registry to Lua, including multiple variants per key, conditional selection, fallback text, and avoiding an immediate repeat when alternatives exist.
-- [ ] Connect flavor text selection to Kristal battle dialogue and story-state conditions.
-- [ ] Port opening/battle flavor text and the Odd Radio / mayo armor entries where those items exist.
+- [x] Connect flavor text selection to the Knight + Titan encounter's first-turn text, per-turn battle-box flavor, and enemy dialogue, including phase conditions and Vessel identity placeholders.
+- [x] Port the opening and phase-aware Knight + Titan flavor lines.
+- [ ] Connect flavor selection to Weird Route/story-state conditions and wire Odd Radio / mayo armor text to their in-game inspect actions when those objects are added.
 - [ ] Port sprite-sheet animation handling and sprite-asset manifest fallback behaviour.
 - [ ] Port the battle scene composition: party lineup, Knight foreground, Titan looming behind,
   summon effects, and phase ambience using Kristal sprites/objects rather than HTML canvas.

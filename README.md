@@ -92,7 +92,9 @@ On a new save, the game offers a Vessel identity setup screen. The name, gender,
 pronouns, and visual presentation are saved independently of the Deltarune save.
 The optional import reads the Vessel name from line 2 of a detected Deltarune
 text save; it never edits that save. Existing saves can edit these values in
-**Settings → Vessel Identity**. Dialogue/flavor text can use
+**Settings → Vessel Identity**. The Knight + Titan encounter uses the saved identity in its first-turn text,
+phase-aware battle flavor, and enemy dialogue. Phase-transition announcements take
+priority over ordinary flavor lines. Dialogue/flavor text can use
 `{vessel_name}`, `{vessel_subject}`, `{vessel_object}`,
 `{vessel_determiner}`, `{vessel_possessive}`, and
 `{vessel_reflexive}` placeholders.

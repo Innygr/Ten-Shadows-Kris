@@ -66,6 +66,7 @@ pushes, pull requests, and manual dispatch. It currently:
 - Rejects the incorrect `darkInventory` key.
 - Runs Lua 5.1 syntax validation (`luac5.1 -p`) on every Lua file.
 - Executes `tests/flavor_text_test.lua` to check multiple variants, repeat avoidance, conditions, and fallbacks.
+- Executes `tests/roaring_knight_titan_flavor_test.lua` against the real boss/encounter classes to check the first-turn encounter hook, per-turn lines, identity edits, and phase-transition priority in both text channels.
 - Confirms the smoke-test encounter, enemy, wave, and custom bullet files exist.
 - Checks that the runtime enemy registers party spells, all ten shadows, and Chimera Shadow Garden.
 - Checks that the runtime enemy handles custom ACTs and the standard X-ACT.
