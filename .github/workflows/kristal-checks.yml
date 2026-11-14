@@ -99,6 +99,9 @@ jobs:
       - name: Test combat balance and equipment blacklist
         run: lua5.1 tests/combat_balance_test.lua
 
+      - name: Test Kris + Vessel fusion Domain and V-ACT
+        run: lua5.1 tests/fusion_domain_test.lua
+
       - name: Test Vessel SOUL-mode boss attacks
         run: lua5.1 tests/soul_mode_attacks_test.lua
 
