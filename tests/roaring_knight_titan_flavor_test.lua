@@ -32,7 +32,17 @@ EnemyBattler = {
     setActor = function() end,
     registerAct = function() end,
     getEncounterText = function() return "base encounter fallback" end,
-    getEnemyDialogue = function() return "base dialogue fallback" end,
+    getEnemyDialogue = function(self)
+        if self.dialogue_override then
+            local dialogue = self.dialogue_override
+            self.dialogue_override = nil
+            return dialogue
+        end
+        return "base dialogue fallback"
+    end,
+    onHurt = function(self, damage)
+        self.health = self.health - damage
+    end,
 }
 function Class(base)
     local class = {}
@@ -69,4 +79,16 @@ local updated = enemy:getEncounterText()
 assert(updated == "* The Titan studies xem from behind the armour.",
     "The active battle must read updated identity values rather than cached text")
 
-print("Roaring Knight dialogue and per-phase flavor use the saved, live Vessel identity")
+-- Crossing the phase-two threshold installs a one-shot engine dialogue override.
+-- The identity-aware dialogue selector must not consume and replace this line.
+enemy.ten_shadows_phase = 1
+enemy.health = 200
+enemy:onHurt(30)
+assert(enemy.ten_shadows_phase == 2, "Damage across the threshold must advance to phase two")
+local phase_dialogue = enemy:getEnemyDialogue()
+assert(phase_dialogue == BossPhase.TEXT[2],
+    "Phase transition dialogue must take priority over normal flavor dialogue")
+assert(enemy.dialogue_override == nil,
+    "The phase transition override must be consumed exactly once")
+
+print("Roaring Knight dialogue, phase overrides, and per-phase flavor use the saved, live Vessel identity")

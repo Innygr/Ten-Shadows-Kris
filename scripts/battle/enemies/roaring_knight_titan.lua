@@ -63,6 +63,12 @@ function RoaringKnightTitan:getEncounterText()
 end
 
 function RoaringKnightTitan:getEnemyDialogue()
+    -- Phase changes install a one-shot engine override. Preserve its priority
+    -- instead of consuming it and replacing it with an ordinary flavor line.
+    if self.dialogue_override then
+        return super.getEnemyDialogue(self)
+    end
+
     local fallback = super.getEnemyDialogue(self)
     local text = Mod and Mod.flavor_text and Mod.flavor_text.get("roaring_knight.opening", {
         phase = self.ten_shadows_phase or 1,
