@@ -22,6 +22,11 @@ pronouns = Identity.getPronouns()
 assert(pronouns.subject == "xe" and pronouns.object == "xem"
     and pronouns.determiner == "xyr" and pronouns.possessive == "xyrs"
     and pronouns.reflexive == "xemself", "Xe/xem forms should be resolved consistently")
+Identity.update({pronouns = "it/its"})
+pronouns = Identity.getPronouns()
+assert(pronouns.subject == "it" and pronouns.object == "it"
+    and pronouns.determiner == "its" and pronouns.possessive == "its"
+    and pronouns.reflexive == "itself", "It/its forms should be resolved consistently")
 Identity.update({name = "Rowan", pronouns = "she/her"})
 assert(Identity.format("{vessel_name} said {vessel_subject} would bring {vessel_determiner} own supplies, and {vessel_reflexive} did.") ==
     "Rowan said she would bring her own supplies, and herself did.",

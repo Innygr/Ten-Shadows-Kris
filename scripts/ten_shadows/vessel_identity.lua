@@ -64,6 +64,7 @@ local COMMON_PRONOUNS = {
     ["she/her"] = {subject = "she", object = "her", determiner = "her", possessive = "hers", reflexive = "herself"},
     ["they/them"] = {subject = "they", object = "them", determiner = "their", possessive = "theirs", reflexive = "themself"},
     ["xe/xem"] = {subject = "xe", object = "xem", determiner = "xyr", possessive = "xyrs", reflexive = "xemself"},
+    ["it/its"] = {subject = "it", object = "it", determiner = "its", possessive = "its", reflexive = "itself"},
 }
 
 function Identity.getPronouns()
