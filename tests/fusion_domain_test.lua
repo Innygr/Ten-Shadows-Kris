@@ -102,4 +102,45 @@ assert(enemy_source:find('name == "FUSION DOMAIN"', 1, true),
 assert(enemy_source:find('name == "GRANITE BLAST"', 1, true),
     "the enemy ACT handler must resolve Granite Blast")
 
+
+-- Joint activation also requires Kris; failure must not spend TP or reserve
+-- either character's once-per-battle Domain.
+local down_kris = CombatState.new()
+down_kris.tp = 100
+down_kris:getMember("kris").hp = 0
+local kris_ok, kris_reason = down_kris:expandFusionDomain(false)
+expect(kris_ok, false, "Kris must be standing to supply the shadow garden")
+expect(type(kris_reason), "string", "failed activation explains the missing partner")
+expect(down_kris.tp, 100, "failed joint activation does not spend TP")
+expect(down_kris.fusion_domain.used, false, "failed joint activation does not consume fusion use")
+expect(down_kris.player_domain.used, false, "failed joint activation does not consume ordinary domain use")
+
+-- Invalid routing input is rejected without mutating the original spell or
+-- incrementing the route counter.
+local invalid_spell = {origin_x = 5, origin_y = 6, target_x = 7, target_y = 8}
+local invalid_route, route_reason = state:routePartySpell(
+    invalid_spell, {x = 1, y = 2}, {x = "not-a-number", y = 4}
+)
+expect(invalid_route, false, "portal routing rejects malformed coordinates")
+expect(type(route_reason), "string", "invalid routing explains the required inputs")
+expect(state.fusion_domain.portal_routes, 1, "invalid routing does not count as a successful route")
+expect(invalid_spell.origin_x, 5, "invalid routing leaves the spell unchanged")
+
+local bad_blast, blast_reason = state:createGraniteBlast(
+    {x = 1, y = 2}, {x = 3, y = false}, 1
+)
+expect(bad_blast, false, "Granite Blast rejects malformed target coordinates")
+expect(type(blast_reason), "string", "invalid Granite Blast explains its inputs")
+
+-- The fusion Domain and ordinary Chimera Domain share one activation slot.
+local mutually_exclusive = CombatState.new()
+mutually_exclusive.tp = 100
+expect(mutually_exclusive:expandChimeraDomain(true), true,
+    "ordinary Chimera Domain can be activated first")
+local fusion_after_chimera = mutually_exclusive:expandFusionDomain(true)
+expect(fusion_after_chimera, false,
+    "fusion Domain cannot overlap an already-active Chimera Domain")
+expect(mutually_exclusive.fusion_domain.used, false,
+    "rejected overlap does not consume the fusion Domain")
+
 print("Kris + Vessel fusion Domain and V-ACT tests passed.")
