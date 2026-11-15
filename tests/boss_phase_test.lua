@@ -7,7 +7,7 @@ phase, message = BossPhase.advance(14000, phase)
 assert(phase == 2 and message == BossPhase.TEXT[2], "14000 HP must trigger phase two")
 
 local same_phase
-same_phase, message = BossPhase.advance(100, phase)
+same_phase, message = BossPhase.advance(10000, phase)
 assert(same_phase == 2 and message == nil, "phase two must remain active above 7000 HP")
 
 phase, message = BossPhase.advance(7000, same_phase)
