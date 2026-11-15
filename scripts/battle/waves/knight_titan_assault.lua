@@ -37,7 +37,7 @@ function KnightTitanAssault:onStart()
         local GardenVisual = modRequire("scripts/battle/objects/chimera_shadow_garden")
         local opening = state.player_domain.visual_pending == true
         state.player_domain.visual_pending = false
-        garden_visual = GardenVisual(arena.width, arena.height, opening)
+        garden_visual = GardenVisual(\n            arena.width, arena.height, opening,\n            state.fusion_domain and state.fusion_domain.active or false\n        )
         self:spawnObjectTo(arena.mask, garden_visual, 0, 0)
     end
 
