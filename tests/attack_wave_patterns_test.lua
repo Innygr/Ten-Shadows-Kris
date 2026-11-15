@@ -265,7 +265,7 @@ assert(desperation[1].x ~= desperation_next[1].x,
     "Desperation launch sides must alternate between volleys")
 
 local execution_shots, execution_family = Patterns.build(
-    {id = "cyan_knights_execution", source = "knight", pattern = "cyan-parry-window"},
+    {id = "cyan_knights_execution", source = "knight", pattern = "execution-test-pattern"},
     2, 3, arena, target, false
 )
 assert(execution_family == "aimed", "Knight's Execution should remain an aimed slash pattern")
