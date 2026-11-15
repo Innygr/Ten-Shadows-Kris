@@ -3,13 +3,13 @@ local RoaringKnightTitan, super = Class(EnemyBattler)
 function RoaringKnightTitan:init()
     super.init(self)
 
-    self.name = "Roaring Knight + Titan"
+    self.name = "The Titan"
     -- Temporary Kris actor placeholder until dedicated Knight/Titan art is added.
     self:setActor("kris")
-    self.max_health = 260
-    self.health = 260
-    self.attack = 1
-    self.defense = 0
+    self.max_health = 21000
+    self.health = self.max_health
+    self.attack = 40
+    self.defense = 800
     self.money = 0
     self.experience = 0
     self.spare_points = 0
@@ -29,18 +29,18 @@ function RoaringKnightTitan:init()
     self.ten_shadows_state.boss.hp = self.health
     self.ten_shadows_state.boss.max_hp = self.max_health
     self.dialogue = {
-        "* The Knight raises its blade.",
-        "* The Titan watches from behind the armour.",
+        "* The Titan watches from behind its armour.",
+        "* The Roaring Knight advances beside it.",
     }
     self.text = {
-        "* The Roaring Knight and Titan share one health pool.",
-        "* Neither can be made TIRED or spared.",
+        "* The Titan has 21,000 HP.",
+        "* The Roaring Knight fights independently.",
     }
 
     local BossPhase = modRequire("scripts/ten_shadows/boss_phase")
     self.check = BossPhase.checkText(self.ten_shadows_phase)
 
-    self:registerAct("Inspect", "Read the shared boss status")
+    self:registerAct("Inspect", "Read the Titan status")
 end
 
 -- Pull flavor from the data-driven registry rather than leaving the
