@@ -96,7 +96,7 @@ assert(updated == "* The Titan studies xem from behind the armour.",
 -- Crossing the phase-two threshold installs a one-shot engine dialogue override.
 -- The identity-aware dialogue selector must not consume and replace this line.
 enemy.ten_shadows_phase = 1
-enemy.health = 200
+enemy.health = 14000
 enemy:onHurt(30)
 assert(enemy.ten_shadows_phase == 2, "Damage across the threshold must advance to phase two")
 local phase_dialogue = enemy:getEnemyDialogue()
