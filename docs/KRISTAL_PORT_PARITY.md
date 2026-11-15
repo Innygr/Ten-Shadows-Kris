@@ -124,7 +124,8 @@ and has been tested in Kristal.
 - [x] Core rules: selecting a Vessel mode switches the shared enemy scheduler to that mode's attack pool; Titan and Knight turns alternate, with a synchronized attack on the combo cadence.
 - [x] Core rules: a frozen Knight still yields a Titan attack from the selected mode.
 - [x] Kristal integration: Vessel's seven SOUL choices call state:setSoulMode(mode); choosing Red clears the special mode and restores the ordinary attack library.
-- [x] Kristal foundation: all 30 non-default SOUL-mode attack definitions route through the shared wave-pattern planner.
+- [x] Kristal foundation: all 30 non-default SOUL-mode attack definitions route through dedicated pattern-key geometry builders, with per-pattern telegraphs and mechanic markers.
+- [ ] Kristal visuals/collision: give each SOUL-mode pattern its final bespoke projectile presentation and any required mode-specific collision/guard/parry behaviour; current builders establish distinct paths and telegraphs only.
 - [ ] Kristal integration: implement bespoke mechanics for the 30 Blue, Green, Yellow, Purple, Orange, and Cyan Knight/Titan/combined Wave patterns using each definition's pattern key. The ordinary 37-attack library is the Red SOUL baseline, not a separate mode-specific attack set.
 - [ ] Kristal integration: playtest each SOUL mode and verify arena movement, hitboxes, timing, and difficulty scaling in the actual Kristal runtime.
 
