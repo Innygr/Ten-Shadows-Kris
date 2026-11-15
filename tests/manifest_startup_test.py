@@ -13,8 +13,9 @@ assert encounter_id == "knight_titan_preview", (
 encounter_path = root / "scripts" / "battle" / "encounters" / f"{encounter_id}.lua"
 assert encounter_path.is_file(), f"manifest encounter is missing: {encounter_path}"
 encounter = encounter_path.read_text(encoding="utf-8")
-assert 'self:addEnemy("roaring_knight_titan")' in encounter, (
-    "the manifest encounter must add the shared Knight + Titan enemy"
+assert 'self:addEnemy("roaring_knight_titan")' in encounter
+assert 'self:addEnemy("roaring_knight")' in encounter, (
+    "the encounter must spawn the Knight separately from the Titan"
 )
 
 enemy_path = root / "scripts" / "battle" / "enemies" / "roaring_knight_titan.lua"
@@ -22,7 +23,11 @@ enemy = enemy_path.read_text(encoding="utf-8")
 assert 'self.waves = {"knight_titan_assault"}' in enemy, (
     "the boss must select the dedicated Knight + Titan assault wave"
 )
-assert "self.max_health = 260" in enemy and "self.health = 260" in enemy
+assert "self.max_health = 21000" in enemy and "self.health = self.max_health" in enemy
+assert "self.attack = 40" in enemy and "self.defense = 800" in enemy
+knight_path = root / "scripts" / "battle" / "enemies" / "roaring_knight.lua"
+knight = knight_path.read_text(encoding="utf-8")
+assert "self.max_health = 1460" in knight and "self.health = self.max_health" in knight
 assert "self.disable_mercy = true" in enemy
 assert "self.can_freeze = false" in enemy
 
