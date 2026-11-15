@@ -4,8 +4,8 @@
 local BossPhase = {}
 
 BossPhase.THRESHOLDS = {
-    [2] = 175,
-    [3] = 78,
+    [2] = 14000,
+    [3] = 7000,
 }
 
 BossPhase.TEXT = {
@@ -35,11 +35,11 @@ end
 function BossPhase.checkText(phase)
     phase = phase or 1
     if phase == 3 then
-        return "AT 1 DF 0\n* Shared HP: 78 or less.\n* The final phase has begun."
+        return "AT 40 DF 800\n* Titan HP: 7,000 or less.\n* The final phase has begun."
     elseif phase == 2 then
-        return "AT 1 DF 0\n* Shared HP: 175 or less.\n* The second phase has begun."
+        return "AT 40 DF 800\n* Titan HP: 14,000 or less.\n* The second phase has begun."
     end
-    return "AT 1 DF 0\n* One shared health pool.\n* The Knight and Titan fight as one."
+    return "AT 40 DF 800\n* Titan HP: 21,000.\n* The Knight has a separate 1,460 HP."
 end
 
 return BossPhase
