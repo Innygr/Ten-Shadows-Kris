@@ -94,7 +94,7 @@ end
 assert(changed_gap, "wall safe lane must move between volleys")
 
 local aimed_shots, aimed_family = Patterns.build(
-    {id = "test_aimed", pattern = "aimed-projectile-volley", source = "knight"},
+    {id = "test_aimed", pattern = "aimed-test-pattern", source = "knight"},
     2, 1, arena, target, false
 )
 assert(aimed_family == "aimed", "aimed pattern should retain its own family")
