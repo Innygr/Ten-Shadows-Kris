@@ -126,6 +126,267 @@ local function add(shots, kind, x, y, direction, speed, warning, mechanic)
     }
 end
 
+
+-- SOUL-mode attacks use dedicated geometry rather than falling through to
+-- one of the six broad Red-mode projectile families. Each descriptor keeps
+-- its source styling and carries a stable pattern key for future visuals.
+local SOUL_MODE_PATTERN_KEYS = {
+    ["falling-columns"] = true, ["updraft-sweep"] = true,
+    ["gravity-arc"] = true, ["gravity-inversion"] = true, ["gravity-slam"] = true,
+    ["timed-laser-grid"] = true, ["shieldbreaker-strike"] = true,
+    ["feint-then-lunge"] = true, ["directional-blade-barrage"] = true,
+    ["guardbreak-grid"] = true, ["aimed-projectile-volley"] = true,
+    ["target-barricade"] = true, ["ricochet-blades"] = true,
+    ["armored-artillery"] = true, ["aimed-crossfire"] = true,
+    ["closing-thread-grid"] = true, ["severed-thread-lanes"] = true,
+    ["thread-lane-snare"] = true, ["crossing-thread-projectiles"] = true,
+    ["thread-cage-crosscut"] = true, ["moving-hazard-lanes"] = true,
+    ["chasing-embers"] = true, ["moving-target-slashes"] = true,
+    ["shifting-safe-zones"] = true, ["chase-and-sweep"] = true,
+    ["timed-pulse-rings"] = true, ["dark-interval-pulses"] = true,
+    ["pause-then-strike"] = true, ["cyan-parry-window"] = true,
+    ["timed-cross-pulse"] = true,
+}
+
+local function buildSoulModePattern(attack, phase, volley, arena, target, pace, shots)
+    local pattern = attack and attack.pattern
+    if not SOUL_MODE_PATTERN_KEYS[pattern] then return nil end
+
+    local source = inferSource(attack)
+    local width = arena.right - arena.left
+    local height = arena.bottom - arena.top
+    local cx = (arena.left + arena.right) / 2
+    local cy = (arena.top + arena.bottom) / 2
+    local duration = phase == 3 and 0.34 or (phase == 2 and 0.40 or 0.46)
+    local function marker(variant, extra)
+        local result = {kind = "soul_mode_pattern", pattern = pattern, variant = variant}
+        for key, value in pairs(extra or {}) do result[key] = value end
+        return result
+    end
+    local function aim(x, y, tx, ty, speed, spread, variant)
+        local dx, dy = tx - x, ty - y
+        local distance = math.sqrt(dx * dx + dy * dy)
+        add(shots, source, x, y, atan2(dy, dx) + (spread or 0), speed or pace + 0.35, {
+            kind = "target", duration = duration, length = math.max(12, distance),
+        }, marker(variant, {target_x = tx, target_y = ty}))
+    end
+    local function lane(x, y, direction, speed, length, variant, lane_index)
+        add(shots, source, x, y, direction, speed or pace + 0.25, {
+            kind = "lane", duration = duration, length = length or width + 24,
+        }, marker(variant, {lane = lane_index}))
+    end
+    local function falling(x, y, direction, speed, length, variant, lane_index)
+        add(shots, source, x, y, direction, speed or pace + 0.2, {
+            kind = "falling", duration = duration, length = length or height + 24,
+        }, marker(variant, {lane = lane_index}))
+    end
+    local side_x = volley % 2 == 0 and arena.right + 14 or arena.left - 14
+    local side_dir = volley % 2 == 0 and math.pi or 0
+    local lead = target.previous or target
+    local lead_x = math.max(arena.left + 10, math.min(arena.right - 10,
+        target.x + (target.x - lead.x) * 0.9))
+    local lead_y = math.max(arena.top + 10, math.min(arena.bottom - 10,
+        target.y + (target.y - lead.y) * 0.9))
+
+    if pattern == "falling-columns" then
+        local count, gap = 6, (volley + phase) % 6 + 1
+        for i = 1, count do
+            if i ~= gap then falling(arena.left + width * i / (count + 1), arena.top - 12,
+                math.pi / 2, pace + 0.2 + i * 0.025, height + 24, "gravity_column", i) end
+        end
+    elseif pattern == "updraft-sweep" then
+        for i = -2, 2 do
+            local x = arena.left + width * (i + 3) / 6
+            local drift = (volley % 2 == 0 and 1 or -1) * 0.22
+            add(shots, source, x, arena.bottom + 12, math.pi * (0.5 - drift), pace + 0.35, {
+                kind = "falling", duration = duration, length = height + 24,
+            }, marker("updraft_column", {column = i + 3}))
+        end
+        lane(arena.left - 10, cy - height * 0.18, 0, pace + 0.45,
+            width + 20, "lifted_sweep", 1)
+    elseif pattern == "gravity-arc" then
+        for i = -2, 2 do
+            local x = side_x
+            local y = cy + i * height * 0.12
+            aim(x, y, cx + (volley % 2 == 0 and 1 or -1) * width * 0.22,
+                cy - i * height * 0.10, pace + 0.35, i * 0.035, "gravity_arc")
+        end
+    elseif pattern == "gravity-inversion" then
+        for i = 1, 5 do
+            local x = arena.left + width * i / 6
+            local from_bottom = (i + volley) % 2 == 0
+            falling(x, from_bottom and arena.bottom + 10 or arena.top - 10,
+                from_bottom and -math.pi / 2 or math.pi / 2, pace + 0.3,
+                height + 20, "inversion_lane", i)
+        end
+    elseif pattern == "gravity-slam" then
+        local x = cx + (volley % 2 == 0 and 1 or -1) * width * 0.16
+        local y = cy + (phase - 2) * height * 0.10
+        for i = 0, 3 do
+            local angle = i * math.pi / 2 + (volley % 2) * math.pi / 4
+            local sx, sy = x + math.cos(angle) * width * 0.55, y + math.sin(angle) * height * 0.55
+            aim(sx, sy, x, y, pace + 0.45, 0, "gravity_slam")
+        end
+    elseif pattern == "timed-laser-grid" then
+        local gap = (volley + phase) % 5 + 1
+        for i = 1, 5 do
+            if i ~= gap then lane(arena.left - 10, arena.top + height * i / 6,
+                0, pace + 0.2, width + 20, "laser_grid", i) end
+        end
+        lane(arena.right + 10, cy, math.pi, pace + 0.2, width + 20, "laser_crossbar", 0)
+    elseif pattern == "shieldbreaker-strike" then
+        for i = -1, 1 do
+            aim(side_x, target.y + i * 22, target.x, target.y, pace + 0.65,
+                i * 0.12, "shieldbreaker_heavy")
+        end
+    elseif pattern == "feint-then-lunge" then
+        local feint_y = target.y + (volley % 2 == 0 and -1 or 1) * height * 0.28
+        aim(side_x, feint_y, target.x, feint_y, pace + 0.15, 0, "feint")
+        aim(side_x, cy, target.x, target.y, pace + 0.72, 0, "lunge")
+    elseif pattern == "directional-blade-barrage" then
+        for i = 1, 6 do
+            local from_left = (i + volley) % 2 == 0
+            local x = from_left and arena.left - 12 or arena.right + 12
+            local y = arena.top + height * i / 7
+            lane(x, y, from_left and 0 or math.pi, pace + 0.28 + i * 0.035,
+                width + 24, "directional_blade", i)
+        end
+    elseif pattern == "guardbreak-grid" then
+        local gap_a, gap_b = (volley % 4) + 1, ((volley + 2) % 4) + 1
+        for i = 1, 4 do
+            local y = cy - height * 0.22 + (i - 1) * height * 0.14
+            if i ~= gap_a then lane(arena.left - 12, y, 0, pace + 0.25, width + 24, "upper_guard_grid", i) end
+            if i ~= gap_b then lane(arena.right + 12, y, math.pi, pace + 0.25, width + 24, "lower_guard_grid", i) end
+        end
+    elseif pattern == "aimed-projectile-volley" then
+        for i = -1, 1 do aim(side_x, target.y + i * 16, target.x, target.y, pace + 0.38, i * 0.10, "aimed_volley") end
+    elseif pattern == "target-barricade" then
+        local gap = (volley + phase) % 7 + 1
+        for i = 1, 7 do
+            if i ~= gap then
+                local y = arena.top + height * i / 8
+                lane(side_x, y, side_dir, pace + 0.2, width + 28, "target_barricade", i)
+            end
+        end
+    elseif pattern == "ricochet-blades" then
+        for i = 1, 4 do
+            local y = arena.top + height * i / 5
+            local from_left = (i + volley) % 2 == 0
+            local x = from_left and arena.left - 10 or arena.right + 10
+            aim(x, y, cx + (from_left and 1 or -1) * width * 0.18,
+                arena.bottom - y + arena.top, pace + 0.42, (i % 2 == 0 and 1 or -1) * 0.08, "ricochet_blade")
+        end
+    elseif pattern == "armored-artillery" then
+        for i = -1, 1 do
+            aim(side_x, cy + i * height * 0.20, target.x, target.y, pace + 0.3,
+                i * 0.05, "armored_artillery")
+        end
+    elseif pattern == "aimed-crossfire" then
+        aim(arena.left - 12, target.y - height * 0.20, target.x, target.y, pace + 0.4, 0, "crossfire_left")
+        aim(arena.right + 12, target.y + height * 0.20, target.x, target.y, pace + 0.4, 0, "crossfire_right")
+        aim(cx, arena.top - 12, target.x, target.y, pace + 0.5, 0, "crossfire_top")
+    elseif pattern == "closing-thread-grid" then
+        for i = 1, 4 do
+            local y = arena.top + height * i / 5
+            lane(arena.left - 12, y, 0, pace + 0.18, width + 24, "closing_thread_left", i)
+            lane(arena.right + 12, y, math.pi, pace + 0.18, width + 24, "closing_thread_right", i)
+        end
+    elseif pattern == "severed-thread-lanes" then
+        local safe = (volley + phase) % 6 + 1
+        for i = 1, 6 do
+            if i ~= safe then
+                local x = arena.left + width * i / 7
+                falling(x, arena.top - 10, math.pi / 2, pace + 0.24, height + 20, "severed_thread", i)
+            end
+        end
+    elseif pattern == "thread-lane-snare" then
+        local y = math.max(arena.top + 12, math.min(arena.bottom - 12, target.y))
+        lane(arena.left - 10, y - 14, 0, pace + 0.3, width + 20, "snare_upper", 1)
+        lane(arena.right + 10, y + 14, math.pi, pace + 0.3, width + 20, "snare_lower", 2)
+    elseif pattern == "crossing-thread-projectiles" then
+        for i = 1, 4 do
+            local from_left = i % 2 == 0
+            local x = from_left and arena.left - 10 or arena.right + 10
+            local y = arena.top + height * i / 5
+            aim(x, y, from_left and arena.right + 8 or arena.left - 8,
+                arena.bottom - (y - arena.top), pace + 0.32, 0, "crossing_thread")
+        end
+    elseif pattern == "thread-cage-crosscut" then
+        local gap = (volley + 1) % 5 + 1
+        for i = 1, 5 do
+            if i ~= gap then
+                lane(arena.left - 10, arena.top + height * i / 6, 0, pace + 0.2, width + 20, "thread_cage", i)
+            end
+        end
+        aim(cx, arena.top - 10, target.x, target.y, pace + 0.52, 0, "thread_crosscut")
+    elseif pattern == "moving-hazard-lanes" then
+        for i = 1, 5 do
+            local offset = math.sin((volley + i) * 0.9) * height * 0.12
+            lane(side_x, cy + (i - 3) * height * 0.14 + offset, side_dir,
+                pace + 0.22, width + 28, "moving_hazard", i)
+        end
+    elseif pattern == "chasing-embers" then
+        for i = -1, 2 do
+            aim(side_x, cy + i * height * 0.16, lead_x, lead_y, pace + 0.4,
+                i * 0.07, "chasing_ember")
+        end
+    elseif pattern == "moving-target-slashes" then
+        for i = -1, 1 do
+            local tx = math.max(arena.left + 10, math.min(arena.right - 10, target.x + i * width * 0.18))
+            local ty = math.max(arena.top + 10, math.min(arena.bottom - 10, target.y + (volley % 2 == 0 and 1 or -1) * height * 0.16))
+            aim(side_x, cy + i * height * 0.22, tx, ty, pace + 0.45, 0, "moving_target_slash")
+        end
+    elseif pattern == "shifting-safe-zones" then
+        local gap = (volley * 2 + phase) % 6 + 1
+        for i = 1, 6 do
+            if i ~= gap then
+                local x = arena.left + width * i / 7
+                falling(x, arena.top - 10, math.pi / 2, pace + 0.22, height + 20, "shifting_safe_zone", i)
+            end
+        end
+    elseif pattern == "chase-and-sweep" then
+        aim(arena.left - 10, target.y - 20, lead_x, lead_y, pace + 0.42, 0, "chase")
+        aim(arena.right + 10, target.y + 20, lead_x, lead_y, pace + 0.42, 0, "chase")
+        lane(arena.left - 12, cy + (volley % 2 == 0 and 1 or -1) * height * 0.28,
+            0, pace + 0.22, width + 24, "sweep", 1)
+    elseif pattern == "timed-pulse-rings" then
+        local count = 8 + phase * 2
+        local rotation = (volley % 2) * math.pi / count
+        for i = 0, count - 1 do
+            local angle = rotation + i * math.pi * 2 / count
+            add(shots, source, cx, cy, angle, pace + 0.28, {
+                kind = "target", duration = duration, length = math.min(width, height) * 0.72,
+            }, marker("timed_pulse_ring", {spoke = i}))
+        end
+    elseif pattern == "dark-interval-pulses" then
+        local count = volley % 2 == 0 and 6 or 10
+        local gap = (volley + phase) % count
+        for i = 0, count - 1 do
+            if i ~= gap then
+                local angle = i * math.pi * 2 / count + (volley % 2) * 0.08
+                add(shots, source, cx, cy, angle, pace + 0.35, {
+                    kind = "target", duration = duration, length = math.min(width, height) * 0.68,
+                }, marker(volley % 2 == 0 and "dark_interval" or "pulse_return", {spoke = i}))
+            end
+        end
+    elseif pattern == "pause-then-strike" then
+        aim(side_x, cy, target.x, target.y, pace + 0.78, 0, "pause_then_strike")
+    elseif pattern == "cyan-parry-window" then
+        local from_right = phase % 2 == 0
+        local x = from_right and arena.right + 12 or arena.left - 12
+        aim(x, target.y, target.x, target.y, pace + 0.7, 0, "cyan_execution")
+    elseif pattern == "timed-cross-pulse" then
+        for i = -1, 1 do
+            lane(arena.left - 10, cy + i * height * 0.18, 0, pace + 0.3,
+                width + 20, "horizontal_pulse", i + 2)
+            falling(cx + i * width * 0.18, arena.top - 10, math.pi / 2,
+                pace + 0.3, height + 20, "vertical_pulse", i + 2)
+        end
+    end
+
+    return "soul_mode"
+end
+
 function AttackWavePatterns.classify(attack)
     return classify(attack)
 end
@@ -149,6 +410,8 @@ function AttackWavePatterns.build(attack, phase, volley, arena, target, knight_d
     local pace = 2.8 + (phase - 1) * 0.42 + (volley - 1) * 0.10
     local shots = {}
 
+    local custom_family = buildSoulModePattern(attack, phase, volley, arena, target, pace, shots)
+    if not custom_family then
     if attack and attack.id == "roaring_fire" then
         -- Roaring Fire sends paired flame streams from both sides of the box.
         -- The same horizontal lane is omitted on both sides, leaving one
@@ -536,6 +799,8 @@ function AttackWavePatterns.build(attack, phase, volley, arena, target, knight_d
             add(shots, kind, center_x, arena.top - 10, math.pi / 2, pace - 0.15)
         end
     end
+    end
+    family = custom_family or family
 
     -- The Knight's phase-three domain layers two diagonal falling blades over
     -- the normal attack. They are sparse enough to preserve the base pattern's
