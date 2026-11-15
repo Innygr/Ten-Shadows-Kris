@@ -25,10 +25,12 @@ architecture contract.
 - `scripts/objects/soul_ejection.lua`: detached SOUL controller foundation.
 - `scripts/ten_shadows/combat_state.lua`, `runtime_shadows.lua`, and `attack_wave_patterns.lua`:
   six-member party rules, boss ACT/status/SOUL-mode integration, disruption, and six reusable
-  projectile-pattern families. Wall, aimed, and falling attacks now telegraph their paths before
-  projectiles become dangerous. BRIGHTEN resolves as one grouped ACT and preserves queued
-  Noelle, Berdly, and Vessel actions. Cyan SOUL charges and purges bullets on release; a timed
-  Knight's Execution parry staggers the Knight and opens a one-use Kris counter ACT. SOUL-mode
+  Red-mode projectile families. All 30 Vessel SOUL-mode attack definitions now have dedicated
+  geometry builders with pattern-specific telegraphs and mechanic markers, rather than falling
+  through to generic radial/wall/aimed patterns. Wall, aimed, and falling attacks telegraph their
+  paths before projectiles become dangerous. BRIGHTEN resolves as one grouped ACT and preserves
+  queued Noelle, Berdly, and Vessel actions. Cyan SOUL charges and purges bullets on release; a
+  timed Knight's Execution parry staggers the Knight and opens a one-use Kris counter ACT. SOUL-mode
   attack sets only run while the matching coloured SOUL is active.
 
 ## Build artifacts
