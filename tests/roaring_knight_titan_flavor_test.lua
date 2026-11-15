@@ -57,12 +57,13 @@ enemy:init()
 Encounter = {
     init = function() end,
     getInitialEncounterText = function(self) return self.text end,
-    addEnemy = function(self, id) self.added_enemy = id end,
+    addEnemy = function(self, id) self.added_enemies = self.added_enemies or {}; table.insert(self.added_enemies, id) end,
 }
 local Preview = dofile("scripts/battle/encounters/knight_titan_preview.lua")
 local preview = setmetatable({}, {__index = Preview})
 preview:init()
-assert(preview.added_enemy == "roaring_knight_titan")
+assert(preview.added_enemies[1] == "roaring_knight_titan" and preview.added_enemies[2] == "roaring_knight",
+    "the preview encounter must register the shared Titan and separate Knight enemies")
 local initial_text = preview:getInitialEncounterText()
 assert(initial_text == "* The red SOUL flickers beside Rowan.",
     "The real first-turn encounter hook must use the saved Vessel name")
