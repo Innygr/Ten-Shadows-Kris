@@ -24,7 +24,7 @@ local function diamond(cx, cy, radius, angle)
     love.graphics.polygon("fill", unpack(points))
 end
 
-function ChimeraShadowGarden:init(width, height, opening)
+function ChimeraShadowGarden:init(width, height, opening, fusion_barrier)
     super.init(self)
 
     self.width = math.max(1, width or 142)
@@ -33,6 +33,7 @@ function ChimeraShadowGarden:init(width, height, opening)
     self.opening = opening == true and 1 or 0
     self.fade = opening == true and 0 or 1
     self.active_roots = {}
+    self.fusion_barrier = fusion_barrier == true
     -- Children of Arena.mask share its visual layer; keep this object at the
     -- parent's local layer so it stays between the arena and live projectiles.
     self.layer = 0
@@ -97,6 +98,32 @@ function ChimeraShadowGarden:draw()
             color(0.72, 0.44, 0.98, bloom_alpha * 0.72)
             graphics.setLineWidth(2)
             graphics.line(inner_x, inner_y, outer_x, outer_y)
+        end
+    end
+
+    -- Vessel's half of the joint Domain: a persistent enclosing barrier.
+    -- This is deliberately drawn behind the shadow roots and incoming shots,
+    -- keeping the attack telegraphs readable while making the fusion distinct.
+    if self.fusion_barrier then
+        local barrier_pulse = 0.5 + 0.5 * math.sin(self.time * 2.8)
+        local inset = math.min(width, height) * 0.075
+        local bx, by = inset, inset
+        local bw, bh = math.max(0, width - inset * 2), math.max(0, height - inset * 2)
+        color(0.34, 0.055, 0.12, (0.26 + barrier_pulse * 0.10) * fade)
+        graphics.setLineWidth(3)
+        graphics.rectangle("line", bx, by, bw, bh, 8, 8)
+        color(0.88, 0.30, 0.43, (0.48 + barrier_pulse * 0.20) * fade)
+        graphics.setLineWidth(1)
+        graphics.rectangle("line", bx + 4, by + 4, math.max(0, bw - 8), math.max(0, bh - 8), 6, 6)
+        for node = 0, 5 do
+            local angle = node * TAU / 6 - math.pi / 2
+            local nx, ny = point(cx, cy, radius * 0.91, angle)
+            local node_pulse = 0.5 + 0.5 * math.sin(self.time * 4 + node)
+            color(0.42, 0.045, 0.13, (0.40 + node_pulse * 0.20) * fade)
+            graphics.circle("fill", nx, ny, 5 + node_pulse * 2)
+            color(1.0, 0.62, 0.68, 0.88 * fade)
+            graphics.setLineWidth(1)
+            graphics.circle("line", nx, ny, 4 + node_pulse * 2)
         end
     end
 
