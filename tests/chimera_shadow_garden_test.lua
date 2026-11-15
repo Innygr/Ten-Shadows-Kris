@@ -117,9 +117,35 @@ assert(wave_source:find("spawnObjectTo(arena.mask", 1, true),
     "the garden must be attached to the arena mask")
 assert(wave_source:find("scripts/battle/objects/chimera_shadow_garden", 1, true),
     "the live Wave must load the Chimera Shadow Garden object")
-assert(wave_source:find("GardenVisual(arena.width, arena.height, opening)", 1, true),
-    "the Wave must pass the opening animation state to the garden object")
+assert(wave_source:find("state.fusion_domain and state.fusion_domain.active", 1, true),
+    "the Wave must pass Vessel's barrier state to the garden object")
+assert(wave_source:find("state.fusion_domain and state.fusion_domain.active or false", 1, true),
+    "the fusion barrier must be enabled only during the joint Domain")
 assert(wave_source:find("garden_visual:setActiveRoots(active_roots)", 1, true),
     "the Wave must highlight whichever roots launch the current volley")
+
+
+-- Fusion Domain adds Vessel's enclosing barrier without changing the ordinary
+-- Chimera Shadow Garden presentation.
+local fusion_visual = Garden(180, 142, false, true)
+assert(fusion_visual.fusion_barrier == true,
+    "the fusion visual must retain Vessel's barrier state")
+for _, call in ipairs(draw_calls) do table.remove(draw_calls) end
+fusion_visual:draw()
+local fusion_rectangles = 0
+local fusion_nodes = 0
+for _, call in ipairs(draw_calls) do
+    if call.name == "rectangle" then fusion_rectangles = fusion_rectangles + 1 end
+    if call.name == "circle" then
+        local radius = call.args[3]
+        if type(radius) == "number" and radius >= 4 and radius <= 7 then
+            fusion_nodes = fusion_nodes + 1
+        end
+    end
+end
+assert(fusion_rectangles >= 4,
+    "fusion Domain must draw two extra enclosing barrier outlines")
+assert(fusion_nodes >= 6,
+    "fusion Domain must draw six animated barrier nodes")
 
 print("Chimera Shadow Garden visual and Wave integration tests passed.")
