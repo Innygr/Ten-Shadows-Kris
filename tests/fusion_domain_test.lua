@@ -143,4 +143,19 @@ expect(fusion_after_chimera, false,
 expect(mutually_exclusive.fusion_domain.used, false,
     "rejected overlap does not consume the fusion Domain")
 
+
+local wave_file = assert(io.open("scripts/battle/waves/knight_titan_assault.lua", "r"))
+local wave_source = wave_file:read("*a")
+wave_file:close()
+assert(wave_source:find("state.fusion_domain and state.fusion_domain.active", 1, true),
+    "the live assault Wave must pass fusion state into the garden visual")
+
+local garden_file = assert(io.open("scripts/battle/objects/chimera_shadow_garden.lua", "r"))
+local garden_source = garden_file:read("*a")
+garden_file:close()
+assert(garden_source:find("self.fusion_barrier", 1, true),
+    "the garden visual must distinguish Vessel's fusion barrier")
+assert(garden_source:find("Vessel's half of the joint Domain", 1, true),
+    "the barrier presentation documents Vessel's role")
+
 print("Kris + Vessel fusion Domain and V-ACT tests passed.")
