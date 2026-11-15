@@ -43,6 +43,7 @@ local WALL_PATTERNS = {
 }
 
 local AIMED_PATTERNS = {
+    ["aimed-test-pattern"] = true,
     ["aimed-projectile-volley"] = true,
     ["afterimage-pursuit"] = true,
     ["armored-artillery"] = true,
