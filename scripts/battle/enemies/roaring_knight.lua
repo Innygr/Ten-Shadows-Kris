@@ -8,7 +8,7 @@ function RoaringKnight:init()
     self:setActor("kris")
     self.max_health = 1460
     self.health = self.max_health
-    self.attack = 40
+    self.attack = 1
     self.defense = 0
     self.money = 0
     self.experience = 0
