@@ -8,7 +8,7 @@ local families = {
     falling = true, sweep = true, twin_slash = true, titan_hands = true,
     big_shot_one = true, big_shot_two = true, big_shot_three = true,
     titan_desperation = true, crystal_barrage = true, knight_titan_collision = true,
-    the_roaring = true, roaring_fire = true,
+    the_roaring = true, roaring_fire = true, soul_mode = true,
 }
 
 local function validate(attack, phase)
@@ -21,7 +21,14 @@ local function validate(attack, phase)
         assert(type(shot.speed) == "number" and shot.speed > 0, "shot speed must be positive")
         assert(shot.kind == "knight" or shot.kind == "titan" or shot.kind == "combo", "shot source must be styled")
 
-        if family == "wall" then
+        if family == "soul_mode" then
+            assert(shot.mechanic and shot.mechanic.kind == "soul_mode_pattern",
+                "SOUL-mode attacks must carry their dedicated pattern marker")
+            assert(shot.mechanic.pattern == attack.pattern,
+                "SOUL-mode marker must preserve the selected pattern key")
+            assert(type(shot.mechanic.variant) == "string" and shot.mechanic.variant ~= "",
+                "SOUL-mode attacks must identify their specific mechanic variant")
+        elseif family == "wall" then
             assert(shot.warning and shot.warning.kind == "lane", "wall shots need lane telegraphs")
         elseif family == "aimed" then
             assert(shot.warning and shot.warning.kind == "target", "aimed shots need trajectory/target telegraphs")
@@ -446,5 +453,31 @@ for phase = 1, 3 do
 end
 assert(Patterns.classify({id = "roaring_fire"}) == "roaring_fire",
     "Roaring Fire must not fall through to the generic falling attack family")
+
+
+-- Every Vessel SOUL-mode pattern key must route through its bespoke builder,
+-- not one of the broad generic projectile families.
+local soul_pattern_keys = {}
+for _, sets in pairs(CombatState.SOUL_MODE_ATTACKS) do
+    for _, group in ipairs({sets.titan, sets.knight, sets.combo}) do
+        for _, attack in ipairs(group) do
+            soul_pattern_keys[attack.pattern] = true
+            local shots, family = Patterns.build(attack, attack.phases[1], 2, arena, target, false)
+            assert(family == "soul_mode", attack.pattern .. " fell through to a generic family")
+            assert(#shots > 0, attack.pattern .. " did not produce its bespoke wave")
+            for _, shot in ipairs(shots) do
+                assert(shot.mechanic and shot.mechanic.kind == "soul_mode_pattern"
+                    and shot.mechanic.pattern == attack.pattern,
+                    attack.pattern .. " lost its mechanic identity")
+                assert(shot.warning and shot.warning.duration > 0 and shot.warning.length > 0,
+                    attack.pattern .. " must telegraph each projectile")
+            end
+        end
+    end
+end
+local soul_pattern_count = 0
+for _ in pairs(soul_pattern_keys) do soul_pattern_count = soul_pattern_count + 1 end
+assert(soul_pattern_count == 30,
+    "All 30 Vessel SOUL-mode attack definitions should have dedicated pattern keys")
 
 print("Knight + Titan wave pattern coverage and telegraph tests passed.")
