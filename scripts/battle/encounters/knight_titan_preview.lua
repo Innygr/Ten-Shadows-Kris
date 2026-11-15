@@ -13,11 +13,13 @@ local SOUL_MODE_COLORS = {
 function KnightTitanPreview:init()
     super.init(self)
 
-    self.text = "* The Roaring Knight and Titan approach as one."
+    self.text = "* The Roaring Knight and Titan approach together."
     self.music = "battle"
     self.background = true
 
+    -- Independent enemies: each boss has its own HP pool and status bar.
     self:addEnemy("roaring_knight_titan")
+    self:addEnemy("roaring_knight")
 end
 
 function KnightTitanPreview:getInitialEncounterText()
