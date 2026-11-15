@@ -130,16 +130,20 @@ assert(wave_source:find("garden_visual:setActiveRoots(active_roots)", 1, true),
 local fusion_visual = Garden(180, 142, false, true)
 assert(fusion_visual.fusion_barrier == true,
     "the fusion visual must retain Vessel's barrier state")
-for _, call in ipairs(draw_calls) do table.remove(draw_calls) end
+for index = #draw_calls, 1, -1 do table.remove(draw_calls, index) end
 fusion_visual:draw()
 local fusion_rectangles = 0
 local fusion_nodes = 0
 for _, call in ipairs(draw_calls) do
     if call.name == "rectangle" then fusion_rectangles = fusion_rectangles + 1 end
     if call.name == "circle" then
-        local radius = call.args[3]
-        if type(radius) == "number" and radius >= 4 and radius <= 7 then
-            fusion_nodes = fusion_nodes + 1
+        local x, y, radius = call.args[2], call.args[3], call.args[4]
+        if type(radius) == "number" and radius >= 4 and radius <= 7
+            and type(x) == "number" and type(y) == "number" then
+            local distance = math.sqrt((x - 90)^2 + (y - 71)^2)
+            if math.abs(distance - math.min(180, 142) * 0.43 * 0.91) < 0.01 then
+                fusion_nodes = fusion_nodes + 1
+            end
         end
     end
 end
