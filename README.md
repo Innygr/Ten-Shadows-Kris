@@ -34,6 +34,10 @@ architecture contract.
   queued Noelle, Berdly, and Vessel actions. Cyan SOUL charges and purges bullets on release; a
   timed Knight's Execution parry staggers the Knight and opens a one-use Kris counter ACT. SOUL-mode
   attack sets only run while the matching coloured SOUL is active.
+- `scripts/ten_shadows/boss_actions.lua` centralizes the encounter's Ten Shadows, SOUL-mode,
+  BRIGHTEN, Domain, and V-ACT handling for either living boss. The Cyan Execution Counter is
+  dispatched to the Knight and damages its independent HP pool; the shared scheduler and Titan
+  phase state remain separate from Knight health.
 
 ## Build artifacts
 
