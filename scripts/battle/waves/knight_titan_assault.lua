@@ -196,8 +196,9 @@ function KnightTitanAssault:onEnd(death)
     end
 
     if state then
-        -- Status durations and fusion upkeep are measured in enemy turns,
-        -- not individual volleys. Tick once after the complete Wave has ended.
+        -- Status durations and Domain upkeep are measured in enemy turns,
+        -- not individual volleys. Pull the latest TP after grazes, then tick once.
+        if Game and Game.getTension then state.tp = Game:getTension() end
         local effects = state:tickEnemyTurnEffects()
         -- Mirror upkeep into the live tension bar so its value matches the rule state.
         if Game and Game.setTension then Game:setTension(state.tp) end

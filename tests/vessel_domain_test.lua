@@ -33,4 +33,47 @@ expect(coexist.tp, 0, "upkeep is deducted from the shared TP pool")
 expect(coexist.fusion_domain.active, false, "separate expansions are not Fusion Domain")
 expect(coexist:expandFusionDomain(true), false, "spent solo Domain uses prevent later fusion")
 
+-- Live Wave upkeep must use TP gained during the Wave, not the stale start snapshot.
+Wave = {
+    init = function() end,
+    onEnd = function() end,
+}
+function Class(base)
+    local class = {}
+    class.__index = class
+    setmetatable(class, {
+        __index = base,
+        __call = function(ctor, ...)
+            local instance = setmetatable({}, ctor)
+            instance:init(...)
+            return instance
+        end,
+    })
+    return class, base
+end
+local RuntimeWave = dofile("scripts/battle/waves/knight_titan_assault.lua")
+local live_state = CombatState.new()
+live_state.vessel_domain.active = true
+live_state.vessel_domain.used = true
+live_state.tp = 1 -- stale value from the start of the Wave
+local live_tp = 5 -- latest in-game TP after the player grazed projectiles
+local live_enemy = {ten_shadows_state = live_state}
+Game = {
+    battle = {
+        getActiveEnemies = function() return {live_enemy} end,
+    },
+    getTension = function() return live_tp end,
+    setTension = function(_, value) live_tp = value end,
+}
+modRequire = function(path)
+    if path == "scripts/ten_shadows/runtime_shadows" then
+        return {onEnemyTurnEnd = function() end}
+    end
+    error("Unexpected Wave module: " .. tostring(path))
+end
+local live_wave = RuntimeWave()
+live_wave:onEnd(false)
+expect(live_state.tp, 3, "Wave end upkeep is charged from latest in-game TP")
+expect(live_tp, 3, "Wave end preserves grazed TP then deducts 2 upkeep")
+
 print("Standalone Vessel Domain, independent usage, upkeep, and coexistence tests passed.")
