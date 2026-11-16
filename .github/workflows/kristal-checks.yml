@@ -132,6 +132,7 @@ jobs:
 
       - name: Verify runtime scaffold paths
         run: |
+          set -euxo pipefail
           test -f mod.lua
           test -f scripts/battle/encounters/runtime_smoke_test.lua
           test -f scripts/battle/encounters/knight_titan_preview.lua
@@ -159,10 +160,12 @@ jobs:
           grep -q 'function CyanSoul:releaseCharge()' scripts/objects/cyan_soul.lua
           grep -q 'function state:parryExecution()' scripts/ten_shadows/combat_state.lua
           grep -q 'cyan_knights_execution' scripts/ten_shadows/attack_wave_patterns.lua
-          grep -q 'EXECUTION COUNTER' scripts/battle/enemies/roaring_knight_titan.lua
+          grep -q 'name == "EXECUTION COUNTER"' scripts/battle/enemies/roaring_knight.lua
+          grep -q 'battle:pushAction("ACT", knight_enemy, item)' mod.lua
           grep -q 'self:consumeKnightDisruption(false)' scripts/ten_shadows/combat_state.lua
           grep -q 'state:tickEnemyTurnEffects()' scripts/battle/waves/knight_titan_assault.lua
-          grep -q 'Shadows.onEnemyTurnEnd(enemy)' scripts/battle/waves/knight_titan_assault.lua
+          grep -q 'Shadows.onEnemyTurnEnd(active_enemy)' scripts/battle/waves/knight_titan_assault.lua
+          grep -q 'for _, active_enemy in ipairs(active_enemies)' scripts/battle/waves/knight_titan_assault.lua
           grep -q 'Shadows.use(name, battler, self)' scripts/battle/enemies/roaring_knight_titan.lua
           grep -q 'state:setSoulMode(soul_mode)' scripts/battle/enemies/roaring_knight_titan.lua
           grep -q 'state:expandChimeraDomain(true)' scripts/battle/enemies/roaring_knight_titan.lua

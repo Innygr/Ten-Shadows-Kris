@@ -6,6 +6,16 @@ EnemyBattler = {
     setActor = function() end,
     registerAct = function() end,
     onHurt = function(self, damage) self.health = self.health - damage end,
+    hurt = function(self, damage, battler)
+        self:onHurt(damage, battler)
+        if self.health <= 0 then
+            self.health = 0
+            self:onDefeat(damage, battler)
+        end
+    end,
+    onAct = function(self, battler, name)
+        if name == "Check" then return self:getCheckText(battler) end
+    end,
     onDefeat = function(self) self.defeated = true end,
     getCheckText = function(self)
         local lines = {}
@@ -90,8 +100,26 @@ knight:onHurt(500)
 assert(knight.health == 560 and titan.health == 14000 and scheduler.boss.hp == 14000,
     "further Knight damage must remain independent")
 
+-- The Cyan parry counter must be offered against the Knight and spend its
+-- damage from the Knight's pool only.
+scheduler:parryExecution()
+local titan_hp_before_counter = titan.health
+local knight_hp_before_counter = knight.health
+local counter_text = knight:onAct(nil, "EXECUTION COUNTER")
+assert(type(counter_text) == "table", "Knight should accept the ready Execution Counter ACT")
+assert(knight.health == knight_hp_before_counter - 36,
+    "Execution Counter must deal its 36 damage to the Knight")
+assert(titan.health == titan_hp_before_counter and scheduler.boss.hp == titan_hp_before_counter,
+    "Execution Counter must never reduce Titan HP")
+assert(not scheduler.boss.counter_ready,
+    "Execution Counter must be consumed exactly once")
+
+-- Defeating the Knight clears a counter if the player did not spend it.
+scheduler:parryExecution()
 knight.health = 0
 knight:onDefeat()
+assert(not scheduler.boss.counter_ready and scheduler.boss.counter_turns == 0,
+    "Knight defeat must clear an unused Execution Counter")
 assert(table.concat(knight:getCheckText(), " "):find("0 / 1,460", 1, true),
     "defeated Knight CHECK must show zero current HP")
 assert(not scheduler.knight_alive, "Knight defeat must remove its attack source")

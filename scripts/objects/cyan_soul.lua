@@ -48,9 +48,24 @@ function CyanSoul:releaseCharge()
 
     local parried = false
     if execution_nearby then
-        local enemies = Game.battle and Game.battle.enemies or {}
-        local boss = enemies[1]
-        local state = boss and boss.ten_shadows_state
+        local battle = Game and Game.battle
+        local enemies = {}
+        if battle then
+            if type(battle.getActiveEnemies) == "function" then
+                enemies = battle:getActiveEnemies()
+            else
+                enemies = battle.enemies or {}
+            end
+        end
+
+        local state = nil
+        for _, enemy in ipairs(enemies) do
+            if enemy.ten_shadows_state then
+                state = enemy.ten_shadows_state
+                break
+            end
+        end
+
         if state and state.parryExecution then
             parried = state:parryExecution() == true
             if parried and Game.giveTension then

@@ -74,7 +74,7 @@ Game = {
 local CyanSoul = dofile("scripts/objects/cyan_soul.lua")
 local CombatState = dofile("scripts/ten_shadows/combat_state.lua")
 local state = CombatState.new()
-Game.battle.enemies = {{ten_shadows_state = state}}
+Game.battle.enemies = {{name = "unrelated"}, {ten_shadows_state = state}}
 
 local function projectile(x, y, execution)
     return {
@@ -129,7 +129,7 @@ expect(expiring.boss.counter_ready, false, "unused counter expires after its nex
 
 -- A short release still purifies bullets, but it cannot parry the Knight.
 local missed_state = CombatState.new()
-Game.battle.enemies = {{ten_shadows_state = missed_state}}
+Game.battle.enemies = {{name = "unrelated"}, {ten_shadows_state = missed_state}}
 local miss_soul = CyanSoul(100, 100)
 bullets = {
     projectile(106, 100, true),

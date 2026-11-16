@@ -290,6 +290,8 @@ function CombatState.new()
         self.knight_alive = alive == true
         if not self.knight_alive then
             self.knight_disrupted = 0
+            self.boss.counter_ready = false
+            self.boss.counter_turns = 0
             self.boss.chill = 0
             self.boss.frozen_turns = 0
             self.knight_domain.active = false

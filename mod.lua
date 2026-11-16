@@ -461,6 +461,16 @@ function Mod:onBattleEnemySelect(reason, selected)
     local battler = battle.party[battle.current_selecting]
     if not enemy or not battler then return false end
 
+    local active_enemies = battle.getActiveEnemies
+        and battle:getActiveEnemies() or battle.enemies or {}
+    local knight_enemy = nil
+    for _, candidate in ipairs(active_enemies) do
+        if candidate.ten_shadows_role == "knight" then
+            knight_enemy = candidate
+            break
+        end
+    end
+
     local chara = battler.chara.id
     local root = {}
 
@@ -485,9 +495,9 @@ function Mod:onBattleEnemySelect(reason, selected)
             battle:pushAction("ACT", enemy, item)
         end, {"kris", "susie", "ralsei"}}
         local boss_state = enemy.ten_shadows_state
-        if boss_state and boss_state.boss.counter_ready then
+        if boss_state and boss_state.boss.counter_ready and knight_enemy then
             root[#root + 1] = {"EXECUTION COUNTER", "Strike while the Knight is staggered.", 0, function(item)
-                battle:pushAction("ACT", enemy, item)
+                battle:pushAction("ACT", knight_enemy, item)
             end}
         end
         if not boss_state or not boss_state.player_domain.used then
