@@ -98,7 +98,9 @@ and has been tested in Kristal.
 - [x] Core rules: Vessel's Granite Blast has a 100%-output attack descriptor whose origin can be selected anywhere inside the active fusion Domain.
 - [x] Kristal ACT integration: Kris's ACT menu offers FUSION DOMAIN when Vessel is standing; otherwise it retains the ordinary CHIMERA SHADOW GARDEN option. Vessel has a V-ACT submenu with GRANITE BLAST (50 TP, 58 damage).
 - [x] Kristal visual integration: the active fusion Domain now layers Vessel’s animated enclosing barrier and six barrier nodes over Kris’s shadow garden in the live assault Wave.
-- [ ] Kristal runtime integration: connect the portal-routing descriptors to actual spell/projectile movement and add visible portal effects, target-position selection, and Granite Blast charge/launch presentation.
+- [x] Code integration + automated regression: Vessel's GRANITE BLAST is available only during the active fusion Domain, routes through a paired gate using the SOUL's current arena position as the exit, preserves the selected boss target, applies its 58-damage hit once, and spawns a charge/launch visual.
+- [ ] Kristal runtime verification: playtest the Granite Blast gate, portal placement, visual timing, TP charge, and selected-target damage in Kristal.
+- [ ] Remaining portal parity: route the regular party spell projectiles through the portal network and add a player-controlled arbitrary exit-position selector.
 
 ### Coordinated Knight + Titan encounter
 
