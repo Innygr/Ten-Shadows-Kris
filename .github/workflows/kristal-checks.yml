@@ -168,9 +168,9 @@ jobs:
           grep -q 'state:tickEnemyTurnEffects()' scripts/battle/waves/knight_titan_assault.lua
           grep -q 'Shadows.onEnemyTurnEnd(active_enemy)' scripts/battle/waves/knight_titan_assault.lua
           grep -q 'for _, active_enemy in ipairs(active_enemies)' scripts/battle/waves/knight_titan_assault.lua
-          grep -q 'Shadows.use(name, battler, self)' scripts/battle/enemies/roaring_knight_titan.lua
-          grep -q 'state:setSoulMode(soul_mode)' scripts/battle/enemies/roaring_knight_titan.lua
-          grep -q 'state:expandChimeraDomain(true)' scripts/battle/enemies/roaring_knight_titan.lua
+          grep -q 'Shadows.use(name, battler, enemy)' scripts/ten_shadows/boss_actions.lua
+          grep -q 'state:setSoulMode(soul_mode)' scripts/ten_shadows/boss_actions.lua
+          grep -q 'state:expandChimeraDomain(true)' scripts/ten_shadows/boss_actions.lua
           grep -q 'function KnightTitanPreview:onBattleEnd()' scripts/battle/encounters/knight_titan_preview.lua
           grep -q 'CHIMERA SHADOW GARDEN' mod.lua
           test -f scripts/battle/enemies/roaring_knight_titan.lua
