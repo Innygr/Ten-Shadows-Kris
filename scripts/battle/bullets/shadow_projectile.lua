@@ -20,6 +20,12 @@ function ShadowProjectile:init(x, y, direction, speed, kind, warning, mechanic)
     self.is_titan_desperation_shot = type(mechanic) == "table" and mechanic.kind == "titan_desperation_shot"
     self.is_crystal_shard = type(mechanic) == "table" and mechanic.kind == "crystal_shard"
     self.is_knight_titan_collision = type(mechanic) == "table" and mechanic.kind == "knight_titan_collision"
+    self.is_ricochet_blade = type(mechanic) == "table"
+        and mechanic.kind == "soul_mode_pattern" and mechanic.variant == "ricochet_blade"
+    self.ricochet_bounds = self.is_ricochet_blade and mechanic.ricochet_bounds or nil
+    self.ricochet_bounces_remaining = self.is_ricochet_blade
+        and math.max(0, math.floor(tonumber(mechanic.ricochet_bounces) or 0)) or 0
+    self.ricochet_bounce_count = 0
     self.big_shot_tier = self.is_titan_big_shot and mechanic.tier or nil
     local radius = (self.is_roaring_shard or self.is_roaring_flame) and 6
         or (self.is_chimera_domain_blade and 5
@@ -67,6 +73,46 @@ function ShadowProjectile:arm()
     self.physics.speed = self.intended_speed
 end
 
+function ShadowProjectile:update()
+    super.update(self)
+
+    local bounds = self.ricochet_bounds
+    if not self.is_ricochet_blade or not self.armed or not bounds
+        or self.ricochet_bounces_remaining <= 0 then
+        return
+    end
+
+    local direction = self.physics.direction or self.rotation or 0
+    local bounced = false
+
+    if self.x < bounds.left then
+        self.x = bounds.left
+        direction = math.pi - direction
+        bounced = true
+    elseif self.x > bounds.right then
+        self.x = bounds.right
+        direction = math.pi - direction
+        bounced = true
+    end
+
+    if self.y < bounds.top then
+        self.y = bounds.top
+        direction = -direction
+        bounced = true
+    elseif self.y > bounds.bottom then
+        self.y = bounds.bottom
+        direction = -direction
+        bounced = true
+    end
+
+    if bounced then
+        self.physics.direction = direction
+        self.rotation = direction
+        self.ricochet_bounces_remaining = self.ricochet_bounces_remaining - 1
+        self.ricochet_bounce_count = self.ricochet_bounce_count + 1
+    end
+end
+
 function ShadowProjectile:draw()
     local color = COLORS[self.kind]
 
@@ -111,6 +157,20 @@ function ShadowProjectile:draw()
             love.graphics.polygon("line", length, -5, length + 5, 0, length, 5, length - 5, 0)
         end
 
+        super.draw(self)
+        return
+    end
+
+    if self.is_ricochet_blade then
+        love.graphics.push("all")
+        love.graphics.rotate(self.physics.direction or self.rotation or 0)
+        love.graphics.setColor(color[1], color[2], color[3], 0.24)
+        love.graphics.circle("fill", 0, 0, 11)
+        love.graphics.setColor(color[1], color[2], color[3], 1)
+        love.graphics.polygon("fill", -11, -3, 5, -3, 12, 0, 5, 3, -11, 3, -6, 0)
+        love.graphics.setColor(1, 1, 1, 0.95)
+        love.graphics.line(-6, 0, 8, 0)
+        love.graphics.pop()
         super.draw(self)
         return
     end
