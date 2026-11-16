@@ -165,12 +165,14 @@ local function buildSoulModePattern(attack, phase, volley, arena, target, pace, 
         for key, value in pairs(extra or {}) do result[key] = value end
         return result
     end
-    local function aim(x, y, tx, ty, speed, spread, variant)
+    local function aim(x, y, tx, ty, speed, spread, variant, extra)
         local dx, dy = tx - x, ty - y
         local distance = math.sqrt(dx * dx + dy * dy)
+        local metadata = {target_x = tx, target_y = ty}
+        for key, value in pairs(extra or {}) do metadata[key] = value end
         add(shots, source, x, y, atan2(dy, dx) + (spread or 0), speed or pace + 0.35, {
             kind = "target", duration = duration, length = math.max(12, distance),
-        }, marker(variant, {target_x = tx, target_y = ty}))
+        }, marker(variant, metadata))
     end
     local function lane(x, y, direction, speed, length, variant, lane_index)
         add(shots, source, x, y, direction, speed or pace + 0.25, {
@@ -271,12 +273,20 @@ local function buildSoulModePattern(attack, phase, volley, arena, target, pace, 
             end
         end
     elseif pattern == "ricochet-blades" then
+        local ricochet_bounds = {
+            left = arena.left + 8, right = arena.right - 8,
+            top = arena.top + 8, bottom = arena.bottom - 8,
+        }
         for i = 1, 4 do
             local y = arena.top + height * i / 5
             local from_left = (i + volley) % 2 == 0
-            local x = from_left and arena.left - 10 or arena.right + 10
+            local x = from_left and arena.left + 12 or arena.right - 12
             aim(x, y, cx + (from_left and 1 or -1) * width * 0.18,
-                arena.bottom - y + arena.top, pace + 0.42, (i % 2 == 0 and 1 or -1) * 0.08, "ricochet_blade")
+                arena.bottom - y + arena.top, pace + 0.42, (i % 2 == 0 and 1 or -1) * 0.08,
+                "ricochet_blade", {
+                    ricochet_bounds = ricochet_bounds,
+                    ricochet_bounces = 2,
+                })
         end
     elseif pattern == "armored-artillery" then
         for i = -1, 1 do
