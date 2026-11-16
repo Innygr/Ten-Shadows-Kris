@@ -71,6 +71,9 @@ end
 function BaseSoul:setPosition(x, y)
     self.x, self.y = x, y
 end
+function BaseSoul:setExactPosition(x, y)
+    self.x, self.y = x, y
+end
 function BaseSoul:onCollide(bullet)
     self.base_collision_count = (self.base_collision_count or 0) + 1
     if bullet.onCollide then bullet:onCollide(self) end
@@ -284,7 +287,7 @@ Game.battle.swapSoul = function(self, replacement)
     self.soul = replacement
     self.swap_count = (self.swap_count or 0) + 1
 end
-Game.battle.soul = newBaseSoul(22, 33, {1, 0, 0})
+Game.battle.soul = newBaseSoul(22.25, 33.75, {1, 0, 0})
 Game.battle.soul.inv_flash_timer = 0.42
 local old_soul = Game.battle.soul
 local BossActions = dofile("scripts/ten_shadows/boss_actions.lua")
@@ -297,8 +300,8 @@ assert(type(action_text) == "string", "SOUL mode ACT returns encounter text")
 expect(Game.battle.swap_count, 1, "SOUL mode selection swaps the live object")
 expect(Game.battle.soul == old_soul, false, "previous SOUL object is replaced")
 expect(Game.battle.soul.ten_shadows_mode, "yellow", "replacement Soul uses the selected mode")
-expect(Game.battle.soul.x, 22, "Soul swap preserves x-position")
-expect(Game.battle.soul.y, 33, "Soul swap preserves y-position")
+expect(Game.battle.soul.x, 22.25, "Soul swap preserves fractional x-position")
+expect(Game.battle.soul.y, 33.75, "Soul swap preserves fractional y-position")
 expect(Game.battle.soul.inv_flash_timer, 0.42, "Soul swap preserves damage-flash animation time")
 
 print("Blue gravity, Green shield, Yellow shooting/charge, Orange dash, Purple tracks, and SOUL factory tests passed.")
