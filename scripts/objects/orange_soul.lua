@@ -23,7 +23,7 @@ function OrangeSoul:beginDash()
     self.orange_dash_timer = self.orange_dash_duration
     self.orange_dash_speed = 9 + charge * 8
     self.orange_dashing = true
-    self.orange_previous_noclip = self.noclip
+    self.orange_previous_noclip = self.noclip == true
     self.noclip = true
     self.orange_charge = 0
     self.orange_charging = false
@@ -83,7 +83,7 @@ function OrangeSoul:update()
         self.orange_dash_timer = math.max(0, self.orange_dash_timer - (DT or 1 / 30))
         if self.orange_dash_timer <= 0 then
             self.orange_dashing = false
-            self.noclip = self.orange_previous_noclip
+            self.noclip = self.orange_previous_noclip == true
             self.moving_x = 0
             self.moving_y = 0
         end
