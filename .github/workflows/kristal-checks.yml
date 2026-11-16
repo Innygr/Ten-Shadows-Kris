@@ -158,7 +158,9 @@ jobs:
           test -f tests/granite_blast_test.lua
           grep -q 'state:routePartySpell(descriptor, entry' scripts/ten_shadows/boss_actions.lua
           grep -q 'GraniteBlast(' scripts/ten_shadows/boss_actions.lua
-          grep -q 'boss_state.fusion_domain.active' mod.lua
+           grep -q 'root\[#root + 1\] = {"V-ACT"' mod.lua
+           grep -q '{"GRANITE BLAST"' mod.lua
+           grep -q '{"ULTIMATE BEAM"' mod.lua
           test -f tests/chimera_shadow_garden_test.lua
           test -f tests/fusion_domain_test.lua
           grep -q 'function state:expandFusionDomain(skip_cost)' scripts/ten_shadows/combat_state.lua
