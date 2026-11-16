@@ -54,7 +54,13 @@ expect(blast.source, "vessel", "Granite Blast belongs to Vessel")
 expect(blast.origin_x, 12, "Granite Blast can originate at a chosen Domain position")
 expect(blast.target_x, 270, "Granite Blast keeps its selected target")
 expect(blast.output, 1, "100% output is represented as full charge")
-expect(blast.redirected_by_shadow_portal, true, "Granite Blast uses the shadow portal network")
+expect(blast.redirected_by_shadow_portal, false, "Granite Blast descriptor starts as a direct shot")
+local routed_blast = state:routePartySpell(
+    blast, {x = 18, y = 24}, {x = 120, y = 60}
+)
+expect(routed_blast.redirected_by_shadow_portal, true,
+    "Granite Blast can be routed through the active shadow portal network")
+expect(routed_blast.origin_x, 120, "routed Granite Blast emerges from its exit portal")
 
 local partial = state:createGraniteBlast({x = 0, y = 0}, {x = 1, y = 1}, 2)
 expect(partial.output, 1, "Granite Blast output is clamped to 100%")
@@ -150,7 +156,7 @@ local invalid_route, route_reason = state:routePartySpell(
 )
 expect(invalid_route, false, "portal routing rejects malformed coordinates")
 expect(type(route_reason), "string", "invalid routing explains the required inputs")
-expect(state.fusion_domain.portal_routes, 1, "invalid routing does not count as a successful route")
+expect(state.fusion_domain.portal_routes, 2, "invalid routing does not count as a successful route")
 expect(invalid_spell.origin_x, 5, "invalid routing leaves the spell unchanged")
 
 local bad_blast, blast_reason = state:createGraniteBlast(
