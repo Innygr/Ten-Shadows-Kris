@@ -245,7 +245,7 @@ assert(purple.x > purple_x, "Purple moves horizontally along its track")
 
 -- The encounter factory must build the matching live controller for every mode.
 local function newBaseSoul(x, y, color)
-    local soul = setmetatable({}, Soul)
+    local soul = setmetatable({}, {__index = Soul})
     soul:init(x, y, color)
     return soul
 end
