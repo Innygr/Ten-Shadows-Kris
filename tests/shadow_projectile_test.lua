@@ -7,6 +7,9 @@ love = {
     graphics = {
         setColor = function() end,
         setLineWidth = function() end,
+        push = function() end,
+        pop = function() end,
+        rotate = function() end,
         line = function() draw_lines = draw_lines + 1 end,
         circle = function() draw_circles = draw_circles + 1 end,
         polygon = function() draw_polygons = draw_polygons + 1 end,
@@ -25,6 +28,13 @@ end
 function BaseBullet:addChild(child)
     self.children[#self.children + 1] = child
     child.parent = self
+end
+
+function BaseBullet:update()
+    local direction = self.physics.direction or 0
+    local speed = self.physics.speed or 0
+    self.x = self.x + math.cos(direction) * speed
+    self.y = self.y + math.sin(direction) * speed
 end
 
 function BaseBullet:draw()
@@ -118,6 +128,46 @@ assert(titan_big_shot.armed and titan_big_shot.collider.radius == 9,
 titan_big_shot:draw()
 assert(titan_big_shot.base_draw_count == 1,
     "Big Shot rendering must still call the base bullet draw")
+
+-- Ricochet blades remain harmless during their warning, then reflect from
+-- arena bounds twice while keeping their real physics direction synchronized.
+local ricochet = ShadowProjectile(102, 100, 0, 5, "knight", {
+    kind = "target", duration = 0.4, length = 80,
+}, {
+    kind = "soul_mode_pattern",
+    variant = "ricochet_blade",
+    ricochet_bounds = {left = 90, right = 110, top = 80, bottom = 120},
+    ricochet_bounces = 2,
+})
+assert(ricochet.is_ricochet_blade and not ricochet.armed and ricochet.collider == nil,
+    "Ricochet Blades must be harmless until their tell finishes")
+ricochet.telegraph_timer.callback()
+assert(ricochet.armed and ricochet.collider ~= nil
+    and ricochet.ricochet_bounces_remaining == 2,
+    "Ricochet Blade arms with its two rebound allowance")
+ricochet.x = 108
+ricochet.physics.direction = 0
+ricochet:update()
+assert(ricochet.x == 110 and math.abs(ricochet.physics.direction - math.pi) < 0.001,
+    "Ricochet Blade reflects horizontally from the right wall")
+assert(ricochet.ricochet_bounces_remaining == 1 and ricochet.ricochet_bounce_count == 1,
+    "First wall contact consumes one rebound")
+ricochet.x = 92
+ricochet.physics.direction = math.pi
+ricochet:update()
+assert(ricochet.x == 90 and math.abs(ricochet.physics.direction) < 0.001,
+    "Ricochet Blade reflects back from the left wall")
+assert(ricochet.ricochet_bounces_remaining == 0 and ricochet.ricochet_bounce_count == 2,
+    "Second wall contact consumes the final rebound")
+ricochet.x = 108
+ricochet.physics.direction = 0
+ricochet:update()
+assert(ricochet.x > 110 and ricochet.ricochet_bounce_count == 2,
+    "Ricochet Blade stops reflecting after its two rebounds")
+local ricochet_polygons_before = draw_polygons
+ricochet:draw()
+assert(draw_polygons > ricochet_polygons_before,
+    "Ricochet Blade draws a dedicated blade silhouette")
 
 local collision_shot = ShadowProjectile(72, 82, 0, 4, "knight", nil, {
     kind = "knight_titan_collision", source = "knight", path = 1,
