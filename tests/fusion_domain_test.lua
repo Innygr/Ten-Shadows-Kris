@@ -94,13 +94,25 @@ assert(menu_source:find('{"V%-ACT"', 1) or menu_source:find('{"V%-ACT"', 1, true
 assert(menu_source:find('"FUSION DOMAIN"', 1, true),
     "Kris's ACT menu must expose the fusion Domain when Vessel is available")
 
-local enemy_file = assert(io.open("scripts/battle/enemies/roaring_knight_titan.lua", "r"))
-local enemy_source = enemy_file:read("*a")
-enemy_file:close()
-assert(enemy_source:find('name == "FUSION DOMAIN"', 1, true),
-    "the enemy ACT handler must activate the fusion Domain")
-assert(enemy_source:find('name == "GRANITE BLAST"', 1, true),
-    "the enemy ACT handler must resolve Granite Blast")
+local actions_file = assert(io.open("scripts/ten_shadows/boss_actions.lua", "r"))
+local actions_source = actions_file:read("*a")
+actions_file:close()
+assert(actions_source:find('name == "FUSION DOMAIN"', 1, true),
+    "the shared boss ACT handler must activate the fusion Domain")
+assert(actions_source:find('name == "GRANITE BLAST"', 1, true),
+    "the shared boss ACT handler must resolve Granite Blast")
+
+local titan_file = assert(io.open("scripts/battle/enemies/roaring_knight_titan.lua", "r"))
+local titan_source = titan_file:read("*a")
+titan_file:close()
+assert(titan_source:find('BossActions.onAct(self, battler, name, super.onAct)', 1, true),
+    "Titan must use the shared boss ACT handler")
+
+local knight_file = assert(io.open("scripts/battle/enemies/roaring_knight.lua", "r"))
+local knight_source = knight_file:read("*a")
+knight_file:close()
+assert(knight_source:find('BossActions.onAct(self, battler, name, super.onAct)', 1, true),
+    "Knight must use the shared boss ACT handler")
 
 
 -- Joint activation also requires Kris; failure must not spend TP or reserve
