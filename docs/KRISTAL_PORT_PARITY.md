@@ -93,12 +93,15 @@ and has been tested in Kristal.
 - [ ] Kristal integration: custom summon animations/presentation and individual summon-specific Wave behaviours.
 - [x] Kristal integration: Chimera Shadow Garden can be activated once from Kris's ACT menu; it reduces Ten Shadows costs and boosts summon damage. The domain lasts three enemy turns.
 - [ ] Kristal integration: final Chimera visual presentation and dedicated end message.
-- [x] Core rules: **Kris + Vessel fusion Domain Expansion** requires both characters standing, costs 60 TP, lasts three enemy turns, and consumes the same once-per-battle Domain use as Chimera Shadow Garden. Vessel supplies the barrier; Kris supplies the Ten Shadows environment.
+- [x] Core rules: **Kris + Vessel fusion Domain Expansion** requires both characters standing, costs 60 TP, then drains 2 TP after each complete enemy turn. It has no fixed duration and cancels both the barrier and shadow garden when upkeep cannot be paid. It consumes the same once-per-battle Domain use as Chimera Shadow Garden. Vessel supplies the barrier; Kris supplies the Ten Shadows environment.
 - [x] Core rules: shadow-portal spell routing copies a spell descriptor, moves its launch point to a chosen exit portal, and preserves its original target. Portal entry/exit coordinates are arena-local inputs.
-- [x] Core rules: Vessel's Granite Blast has a 100%-output attack descriptor whose origin can be selected anywhere inside the active fusion Domain.
-- [x] Kristal ACT integration: Kris's ACT menu offers FUSION DOMAIN when Vessel is standing; otherwise it retains the ordinary CHIMERA SHADOW GARDEN option. Vessel has a V-ACT submenu with GRANITE BLAST (50 TP, 58 damage).
+- [x] Core rules: Vessel's Granite Blast has a 100%-output descriptor and remains usable outside the Fusion Domain; outside it, the blast fires directly from the SOUL position.
+- [x] Core rules: Vessel's ULTIMATE BEAM costs 100 TP, charges for one complete enemy turn, locks the selected boss target, then resolves for 580 damage.
+- [x] Kristal ACT integration: Kris's ACT menu offers FUSION DOMAIN when Vessel is standing; otherwise it retains the ordinary CHIMERA SHADOW GARDEN option. Vessel always has a V-ACT submenu with GRANITE BLAST (50 TP, 58 damage) and ULTIMATE BEAM (100 TP, one enemy turn of charge).
 - [x] Kristal visual integration: the active fusion Domain now layers Vessel’s animated enclosing barrier and six barrier nodes over Kris’s shadow garden in the live assault Wave.
-- [x] Code integration + automated regression: Vessel's GRANITE BLAST is available only during the active fusion Domain, routes through a paired gate using the SOUL's current arena position as the exit, preserves the selected boss target, applies its 58-damage hit once, and spawns a charge/launch visual.
+- [x] Code integration + automated regression: GRANITE BLAST works with or without the Domain; while the Domain is active it routes through a paired gate using the SOUL's current position as the exit, preserves the selected boss target, applies its 58-damage hit once, and spawns a launch visual.
+- [x] Code integration + automated regression: ULTIMATE BEAM begins a one-enemy-turn charge, displays the charge effect during the assault Wave, then applies 580 damage once to its locked target and releases the full beam visual.
+- [x] Code integration + automated regression: Fusion Domain upkeep deducts 2 TP after every completed enemy Wave and cancels both Domain visuals when the payment cannot be made.
 - [ ] Kristal runtime verification: playtest the Granite Blast gate, portal placement, visual timing, TP charge, and selected-target damage in Kristal.
 - [ ] Remaining portal parity: route the regular party spell projectiles through the portal network and add a player-controlled arbitrary exit-position selector.
 
