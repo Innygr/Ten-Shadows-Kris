@@ -43,12 +43,15 @@ function GraniteBlast:draw()
 
     graphics.push("all")
 
-    -- The entry and exit gates remain readable while the blast gathers.
-    graphics.setLineWidth(2)
-    graphics.setColor(0.38, 0.12, 0.72, 0.24 + charge * 0.34)
-    graphics.circle("line", entry.x, entry.y, 8 + charge * 8 + pulse * 2)
-    graphics.setColor(0.70, 0.38, 1.0, 0.82)
-    graphics.circle("line", entry.x, entry.y, 5 + charge * 4)
+    -- Draw a separate entry gate only when a Fusion Domain portal pair
+    -- is active. Outside the Domain the shot launches directly from the SOUL.
+    if math.abs(entry.x - exit.x) > 1 or math.abs(entry.y - exit.y) > 1 then
+        graphics.setLineWidth(2)
+        graphics.setColor(0.38, 0.12, 0.72, 0.24 + charge * 0.34)
+        graphics.circle("line", entry.x, entry.y, 8 + charge * 8 + pulse * 2)
+        graphics.setColor(0.70, 0.38, 1.0, 0.82)
+        graphics.circle("line", entry.x, entry.y, 5 + charge * 4)
+    end
 
     graphics.setColor(0.48, 0.12, 0.78, 0.30 + pulse * 0.15)
     graphics.circle("fill", exit.x, exit.y, 12 + pulse * 3)
