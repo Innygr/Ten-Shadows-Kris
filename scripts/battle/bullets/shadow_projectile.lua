@@ -162,15 +162,14 @@ function ShadowProjectile:draw()
     end
 
     if self.is_ricochet_blade then
-        love.graphics.push("all")
-        love.graphics.rotate(self.physics.direction or self.rotation or 0)
+        -- Object's transform already follows self.rotation, which is updated
+        -- with the reflected physics direction after each wall contact.
         love.graphics.setColor(color[1], color[2], color[3], 0.24)
         love.graphics.circle("fill", 0, 0, 11)
         love.graphics.setColor(color[1], color[2], color[3], 1)
         love.graphics.polygon("fill", -11, -3, 5, -3, 12, 0, 5, 3, -11, 3, -6, 0)
         love.graphics.setColor(1, 1, 1, 0.95)
         love.graphics.line(-6, 0, 8, 0)
-        love.graphics.pop()
         super.draw(self)
         return
     end
