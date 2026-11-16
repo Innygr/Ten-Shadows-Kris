@@ -12,6 +12,7 @@ function OrangeSoul:init(x, y)
     self.orange_charge = 0
     self.orange_dash_timer = 0
     self.orange_dash_duration = 0
+    self.noclip = self.noclip == true
     self.orange_dash_speed = 0
     self.orange_dashing = false
     self.orange_previous_noclip = false
