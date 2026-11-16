@@ -5,6 +5,10 @@
 
 local CombatState = {}
 
+-- The ultimate beam is ten times the standard 58-damage Granite Blast.
+CombatState.ULTIMATE_BEAM_DAMAGE = 580
+CombatState.FUSION_DOMAIN_UPKEEP = 2
+
 -- How often the Knight and Titan coordinate a combined attack. The cadence
 -- tightens as the Roaring progresses, making each phase feel more unified.
 CombatState.COMBO_CADENCE = {
@@ -212,7 +216,11 @@ function CombatState.new()
         player_domain = {active = false, turns = 0, used = false, visual_pending = false},
         -- The fusion domain is one coordinated expansion: Vessel maintains
         -- the barrier while Kris supplies the Ten Shadows environment.
-        fusion_domain = {active = false, turns = 0, used = false, portal_routes = 0},
+        fusion_domain = {
+            active = false, turns = 0, used = false, portal_routes = 0,
+            upkeep_paid_turns = 0, cancel_reason = nil,
+        },
+        ultimate_beam = nil,
         knight_domain = {active = false, turns = 0},
         soul_mode = nil, -- nil keeps the original attack library until the Vessel selects a mode.
         titan = {light_radius = 38, base_light_radius = 38, brighten_turns = 0},
@@ -497,11 +505,15 @@ function CombatState.new()
             return false, "Not enough TP."
         end
         domain.active = true
-        domain.turns = 3
+        -- The fusion Domain no longer has a fixed turn limit. It remains up
+        -- while the party can pay its 2 TP enemy-turn upkeep.
+        domain.turns = -1
         domain.used = true
         domain.portal_routes = 0
+        domain.upkeep_paid_turns = 0
+        domain.cancel_reason = nil
         self.player_domain.active = true
-        self.player_domain.turns = 3
+        self.player_domain.turns = -1
         self.player_domain.used = true
         self.player_domain.visual_pending = true
         return true
@@ -536,13 +548,10 @@ function CombatState.new()
         return routed
     end
 
-    -- Granite Blast is Vessel's signature ranged V-ACT. Its origin can be
-    -- selected anywhere inside the shared Domain, independent of Vessel's
-    -- physical position. output is a normalized charge fraction (1 = 100%).
+    -- Granite Blast is Vessel's standard ranged V-ACT and remains usable
+    -- outside the Fusion Domain. When the Domain is active, the caller may
+    -- route its descriptor through the paired shadow portals.
     function state:createGraniteBlast(origin, target, output)
-        if not self.fusion_domain.active then
-            return false, "Granite Blast can be freely placed only inside the fusion Domain."
-        end
         local function valid_point(point)
             return type(point) == "table"
                 and type(point.x) == "number"
@@ -560,8 +569,40 @@ function CombatState.new()
             target_x = target.x,
             target_y = target.y,
             output = charge,
-            redirected_by_shadow_portal = true,
+            redirected_by_shadow_portal = false,
         }
+    end
+
+    -- Vessel's ultimate beam consumes a full 100 TP menu action, then charges
+    -- through one complete enemy turn before the Wave releases it.
+    function state:beginUltimateBeam(target, user)
+        if self.ultimate_beam and self.ultimate_beam.charging then
+            return false, "The ultimate beam is already charging."
+        end
+        if type(target) ~= "table" or type(target.hurt) ~= "function" then
+            return false, "The ultimate beam has no valid target."
+        end
+        self.ultimate_beam = {
+            charging = true,
+            turns_remaining = 1,
+            target = target,
+            user = user,
+            damage = CombatState.ULTIMATE_BEAM_DAMAGE,
+        }
+        return true
+    end
+
+    -- End a fusion Domain immediately and keep Kris's shadow garden in sync
+    -- with Vessel's barrier. The once-per-battle use remains consumed.
+    function state:cancelFusionDomain(reason)
+        if not self.fusion_domain.active then return false end
+        self.fusion_domain.active = false
+        self.fusion_domain.turns = 0
+        self.fusion_domain.cancel_reason = reason or "cancelled"
+        self.player_domain.active = false
+        self.player_domain.turns = 0
+        self.player_domain.visual_pending = false
+        return true
     end
 
     function state:startKnightDomain()
@@ -572,6 +613,8 @@ function CombatState.new()
     end
 
     function state:tickEnemyTurnEffects()
+        local result = {domain_cancelled = false, ultimate_beam = nil}
+
         if self.boss.exposed > 0 then self.boss.exposed = self.boss.exposed - 1 end
         if self.boss.counter_turns > 0 then
             self.boss.counter_turns = self.boss.counter_turns - 1
@@ -586,7 +629,17 @@ function CombatState.new()
                 self.titan.light_radius = self.titan.base_light_radius
             end
         end
-        if self.player_domain.active then
+
+        -- A fusion Domain replaces the ordinary three-turn shadow-garden
+        -- timer. Pay upkeep once after each complete enemy Wave. With less
+        -- than 2 TP available, cancel both halves rather than going negative.
+        if self.fusion_domain.active then
+            if self:spendTP(CombatState.FUSION_DOMAIN_UPKEEP) then
+                self.fusion_domain.upkeep_paid_turns = self.fusion_domain.upkeep_paid_turns + 1
+            else
+                result.domain_cancelled = self:cancelFusionDomain("insufficient_tp")
+            end
+        elseif self.player_domain.active then
             self.player_domain.turns = self.player_domain.turns - 1
             if self.player_domain.turns <= 0 then
                 self.player_domain.active = false
@@ -594,13 +647,17 @@ function CombatState.new()
                 self.player_domain.visual_pending = false
             end
         end
-        if self.fusion_domain.active then
-            self.fusion_domain.turns = self.fusion_domain.turns - 1
-            if self.fusion_domain.turns <= 0 then
-                self.fusion_domain.active = false
-                self.fusion_domain.turns = 0
+
+        -- The pending ultimate beam matures after one full enemy turn. The
+        -- Wave owns the actual hit/visual release so the target stays explicit.
+        if self.ultimate_beam and self.ultimate_beam.charging then
+            self.ultimate_beam.turns_remaining = self.ultimate_beam.turns_remaining - 1
+            if self.ultimate_beam.turns_remaining <= 0 then
+                result.ultimate_beam = self.ultimate_beam
+                self.ultimate_beam = nil
             end
         end
+
         if self.knight_domain.active then
             self.knight_domain.turns = self.knight_domain.turns - 1
             if self.knight_domain.turns <= 0 then
@@ -608,6 +665,8 @@ function CombatState.new()
                 self.knight_domain.turns = 0
             end
         end
+
+        return result
     end
 
     function state:getShadowCost(shadow)
