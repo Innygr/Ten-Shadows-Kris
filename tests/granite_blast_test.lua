@@ -98,33 +98,36 @@ DT = 0.5
 visual:update()
 expect(visual.removed, true, "the temporary V-ACT visual cleans itself up")
 
--- The handler must fail closed outside the active Domain: no damage, no
--- visual, and no portal route should be recorded.
+-- Granite Blast remains a direct attack when the Fusion Domain is inactive.
 local inactive_state = CombatState.new()
 local inactive_target = {
-    x = 10, y = 20,
-    hurt = function(self, amount) self.damage = (self.damage or 0) + amount end,
+    x = 10, y = 20, width = 20, height = 20,
+    hurt = function(self, amount, source) self.damage = (self.damage or 0) + amount; self.last_user = source end,
     ten_shadows_state = inactive_state,
 }
 local before_spawn = #spawned
-local denied = BossActions.onAct(inactive_target, user, "GRANITE BLAST", function()
-    error("Unavailable Granite Blast must not fall through")
+local direct = BossActions.onAct(inactive_target, user, "GRANITE BLAST", function()
+    error("Granite Blast must not fall through to the engine ACT handler")
 end)
-expect(type(denied), "string", "inactive Domain returns an explanation")
-expect(inactive_target.damage, nil, "inactive Domain cannot damage the selected boss")
-expect(#spawned, before_spawn, "inactive Domain cannot create a visual")
+expect(type(direct), "table", "Granite Blast succeeds outside the Fusion Domain")
+expect(inactive_target.damage, 58, "direct Granite Blast deals its normal 58 damage")
+expect(#spawned, before_spawn + 1, "direct Granite Blast still creates its launch visual")
 expect(inactive_state.fusion_domain.portal_routes, 0,
-    "inactive Domain cannot increment the route count")
+    "direct Granite Blast does not consume a portal route")
+expect(spawned[#spawned].entry.x, spawned[#spawned].exit.x,
+    "direct Granite Blast has no separate portal entry")
+expect(spawned[#spawned].entry.y, spawned[#spawned].exit.y,
+    "direct Granite Blast launches from its own origin")
 
--- The live menu only offers the V-ACT submenu while the shared Domain is up.
+-- Exercise the real Vessel ACT menu builder: V-ACT is always present and
+-- contains both the 50-TP normal blast and 100-TP one-turn ultimate beam.
 local mod_file = assert(io.open("mod.lua", "r"))
 local mod_source = mod_file:read("*a")
 mod_file:close()
-assert(mod_source:find("boss_state.fusion_domain.active", 1, true),
-    "Vessel's V-ACT submenu must be gated by the active Fusion Domain")
-
--- Exercise the real Vessel ACT menu builder: V-ACT is hidden before the
--- fusion Domain, then exposes a 50-TP Granite Blast entry while it is active.
+assert(mod_source:find('{"V-ACT"', 1, true),
+    "Vessel's V-ACT submenu is always registered")
+assert(mod_source:find('{"ULTIMATE BEAM"', 1, true),
+    "Vessel's V-ACT submenu contains the ultimate beam")
 Mod = {}
 dofile("mod.lua")
 
@@ -164,28 +167,30 @@ local function buildVesselMenu(domain_active)
     return battle, target_enemy
 end
 
-local hidden_battle = buildVesselMenu(false)
-for _, item in ipairs(hidden_battle.menu_items) do
-    assert(item.name ~= "V-ACT", "V-ACT is hidden before the Fusion Domain")
+local function checkVesselMenu(domain_active)
+    local battle, target_enemy = buildVesselMenu(domain_active)
+    local vact
+    for _, item in ipairs(battle.menu_items) do
+        if item.name == "V-ACT" then vact = item end
+    end
+    assert(vact, "V-ACT appears regardless of Fusion Domain state")
+    vact.callback()
+    local actions = {}
+    for _, item in ipairs(battle.menu_items) do actions[item.name] = item end
+    assert(actions["GRANITE BLAST"], "V-ACT submenu contains GRANITE BLAST")
+    assert(actions["ULTIMATE BEAM"], "V-ACT submenu contains ULTIMATE BEAM")
+    expect(actions["GRANITE BLAST"].tp, 50, "Granite Blast costs 50 TP")
+    expect(actions["ULTIMATE BEAM"].tp, 100, "Ultimate Beam costs 100 TP")
+    actions["GRANITE BLAST"].callback(actions["GRANITE BLAST"])
+    expect(battle.pushed_action.action, "ACT", "Granite Blast queues an ACT")
+    expect(battle.pushed_action.target, target_enemy, "Granite Blast targets the selected boss")
+    actions["ULTIMATE BEAM"].callback(actions["ULTIMATE BEAM"])
+    expect(battle.pushed_action.item, actions["ULTIMATE BEAM"],
+        "Ultimate Beam queues its selected action")
 end
 
-local active_battle, active_enemy = buildVesselMenu(true)
-local vact
-for _, item in ipairs(active_battle.menu_items) do
-    if item.name == "V-ACT" then vact = item end
-end
-assert(vact, "V-ACT appears while the Fusion Domain is active")
-vact.callback()
-local granite_entry
-for _, item in ipairs(active_battle.menu_items) do
-    if item.name == "GRANITE BLAST" then granite_entry = item end
-end
-assert(granite_entry, "V-ACT submenu contains GRANITE BLAST")
-expect(granite_entry.tp, 50, "Granite Blast retains its 50 TP cost")
-granite_entry.callback(granite_entry)
-expect(active_battle.pushed_action.action, "ACT", "Granite Blast queues an ACT")
-expect(active_battle.pushed_action.target, active_enemy, "Granite Blast targets the chosen boss")
-expect(active_battle.pushed_action.item, granite_entry, "Granite Blast queues its selected menu item")
+checkVesselMenu(false)
+checkVesselMenu(true)
 
 
 print("Granite Blast live routing, damage, visual, and Domain gating tests passed.")
