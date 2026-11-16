@@ -106,6 +106,9 @@ jobs:
       - name: Test Kris + Vessel fusion Domain and V-ACT
         run: lua5.1 tests/fusion_domain_test.lua
 
+      - name: Test live Granite Blast portal routing and visual
+        run: lua5.1 tests/granite_blast_test.lua
+
       - name: Test Vessel SOUL-mode boss attacks
         run: lua5.1 tests/soul_mode_attacks_test.lua
 
@@ -141,6 +144,11 @@ jobs:
           test -f scripts/battle/encounters/knight_titan_preview.lua
           test -f scripts/battle/waves/knight_titan_assault.lua
           test -f scripts/battle/objects/chimera_shadow_garden.lua
+          test -f scripts/battle/objects/granite_blast.lua
+          test -f tests/granite_blast_test.lua
+          grep -q 'state:routePartySpell(descriptor, entry' scripts/ten_shadows/boss_actions.lua
+          grep -q 'GraniteBlast(' scripts/ten_shadows/boss_actions.lua
+          grep -q 'boss_state.fusion_domain.active' mod.lua
           test -f tests/chimera_shadow_garden_test.lua
           test -f tests/fusion_domain_test.lua
           grep -q 'function state:expandFusionDomain(skip_cost)' scripts/ten_shadows/combat_state.lua
