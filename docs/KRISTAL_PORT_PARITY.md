@@ -106,8 +106,10 @@ and has been tested in Kristal.
 - [x] Core rules: weighted attack selection, source alternation, Titan shield-class alternation,
   no immediate same attack when alternatives exist, and phase scheduler reset.
 - [x] Core rules: Knight/Titan cannot become TIRED and cannot receive MERCY/SPARE.
-- [x] Automated regression: each EnemyBattler keeps its own HP; Titan damage alone advances the shared phase scheduler, and the surviving boss keeps attacking after the other is defeated.
-- [ ] Kristal runtime: visually confirm both independent HP bars, crossed-out Mercy UI, and survivor transitions.
+- [x] Kristal CHECK integration: Titan and Knight each report live current HP and their own maximum HP.
+- [x] Automated regression: each EnemyBattler keeps its own HP; CHECK/Inspect reports live current/max HP; Titan damage alone advances the shared phase scheduler; the survivor keeps attacking after the other is defeated.
+- [x] Kristal UI contract: both enemies set `disable_mercy = true`, which the engine renders as a crossed-out Mercy bar.
+- [ ] Kristal runtime: visually confirm both independent HP bars and survivor transitions in an actual playtest.
 - [x] Kristal foundation: the selected attack now routes through six reusable projectile families (radial, safe-lane wall, aimed, crossfire, falling, and sweep), with separate Knight/Titan/combined projectile visuals and phase-scaled density.
 - [ ] Kristal integration: all 37 attacks have a matching bespoke Kristal Wave, with the same phase access,
   timing, movement, hit rules, and difficulty variations.

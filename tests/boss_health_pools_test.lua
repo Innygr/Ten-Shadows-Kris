@@ -50,6 +50,14 @@ local titan, knight = spawnPair()
 assert(titan.ten_shadows_role == "titan" and titan.max_health == 21000
     and titan.health == 21000, "Titan must start with 21,000 independent HP")
 assert(titan.attack == 40 and titan.defense == 800, "Titan must have 40 ATK and 800 DEF")
+assert(titan.disable_mercy and knight.disable_mercy,
+    "both bosses must use Kristal's crossed-out Mercy UI")
+assert(not titan.auto_spare and not knight.auto_spare,
+    "neither boss can be auto-spared")
+assert(not titan.can_freeze and not knight.can_freeze,
+    "neither boss can be frozen")
+assert(titan.tired_percentage == 0 and knight.tired_percentage == 0,
+    "neither boss can enter the TIRED state")
 assert(table.concat(titan:getCheckText(), " "):find("21,000 / 21,000", 1, true),
     "Titan Inspect must show current HP and maximum HP")
 assert(knight.ten_shadows_role == "knight" and knight.max_health == 1460
@@ -79,7 +87,10 @@ knight:onHurt(500)
 assert(knight.health == 560 and titan.health == 14000 and scheduler.boss.hp == 14000,
     "further Knight damage must remain independent")
 
+knight.health = 0
 knight:onDefeat()
+assert(table.concat(knight:getCheckText(), " "):find("0 / 1,460", 1, true),
+    "defeated Knight CHECK must show zero current HP")
 assert(not scheduler.knight_alive, "Knight defeat must remove its attack source")
 for _ = 1, 6 do
     local attack = scheduler:chooseEnemyAttack()
@@ -91,6 +102,8 @@ end
 local surviving_titan, surviving_knight = spawnPair()
 local survivor_state = surviving_titan.ten_shadows_state
 surviving_titan:onDefeat()
+assert(table.concat(surviving_titan:onAct(nil, "Inspect"), " "):find("0 / 21,000", 1, true),
+    "defeated Titan Inspect must show zero current HP")
 assert(not survivor_state.titan_alive and survivor_state.knight_alive,
     "Titan defeat must leave Knight alive")
 assert(survivor_state.boss.hp == 0 and survivor_state.boss.phase == 3,
