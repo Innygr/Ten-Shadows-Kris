@@ -85,6 +85,17 @@ expect(upkeep.player_domain.active, false, "unpayable upkeep cancels the shadow 
 expect(upkeep.fusion_domain.cancel_reason, "insufficient_tp", "cancellation records the TP reason")
 expect(upkeep:expandFusionDomain(true), false, "cancelled Fusion Domain remains once per battle")
 
+local shortfall = CombatState.new()
+shortfall.tp = 61
+expect(shortfall:expandFusionDomain(false), true,
+    "a 60 TP activation leaves one TP for the upkeep edge case")
+local shortfall_result = shortfall:tickEnemyTurnEffects()
+expect(shortfall_result.domain_cancelled, true,
+    "one remaining TP cannot cover the 2 TP upkeep")
+expect(shortfall.tp, 1, "failed upkeep preserves the remaining one TP")
+expect(shortfall.player_domain.active, false,
+    "one-TP shortfall cancels Kris's shadow garden with the barrier")
+
 local down_vessel = CombatState.new()
 down_vessel:getMember("vessel").hp = 0
 expect(down_vessel:expandFusionDomain(true), false,
