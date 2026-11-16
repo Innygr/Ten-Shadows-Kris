@@ -5,7 +5,8 @@ local function expect(actual, expected, label)
     end
 end
 
-local graphics = {lines = 0, circles = 0}
+local graphics
+graphics = {lines = 0, circles = 0}
 love = {
     graphics = {
         push = function() end,
