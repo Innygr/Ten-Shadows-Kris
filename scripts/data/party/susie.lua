@@ -17,7 +17,6 @@ function character:init()
     self:addSpell("rude_buster")
     self:addSpell("ultimate_heal")
     self:addSpell("scythemare")
-    self:addSpell("ts_rush")
     self.health = 350
     self.stats = {health = 350, attack = 24, defense = 2, magic = 2}
     self.max_stats = {health = 350}

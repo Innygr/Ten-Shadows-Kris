@@ -17,6 +17,8 @@ expect(state:expandFusionDomain(false), true, "Kris and Vessel can create the fu
 expect(state.tp, 40, "fusion Domain costs 60 TP")
 expect(state.fusion_domain.active, true, "fusion Domain barrier is active")
 expect(state.player_domain.active, true, "Kris's shadow garden is active")
+expect(state.vessel_domain.active, true, "Vessel's barrier half is active too")
+expect(state.vessel_domain.used, true, "fusion activation consumes Vessel's Domain use")
 expect(state.fusion_domain.turns, -1, "fusion Domain has no fixed turn limit")
 expect(state.player_domain.turns, -1, "shadow garden follows the upkeep-based Domain")
 
@@ -129,6 +131,8 @@ assert(menu_source:find('"FUSION DOMAIN"', 1, true),
 local actions_file = assert(io.open("scripts/ten_shadows/boss_actions.lua", "r"))
 local actions_source = actions_file:read("*a")
 actions_file:close()
+assert(actions_source:find('name == "VESSEL DOMAIN"', 1, true),
+    "the shared boss ACT handler must activate Vessel's Domain independently")
 assert(actions_source:find('name == "FUSION DOMAIN"', 1, true),
     "the shared boss ACT handler must activate the fusion Domain")
 assert(actions_source:find('name == "GRANITE BLAST"', 1, true),

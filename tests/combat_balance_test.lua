@@ -11,6 +11,10 @@ expect(CombatState.isEquipmentBlacklisted("THORNRING"), true, "denylist is case-
 expect(CombatState.isEquipmentBlacklisted("snowring"), false, "unlisted equipment remains allowed")
 
 local state = CombatState.new()
+expect(CombatState.MAX_TP, 110, "project maximum TP")
+state:addTP(200)
+expect(state.tp, 110, "TP gains clamp at 110")
+state.tp = 35
 expect(#state.party, 6, "all six party members are active")
 expect(state.party[1].id, "kris", "Kris is first in party")
 expect(state.party[2].id, "susie", "Susie is second in party")

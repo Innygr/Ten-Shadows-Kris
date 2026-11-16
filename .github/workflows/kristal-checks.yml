@@ -85,6 +85,12 @@ jobs:
       - name: Test runtime spell effects
         run: lua5.1 tests/runtime_spells_test.lua
 
+      - name: Test Titan shield damage routing and spell multipliers
+        run: lua5.1 tests/titan_shield_test.lua
+
+      - name: Test independent Vessel Domain and upkeep
+        run: lua5.1 tests/vessel_domain_test.lua
+
       - name: Test grouped BRIGHTEN ACT
         run: lua5.1 tests/brighten_act_test.lua
 
@@ -150,6 +156,11 @@ jobs:
           test -f scripts/battle/objects/granite_blast.lua
           test -f scripts/battle/objects/ultimate_beam.lua
           test -f tests/ultimate_beam_test.lua
+          test -f tests/titan_shield_test.lua
+          test -f tests/vessel_domain_test.lua
+          grep -q 'TITAN_SHIELD_MAX_HP = 1200' scripts/ten_shadows/combat_state.lua
+          grep -q 'function RoaringKnightTitan:getAttackDamage' scripts/battle/enemies/roaring_knight_titan.lua
+          grep -q 'name == "VESSEL DOMAIN"' scripts/ten_shadows/boss_actions.lua
           grep -q 'function state:beginUltimateBeam(target, user)' scripts/ten_shadows/combat_state.lua
           grep -q 'function state:cancelFusionDomain(reason)' scripts/ten_shadows/combat_state.lua
           grep -q 'FUSION_DOMAIN_UPKEEP = 2' scripts/ten_shadows/combat_state.lua
@@ -333,7 +344,7 @@ jobs:
               assert f'self:setWeapon("{weapon}")' in party_source, (member, weapon)
               assert Path(f"scripts/data/items/weapons/{weapon}.lua").is_file(), weapon
           PY
-          for spell in ts_rush ts_brighten ts_heal ts_revivesong ts_ice_shock ts_ice_wave ts_tornado ts_snowgrave scythemare; do test -f "scripts/data/spells/$spell.lua"; done
+          for spell in ts_brighten ts_heal ts_revivesong ts_ice_shock ts_fire_shock ts_ice_wave ts_tornado ts_snowgrave scythemare; do test -f "scripts/data/spells/$spell.lua"; done
           grep -q 'registerAct("Inspect"' scripts/battle/enemies/runtime_dummy.lua
           grep -q 'registerActFor("kris", "Signal"' scripts/battle/enemies/runtime_dummy.lua
           grep -q 'Standard = "\* The standard X-ACT handler works\.' scripts/battle/enemies/runtime_dummy.lua

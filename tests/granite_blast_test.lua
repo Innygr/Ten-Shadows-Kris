@@ -135,6 +135,8 @@ local function buildVesselMenu(domain_active)
     local target_enemy = {
         ten_shadows_state = {
             fusion_domain = {active = domain_active == true},
+            vessel_domain = {active = false, used = false},
+            player_domain = {active = false, used = false},
         },
     }
     local battle = {
@@ -177,6 +179,8 @@ local function checkVesselMenu(domain_active)
     vact.callback()
     local actions = {}
     for _, item in ipairs(battle.menu_items) do actions[item.name] = item end
+    assert(actions["VESSEL DOMAIN"], "V-ACT submenu contains independent VESSEL DOMAIN")
+    expect(actions["VESSEL DOMAIN"].tp, 60, "Vessel Domain costs 60 TP")
     assert(actions["GRANITE BLAST"], "V-ACT submenu contains GRANITE BLAST")
     assert(actions["ULTIMATE BEAM"], "V-ACT submenu contains ULTIMATE BEAM")
     expect(actions["GRANITE BLAST"].tp, 50, "Granite Blast costs 50 TP")

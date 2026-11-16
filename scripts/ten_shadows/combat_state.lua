@@ -8,6 +8,8 @@ local CombatState = {}
 -- The ultimate beam is ten times the standard 58-damage Granite Blast.
 CombatState.ULTIMATE_BEAM_DAMAGE = 580
 CombatState.FUSION_DOMAIN_UPKEEP = 2
+CombatState.MAX_TP = 110
+CombatState.TITAN_SHIELD_MAX_HP = 1200
 
 -- How often the Knight and Titan coordinate a combined attack. The cadence
 -- tightens as the Roaring progresses, making each phase feel more unified.
@@ -214,6 +216,7 @@ function CombatState.new()
         turn = 1,
         knight_disrupted = 0,
         player_domain = {active = false, turns = 0, used = false, visual_pending = false},
+        vessel_domain = {active = false, turns = 0, used = false, upkeep_paid_turns = 0, cancel_reason = nil, visual_pending = false},
         -- The fusion domain is one coordinated expansion: Vessel maintains
         -- the barrier while Kris supplies the Ten Shadows environment.
         fusion_domain = {
@@ -223,7 +226,7 @@ function CombatState.new()
         ultimate_beam = nil,
         knight_domain = {active = false, turns = 0},
         soul_mode = nil, -- nil keeps the original attack library until the Vessel selects a mode.
-        titan = {light_radius = 38, base_light_radius = 38, brighten_turns = 0},
+        titan = {light_radius = 38, base_light_radius = 38, brighten_turns = 0, shield_hp = CombatState.TITAN_SHIELD_MAX_HP, shield_max_hp = CombatState.TITAN_SHIELD_MAX_HP},
         encounter = {
             phase = 1, last_class = "", last_source = "",
             last_attack = "", turns = 0, phase_counts = {[1]=0,[2]=0,[3]=0},
@@ -268,7 +271,7 @@ function CombatState.new()
     end
 
     function state:addTP(amount)
-        self.tp = math.min(100, math.max(0, self.tp + amount))
+        self.tp = math.min(CombatState.MAX_TP, math.max(0, self.tp + amount))
         return self.tp
     end
 
@@ -276,6 +279,16 @@ function CombatState.new()
         if self.tp < amount then return false end
         self.tp = self.tp - amount
         return true
+    end
+
+    function state:damageTitanShield(amount, multiplier)
+        local current = math.max(0, self.titan.shield_hp or 0)
+        if current <= 0 or type(amount) ~= "number" or amount <= 0 then return 0, false, current end
+        local scale = math.max(0, tonumber(multiplier) or 1)
+        local requested = math.max(1, math.floor(amount * scale + 0.5))
+        local dealt = math.min(current, requested)
+        self.titan.shield_hp = current - dealt
+        return dealt, self.titan.shield_hp <= 0, self.titan.shield_hp
     end
 
     function state:setTitanAlive(alive)
@@ -434,11 +447,6 @@ function CombatState.new()
         self:addTP(12)
     end
 
-    function state:rushWithSusie()
-        if not self:getMember("susie") or self:getMember("susie").hp <= 0 then return false end
-        return self:damageBoss(34)
-    end
-
     function state:castIceShock()
         if not self:spendTP(16) then return false end
         local dealt = self:damageBoss(18)
@@ -490,11 +498,30 @@ function CombatState.new()
     -- A joint Domain Expansion uses the existing Chimera duration and TP
     -- cost, but requires both Kris and Vessel to be standing. It is one
     -- barrier/one shadow garden, not two competing domains.
+    -- Vessel can maintain the enclosing barrier without Kris's shadow garden.
+    function state:expandVesselDomain(skip_cost)
+        local domain = self.vessel_domain
+        local vessel = self:getMember("vessel")
+        if domain.used or domain.active or self.fusion_domain.used or self.fusion_domain.active then
+            return false, "Vessel has already expanded their Domain."
+        end
+        if not vessel or vessel.hp <= 0 then return false, "Vessel must be standing to maintain the barrier." end
+        if not skip_cost and not self:spendTP(60) then return false, "Not enough TP." end
+        domain.active = true
+        domain.turns = -1
+        domain.used = true
+        domain.upkeep_paid_turns = 0
+        domain.cancel_reason = nil
+        domain.visual_pending = true
+        return true
+    end
+
     function state:expandFusionDomain(skip_cost)
         local domain = self.fusion_domain
         local kris = self:getMember("kris")
         local vessel = self:getMember("vessel")
-        if domain.used or domain.active or self.player_domain.used or self.player_domain.active then
+        if domain.used or domain.active or self.player_domain.used or self.player_domain.active
+            or self.vessel_domain.used or self.vessel_domain.active then
             return false, "The Domain has already been expanded."
         end
         if not kris or kris.hp <= 0 or not vessel or vessel.hp <= 0 then
@@ -516,6 +543,12 @@ function CombatState.new()
         self.player_domain.turns = -1
         self.player_domain.used = true
         self.player_domain.visual_pending = true
+        self.vessel_domain.active = true
+        self.vessel_domain.turns = -1
+        self.vessel_domain.used = true
+        self.vessel_domain.upkeep_paid_turns = 0
+        self.vessel_domain.cancel_reason = nil
+        self.vessel_domain.visual_pending = true
         return true
     end
 
@@ -523,8 +556,8 @@ function CombatState.new()
     -- target remains unchanged; its launch point is moved to the exit portal.
     -- Coordinates are arena-local and are supplied by the battle/UI layer.
     function state:routePartySpell(spell, entry_portal, exit_portal)
-        if not self.fusion_domain.active then
-            return false, "The fusion Domain is not active."
+        if not self.fusion_domain.active and not self.vessel_domain.active then
+            return false, "Neither Vessel's Domain nor the Fusion Domain is active."
         end
         local function valid_portal(portal)
             return type(portal) == "table"
@@ -594,6 +627,16 @@ function CombatState.new()
 
     -- End a fusion Domain immediately and keep Kris's shadow garden in sync
     -- with Vessel's barrier. The once-per-battle use remains consumed.
+    function state:cancelVesselDomain(reason)
+        if self.fusion_domain.active then return self:cancelFusionDomain(reason) end
+        if not self.vessel_domain.active then return false end
+        self.vessel_domain.active = false
+        self.vessel_domain.turns = 0
+        self.vessel_domain.cancel_reason = reason or "cancelled"
+        self.vessel_domain.visual_pending = false
+        return true
+    end
+
     function state:cancelFusionDomain(reason)
         if not self.fusion_domain.active then return false end
         self.fusion_domain.active = false
@@ -602,6 +645,10 @@ function CombatState.new()
         self.player_domain.active = false
         self.player_domain.turns = 0
         self.player_domain.visual_pending = false
+        self.vessel_domain.active = false
+        self.vessel_domain.turns = 0
+        self.vessel_domain.cancel_reason = reason or "cancelled"
+        self.vessel_domain.visual_pending = false
         return true
     end
 
@@ -613,7 +660,7 @@ function CombatState.new()
     end
 
     function state:tickEnemyTurnEffects()
-        local result = {domain_cancelled = false, ultimate_beam = nil}
+        local result = {domain_cancelled = false, vessel_domain_cancelled = false, ultimate_beam = nil}
 
         if self.boss.exposed > 0 then self.boss.exposed = self.boss.exposed - 1 end
         if self.boss.counter_turns > 0 then
@@ -630,21 +677,30 @@ function CombatState.new()
             end
         end
 
-        -- A fusion Domain replaces the ordinary three-turn shadow-garden
-        -- timer. Pay upkeep once after each complete enemy Wave. With less
-        -- than 2 TP available, cancel both halves rather than going negative.
+        -- Fusion pays one shared upkeep. A standalone Vessel barrier pays
+        -- the same 2 TP upkeep while Kris's independent garden keeps its timer.
         if self.fusion_domain.active then
             if self:spendTP(CombatState.FUSION_DOMAIN_UPKEEP) then
                 self.fusion_domain.upkeep_paid_turns = self.fusion_domain.upkeep_paid_turns + 1
+                self.vessel_domain.upkeep_paid_turns = self.vessel_domain.upkeep_paid_turns + 1
             else
                 result.domain_cancelled = self:cancelFusionDomain("insufficient_tp")
             end
-        elseif self.player_domain.active then
-            self.player_domain.turns = self.player_domain.turns - 1
-            if self.player_domain.turns <= 0 then
-                self.player_domain.active = false
-                self.player_domain.turns = 0
-                self.player_domain.visual_pending = false
+        else
+            if self.vessel_domain.active then
+                if self:spendTP(CombatState.FUSION_DOMAIN_UPKEEP) then
+                    self.vessel_domain.upkeep_paid_turns = self.vessel_domain.upkeep_paid_turns + 1
+                else
+                    result.vessel_domain_cancelled = self:cancelVesselDomain("insufficient_tp")
+                end
+            end
+            if self.player_domain.active then
+                self.player_domain.turns = self.player_domain.turns - 1
+                if self.player_domain.turns <= 0 then
+                    self.player_domain.active = false
+                    self.player_domain.turns = 0
+                    self.player_domain.visual_pending = false
+                end
             end
         end
 
@@ -712,13 +768,12 @@ function CombatState.new()
         end
         if member_id == "kris" then
             actions[#actions + 1] = "BRIGHTEN"
-        elseif member_id == "susie" then
-            actions[#actions + 1] = "RUSH"
         elseif member_id == "ralsei" then
             actions[#actions + 1] = "HEAL"
             actions[#actions + 1] = "REVIVESONG"
         elseif member_id == "vessel" then
             actions[#actions + 1] = "SOUL MODE"
+            if not self.vessel_domain.used then actions[#actions + 1] = "VESSEL DOMAIN" end
         elseif member_id == "noelle" then
             actions[#actions + 1] = "ICE SHOCK"
             actions[#actions + 1] = "ICE WAVE"

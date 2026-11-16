@@ -39,6 +39,17 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
         return Effects.brightenAct(state)
     end
 
+    if name == "VESSEL DOMAIN" then
+        if not state or not state:expandVesselDomain(true) then
+            return "* Vessel cannot form the Domain right now."
+        end
+        return {
+            "* DOMAIN EXPANSION — VESSEL'S BARRIER.",
+            "* The battlefield is sealed inside Vessel's Domain.",
+            "* Its portals can redirect Vessel's Granite Blast.",
+        }
+    end
+
     if name == "FUSION DOMAIN" then
         if not state or not state:expandFusionDomain(true) then
             return "* Kris and Vessel cannot complete the Domain right now."
@@ -96,7 +107,8 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
 
         local entry = {x = origin_x, y = origin_y}
         local routed = descriptor
-        if state.fusion_domain and state.fusion_domain.active then
+        if (state.fusion_domain and state.fusion_domain.active)
+            or (state.vessel_domain and state.vessel_domain.active) then
             entry = {
                 x = math.max(8, math.min(arena.width - 8, arena.width - origin_x)),
                 y = math.max(8, math.min(arena.height - 8, arena.height - origin_y)),

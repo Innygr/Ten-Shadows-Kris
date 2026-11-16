@@ -23,6 +23,8 @@ function KnightTitanAssault:onStart()
     local attack, frozen, domain_started, disrupted
 
     if state then
+        -- Kristal's TP pool is authoritative; mirror it before end-of-Wave upkeep.
+        if Game and Game.getTension then state.tp = Game:getTension() end
         if enemy.ten_shadows_role == "titan" then
             state.boss.hp = enemy.health
         end
@@ -71,15 +73,21 @@ function KnightTitanAssault:onStart()
     -- current defending turn ends. The next Wave recreates it while either
     -- the ordinary Chimera duration or the Fusion Domain upkeep remains active.
     local garden_visual = nil
+    local vessel_domain_active = state and state.vessel_domain and state.vessel_domain.active
     if state and state.player_domain.active and arena and arena.mask then
         local GardenVisual = modRequire("scripts/battle/objects/chimera_shadow_garden")
         local opening = state.player_domain.visual_pending == true
+            or (state.vessel_domain and state.vessel_domain.visual_pending == true)
         state.player_domain.visual_pending = false
-        garden_visual = GardenVisual(
-            arena.width, arena.height, opening,
-            state.fusion_domain and state.fusion_domain.active or false
-        )
+        if state.vessel_domain then state.vessel_domain.visual_pending = false end
+        garden_visual = GardenVisual(arena.width, arena.height, opening,
+            vessel_domain_active or (state.fusion_domain and state.fusion_domain.active or false))
         self:spawnObjectTo(arena.mask, garden_visual, 0, 0)
+    elseif vessel_domain_active and arena and arena.mask then
+        local VesselBarrier = modRequire("scripts/battle/objects/vessel_domain_barrier")
+        local opening = state.vessel_domain.visual_pending == true
+        state.vessel_domain.visual_pending = false
+        self:spawnObjectTo(arena.mask, VesselBarrier(arena.width, arena.height, opening), 0, 0)
     end
 
     -- THE ROARING gets a small animated core marker so the two open spokes
@@ -191,6 +199,8 @@ function KnightTitanAssault:onEnd(death)
         -- Status durations and fusion upkeep are measured in enemy turns,
         -- not individual volleys. Tick once after the complete Wave has ended.
         local effects = state:tickEnemyTurnEffects()
+        -- Mirror upkeep into the live tension bar so its value matches the rule state.
+        if Game and Game.setTension then Game:setTension(state.tp) end
         local charged_beam = effects and effects.ultimate_beam
         if charged_beam then
             local target = charged_beam.target

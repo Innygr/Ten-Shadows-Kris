@@ -36,13 +36,16 @@ architecture contract.
   attack sets only run while the matching coloured SOUL is active.
 - Yellow SOUL's Ricochet Blades now behave as actual bouncing projectiles: four blades are
   telegraphed, then rebound from arena walls twice with a dedicated blade silhouette.
-- Vessel always has access to V-ACT: GRANITE BLAST costs 50 TP and deals 58 damage directly,
-  or routes through the Fusion Domain's paired shadow portals while that Domain is active.
-  ULTIMATE BEAM costs 100 TP, charges through one complete enemy Wave, then releases for 580
-  damage against its locked boss target with a full-screen beam effect.
-- The Kris + Vessel Fusion Domain costs 60 TP to activate and drains 2 TP after each enemy turn.
-  It has no fixed three-turn limit; when the upkeep cannot be paid, both the barrier and shadow
-  garden are cancelled immediately.
+- The encounter TP cap is 110. Titan starts behind a 1,200 HP shield: ordinary hits deal
+  reduced shield damage, while Rude Buster, Ice Shock, and Fire Shock are dedicated shield
+  breakers. The Titan's 21,000 HP pool is protected until the shield is depleted.
+- Vessel always has access to V-ACT: VESSEL DOMAIN costs 60 TP and maintains its barrier for
+  2 TP after each enemy turn; GRANITE BLAST costs 50 TP and deals 58 damage, routing through
+  Vessel's or the Fusion Domain's paired portals when either barrier is active. ULTIMATE BEAM
+  costs 100 TP, charges through one complete enemy Wave, then releases for 580 damage.
+- Kris can expand CHIMERA SHADOW GARDEN independently. Vessel can expand their barrier
+  independently, or both can use FUSION DOMAIN together. A solo Vessel barrier and Kris's
+  three-turn garden can coexist; the joint Domain pays one shared 2 TP upkeep.
 - `scripts/ten_shadows/boss_actions.lua` centralizes the encounter's Ten Shadows, SOUL-mode,
   BRIGHTEN, Domain, and V-ACT handling for either living boss. The Cyan Execution Counter is
   dispatched to the Knight and damages its independent HP pool; the shared scheduler and Titan

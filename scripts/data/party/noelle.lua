@@ -16,7 +16,7 @@ function character:init()
     self.xact_name = "N-Action"
     self:addSpell("heal_prayer")
     self:addSpell("sleep_mist")
-    self:addSpell("ice_shock")
+    self:addSpell("ts_ice_shock")
     self:addSpell("ts_ice_wave")
     -- SnowGrave is only listed once the Weird Route has been enabled.
     if Game:getFlag("weird_route", false) then

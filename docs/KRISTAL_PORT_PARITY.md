@@ -60,15 +60,15 @@ and has been tested in Kristal.
 
 ### TP, items, healing, and ACTs
 
-- [x] Core rules: TP starts at 35, caps at 100, can be spent and gained.
+- [x] Core rules: TP starts at 35, caps at 110, can be spent and gained.
 - [x] Core rules: DEFEND grants 14 TP and marks the actor guarded.
 - [x] Core rules: Dark Candy inventory starts at 3; each use restores 18 HP.
 - [x] Core rules: Ralsei HEAL costs 16 TP and restores 22 HP to one living target.
 - [x] Core rules: REVIVESONG costs 84 TP; revives a fallen target at half HP or heals a living target by half its maximum HP.
 - [x] Core rules: CHECK gives 8 TP when the Knight is not exposed.
 - [x] Core rules: DISTRACT exposes the Knight for 2 turns and grants 12 TP.
-- [x] Core rules: Susie's RUSH deals 34 damage.
 - [x] Core rules: Noelle's ICE SHOCK costs 16 TP, deals 18 damage, and adds 1 CHILL.
+- [x] Core rules: Ralsei's FIRE SHOCK costs 20 TP and deals 28 fire damage.
 - [x] Core rules: Noelle's ICE WAVE costs 28 TP, deals 30 damage, and adds 2 CHILL.
 - [x] Core rules: Berdly's TORNADO costs 20 TP, deals 16 damage, and disrupts the Knight's next attack.
 - [x] Core rules: every non-Kris party member receives WAKE KRIS in their ACT list.
@@ -77,7 +77,7 @@ and has been tested in Kristal.
   replaced by WAKE KRIS; Vessel receives WAKE KRIS in the ACT menu because Vessel has no X-Action slot.
 - [ ] Kristal runtime: verify the downed animation clears, Kris returns at 1 HP, and the action is
   unavailable again once Kris is standing.
-- [x] Kristal integration: first custom spell classes exist for RUSH, BRIGHTEN, HEAL, REVIVESONG, ICE SHOCK, ICE WAVE, and TORNADO, with costs and core effects covered by Lua tests.
+- [x] Kristal integration: first custom spell classes exist for BRIGHTEN, HEAL, REVIVESONG, ICE SHOCK, FIRE SHOCK, ICE WAVE, and TORNADO, with costs and core effects covered by Lua tests.
 - [ ] Kristal integration: verify spell menus, target selection, action completion, and battle turn consumption in Kristal.
 - [x] Kristal integration: consume Knight disruption on the next Knight-led turn, diverting that slot to the Titan; preserve disruption while the Knight is frozen.
 - [x] Kristal integration: connect CHILL stacks from Noelle's spells and Ten Shadows to the shared frozen-turn state; freeze exposes the boss for one enemy turn.
@@ -93,11 +93,12 @@ and has been tested in Kristal.
 - [ ] Kristal integration: custom summon animations/presentation and individual summon-specific Wave behaviours.
 - [x] Kristal integration: Chimera Shadow Garden can be activated once from Kris's ACT menu; it reduces Ten Shadows costs and boosts summon damage. The domain lasts three enemy turns.
 - [ ] Kristal integration: final Chimera visual presentation and dedicated end message.
-- [x] Core rules: **Kris + Vessel fusion Domain Expansion** requires both characters standing, costs 60 TP, then drains 2 TP after each complete enemy turn. It has no fixed duration and cancels both the barrier and shadow garden when upkeep cannot be paid. It consumes the same once-per-battle Domain use as Chimera Shadow Garden. Vessel supplies the barrier; Kris supplies the Ten Shadows environment.
+- [x] Core rules: Kris can activate CHIMERA SHADOW GARDEN independently for three enemy turns. Vessel can activate a standalone Domain barrier for 60 TP, then 2 TP upkeep per enemy turn; it cancels only the barrier when upkeep fails. Both solo Domains can coexist.
+- [x] Core rules: **Kris + Vessel fusion Domain Expansion** requires both characters standing and both Domain uses unused, costs 60 TP, then drains 2 TP after each complete enemy turn. It has no fixed duration and cancels both the barrier and shadow garden when upkeep cannot be paid. The fused expansion consumes both characters' individual Domain uses.
 - [x] Core rules: shadow-portal spell routing copies a spell descriptor, moves its launch point to a chosen exit portal, and preserves its original target. Portal entry/exit coordinates are arena-local inputs.
 - [x] Core rules: Vessel's Granite Blast has a 100%-output descriptor and remains usable outside the Fusion Domain; outside it, the blast fires directly from the SOUL position.
 - [x] Core rules: Vessel's ULTIMATE BEAM costs 100 TP, charges for one complete enemy turn, locks the selected boss target, then resolves for 580 damage.
-- [x] Kristal ACT integration: Kris's ACT menu offers FUSION DOMAIN when Vessel is standing; otherwise it retains the ordinary CHIMERA SHADOW GARDEN option. Vessel always has a V-ACT submenu with GRANITE BLAST (50 TP, 58 damage) and ULTIMATE BEAM (100 TP, one enemy turn of charge).
+- [x] Kristal ACT integration: Kris can choose CHIMERA SHADOW GARDEN or FUSION DOMAIN when both uses are available. Vessel's V-ACT submenu includes standalone VESSEL DOMAIN (60 TP), GRANITE BLAST (50 TP, 58 damage), and ULTIMATE BEAM (100 TP, one enemy turn of charge).
 - [x] Kristal visual integration: the active fusion Domain now layers Vessel’s animated enclosing barrier and six barrier nodes over Kris’s shadow garden in the live assault Wave.
 - [x] Code integration + automated regression: GRANITE BLAST works with or without the Domain; while the Domain is active it routes through a paired gate using the SOUL's current position as the exit, preserves the selected boss target, applies its 58-damage hit once, and spawns a launch visual.
 - [x] Code integration + automated regression: ULTIMATE BEAM begins a one-enemy-turn charge, displays the charge effect during the assault Wave, then applies 580 damage once to its locked target and releases the full beam visual.
@@ -108,6 +109,7 @@ and has been tested in Kristal.
 ### Coordinated Knight + Titan encounter
 
 - [x] Core data: separate Titan (21,000 HP, 40 ATK, 800 DEF) and Knight (1,460 HP) targets; both remain part of one coordinated fight.
+- [x] Core rules: Titan begins with a 1,200 HP shield. Normal attacks damage the shield at reduced output; Rude Buster, Ice Shock, and Fire Shock use heavy shield-damage multipliers. Hits stop damaging the Titan's body until the shield breaks.
 - [x] Core rules: Titan-driven phase thresholds at 14,000 HP and 7,000 HP, advancing one phase at a time.
 - [x] Core rules: exposed armour multiplies damage by 1.4.
 - [x] Core rules: CHILL stacks to 3; at 3 it freezes the Knight for one enemy turn and exposes armour.
@@ -118,7 +120,7 @@ and has been tested in Kristal.
 - [x] Core rules: weighted attack selection, source alternation, Titan shield-class alternation,
   no immediate same attack when alternatives exist, and phase scheduler reset.
 - [x] Core rules: Knight/Titan cannot become TIRED and cannot receive MERCY/SPARE.
-- [x] Kristal CHECK integration: Titan and Knight each report live current HP and their own maximum HP.
+- [x] Kristal CHECK integration: Titan and Knight each report live current HP and their own maximum HP; Titan CHECK also reports live shield HP and its broken state.
 - [x] Kristal ACT routing: both boss battlers delegate to the shared action handler; the Cyan Execution Counter is routed to the Knight and consumes a one-use 36-damage counter.
 - [x] Automated regression: each EnemyBattler keeps its own HP; CHECK/Inspect reports live current/max HP; Titan armour exposure never boosts Knight damage; per-target exposure ticks for both bosses; Titan damage alone advances the shared phase scheduler; the survivor keeps attacking and retains Ten Shadows ACTs after the other is defeated.
 - [x] Kristal UI contract: both enemies set `disable_mercy = true`, which the engine renders as a crossed-out Mercy bar.

@@ -399,6 +399,8 @@ installSixPartySupport = function()
 end
 
 function Mod:postInit(is_new_file)
+    -- Kristal defaults to 100 TP; Shadowbender allows the pool to reach 110.
+    Game:setMaxTension(110)
     for _, id in ipairs(PARTY_ROSTER) do
         assert(Game:getPartyMember(id), "Ten Shadows Kris: party member '" .. id .. "' was not registered")
     end
@@ -508,8 +510,10 @@ function Mod:onBattleEnemySelect(reason, selected)
         end
         if not boss_state or not boss_state.player_domain.used then
             local vessel = boss_state and boss_state:getMember("vessel")
-            if vessel and vessel.hp > 0 then
-                root[#root + 1] = {"FUSION DOMAIN", "Vessel forms the barrier; Kris supplies the shadows.", 60, function(item)
+            local vessel_domain_unused = boss_state and boss_state.vessel_domain
+                and not boss_state.vessel_domain.used
+            if vessel and vessel.hp > 0 and vessel_domain_unused then
+                root[#root + 1] = {"FUSION DOMAIN", "Vessel and Kris expand together; 2 TP upkeep.", 60, function(item)
                     battle:pushAction("ACT", enemy, item)
                 end}
             else
@@ -528,8 +532,13 @@ function Mod:onBattleEnemySelect(reason, selected)
             end}
         end
         root[#root + 1] = {"V-ACT", "Vessel's unique techniques.", 0, function()
-            local entries = {
-                {"GRANITE BLAST", "Fire a 100% output blast; portals enhance it inside the Domain.", 50, function(item)
+            local entries = {}
+            if boss_state and boss_state.vessel_domain and not boss_state.vessel_domain.used then
+                entries[#entries + 1] = {"VESSEL DOMAIN", "Open Vessel's barrier independently; drains 2 TP each enemy turn.", 60, function(item)
+                    battle:pushAction("ACT", enemy, item)
+                end}
+            end
+            entries[#entries + 1] = {"GRANITE BLAST", "Fire a 100% output blast; portals enhance it inside either Vessel or Fusion Domain.", 50, function(item)
                     battle:pushAction("ACT", enemy, item)
                 end},
                 {"ULTIMATE BEAM", "Charge for one enemy turn, then unleash a 580-damage beam.", 100, function(item)
