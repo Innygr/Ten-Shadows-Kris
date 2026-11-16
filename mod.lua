@@ -479,6 +479,7 @@ function Mod:onBattleEnemySelect(reason, selected)
 
     local chara = battler.chara.id
     local root = {}
+    local boss_state = enemy.ten_shadows_state
 
     if chara == "kris" then
         root[#root + 1] = {"TEN SHADOWS", "Open Kris's Ten Shadows techniques.", 0, function()
@@ -500,7 +501,6 @@ function Mod:onBattleEnemySelect(reason, selected)
         root[#root + 1] = {"BRIGHTEN", "Kris strengthens the party.", 4, function(item)
             battle:pushAction("ACT", enemy, item)
         end, {"kris", "susie", "ralsei"}}
-        local boss_state = enemy.ten_shadows_state
         if boss_state and boss_state.boss.counter_ready and knight_enemy then
             root[#root + 1] = {"EXECUTION COUNTER", "Strike while the Knight is staggered.", 0, function(item)
                 battle:pushAction("ACT", knight_enemy, item)
@@ -527,16 +527,18 @@ function Mod:onBattleEnemySelect(reason, selected)
                 battle:pushAction("ACT", enemy, item)
             end}
         end
-        root[#root + 1] = {"V-ACT", "Vessel's unique techniques.", 0, function()
-            local entries = {
-                {"GRANITE BLAST", "Fire a concentrated blast at 100% output.", 50, function(item)
-                    battle:pushAction("ACT", enemy, item)
-                end},
-            }
-            addMenu(battle, enemy, entries, function()
-                addMenu(battle, enemy, root, nil)
-            end)
-        end}
+        if boss_state and boss_state.fusion_domain and boss_state.fusion_domain.active then
+            root[#root + 1] = {"V-ACT", "Vessel's unique techniques.", 0, function()
+                local entries = {
+                    {"GRANITE BLAST", "Fire a 100% output blast through the Domain portals.", 50, function(item)
+                        battle:pushAction("ACT", enemy, item)
+                    end},
+                }
+                addMenu(battle, enemy, entries, function()
+                    addMenu(battle, enemy, root, nil)
+                end)
+            end}
+        end
         root[#root + 1] = {"SOUL MODE", "Choose the Vessel's SOUL mode.", 0, function()
             local entries = {}
             for _, mode in ipairs(SOUL_MODES) do
