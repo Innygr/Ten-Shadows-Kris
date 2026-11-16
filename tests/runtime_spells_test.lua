@@ -82,4 +82,23 @@ expect(boss_state.boss.exposed, 1, "spell freeze exposes the shared boss")
 Effects.disrupt(boss_target)
 expect(boss_state.knight_disrupted, 1, "Berdly spell disruption reaches the scheduler")
 
+-- Titan armour exposure is shared as encounter state, but only Titan should
+-- receive its damage multiplier. The Knight has a separate health pool.
+local shared_armour = CombatState.new()
+shared_armour.boss.exposed = 1
+local titan_target = {
+    ten_shadows_role = "titan",
+    ten_shadows_state = shared_armour,
+    hurt = function(self, amount) self.damage = amount end,
+}
+local knight_target = {
+    ten_shadows_role = "knight",
+    ten_shadows_state = shared_armour,
+    hurt = function(self, amount) self.damage = amount end,
+}
+Effects.damage({}, titan_target, 10)
+Effects.damage({}, knight_target, 10)
+expect(titan_target.damage, 14, "exposed Titan receives armour damage multiplier")
+expect(knight_target.damage, 10, "Knight does not inherit Titan armour exposure")
+
 print("Runtime spell effect tests passed.")

@@ -107,7 +107,7 @@ and has been tested in Kristal.
   no immediate same attack when alternatives exist, and phase scheduler reset.
 - [x] Core rules: Knight/Titan cannot become TIRED and cannot receive MERCY/SPARE.
 - [x] Kristal CHECK integration: Titan and Knight each report live current HP and their own maximum HP.
-- [x] Automated regression: each EnemyBattler keeps its own HP; CHECK/Inspect reports live current/max HP; Titan damage alone advances the shared phase scheduler; the survivor keeps attacking after the other is defeated.
+- [x] Automated regression: each EnemyBattler keeps its own HP; CHECK/Inspect reports live current/max HP; Titan armour exposure never boosts Knight damage; per-target exposure ticks for both bosses; Titan damage alone advances the shared phase scheduler; the survivor keeps attacking after the other is defeated.
 - [x] Kristal UI contract: both enemies set `disable_mercy = true`, which the engine renders as a crossed-out Mercy bar.
 - [ ] Kristal runtime: visually confirm both independent HP bars and survivor transitions in an actual playtest.
 - [x] Kristal foundation: the selected attack now routes through six reusable projectile families (radial, safe-lane wall, aimed, crossfire, falling, and sweep), with separate Knight/Titan/combined projectile visuals and phase-scaled density.

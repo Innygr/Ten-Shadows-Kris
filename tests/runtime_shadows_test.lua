@@ -133,6 +133,34 @@ assert(boss_chill.ten_shadows_state.boss.frozen_turns == 1,
 assert(boss_chill.ten_shadows_state.boss.exposed == 1,
     "freezing the Knight must expose the shared boss")
 
+-- Titan armour exposure must not amplify damage against the separate Knight.
+local armour_state = CombatState.new()
+armour_state.boss.exposed = 1
+local exposed_titan = {ten_shadows_role = "titan", ten_shadows_state = armour_state}
+function exposed_titan:hurt(amount) self.last_damage = amount end
+local unexposed_knight = {ten_shadows_role = "knight", ten_shadows_state = armour_state}
+function unexposed_knight:hurt(amount) self.last_damage = amount end
+Shadows.use("NUE", user, exposed_titan)
+assert(exposed_titan.last_damage == 36,
+    "Titan armour exposure must amplify damage against the Titan")
+Shadows.use("NUE", user, unexposed_knight)
+assert(unexposed_knight.last_damage == 26,
+    "Titan armour exposure must not amplify damage against the Knight")
+
+-- Direct exposure follows the selected boss, while CHILL remains encounter-wide
+-- because its freeze effect belongs to the Knight and opens the Titan's armour.
+local target_state = CombatState.new()
+local exposed_knight = {ten_shadows_role = "knight", ten_shadows_state = target_state}
+function exposed_knight:hurt(amount) self.last_damage = amount end
+Shadows.use("DIVINE DOG", user, exposed_knight)
+assert(exposed_knight.ten_shadows_exposed_turns == 1 and target_state.boss.exposed == 0,
+    "Divine Dog on the Knight must expose only the Knight")
+local armour_titan = {ten_shadows_role = "titan", ten_shadows_state = target_state}
+function armour_titan:hurt(amount) self.last_damage = amount end
+Shadows.use("DIVINE DOG", user, armour_titan)
+assert(target_state.boss.exposed == 1,
+    "Divine Dog on the Titan must expose Titan armour")
+
 local domain_state = CombatState.new()
 domain_state.player_domain.active = true
 local domain_target = {hp = 21000, ten_shadows_state = domain_state}

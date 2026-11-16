@@ -23,6 +23,9 @@ end
 function modRequire(path)
     if path == "scripts/ten_shadows/combat_state" then return CombatState end
     if path == "scripts/ten_shadows/boss_phase" then return BossPhase end
+    if path == "scripts/ten_shadows/runtime_shadows" then
+        return dofile("scripts/ten_shadows/runtime_shadows.lua")
+    end
     error("Unexpected module: " .. tostring(path))
 end
 
@@ -116,4 +119,42 @@ assert(survivor_attack and survivor_source == "knight",
 assert(survivor_attack.id == "black_flash",
     "surviving Knight must receive the phase-three Roaring signature")
 
-print("Independent Knight/Titan HP pools and survivor attack scheduling passed.")
+-- The shared Wave ticks per-enemy statuses on every active boss, but advances
+-- encounter-wide timers exactly once after the complete Wave.
+Wave = {
+    init = function() end,
+    onEnd = function() end,
+}
+local Assault = dofile("scripts/battle/waves/knight_titan_assault.lua")
+local status_state = CombatState.new()
+status_state.boss.exposed = 2
+local state_ticks = 0
+function status_state:tickEnemyTurnEffects()
+    state_ticks = state_ticks + 1
+    self.boss.exposed = math.max(0, self.boss.exposed - 1)
+end
+local active_titan = {
+    ten_shadows_role = "titan",
+    ten_shadows_state = status_state,
+    ten_shadows_exposed_turns = 2,
+}
+local active_knight = {
+    ten_shadows_role = "knight",
+    ten_shadows_state = status_state,
+    ten_shadows_exposed_turns = 2,
+}
+Game = {
+    battle = {
+        enemies = {active_titan, active_knight},
+        getActiveEnemies = function(self) return self.enemies end,
+    },
+}
+local wave = setmetatable({}, {__index = Assault})
+wave:onEnd(false)
+assert(active_titan.ten_shadows_exposed_turns == 1
+    and active_knight.ten_shadows_exposed_turns == 1,
+    "each boss's target-specific exposure must tick after the shared Wave")
+assert(status_state.boss.exposed == 1 and state_ticks == 1,
+    "encounter-wide exposure and domain effects must tick exactly once per Wave")
+
+print("Independent Knight/Titan HP pools, survivor scheduling, and per-target status timers passed.")

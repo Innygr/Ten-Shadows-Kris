@@ -24,8 +24,13 @@ local function damage(user, target, multiplier)
     if not target or not target.hurt then return 0 end
     local state = target.ten_shadows_state
     local domain_bonus = state and state.player_domain and state.player_domain.active
+    -- Boss armour exposure belongs to the Titan only. The shared scheduler
+    -- also stores Knight freeze/disruption state, but that must not make
+    -- attacks against the Knight inherit the Titan's armour multiplier.
+    local titan_armour_exposed = target.ten_shadows_role == "titan"
+        and state and state.boss and state.boss.exposed > 0
     local exposed = (target.ten_shadows_exposed_turns or 0) > 0
-        or (state and state.boss and state.boss.exposed > 0)
+        or titan_armour_exposed
     local amount = math.floor(attackStat(user) * multiplier * (domain_bonus and 1.35 or 1) + 0.5)
     if exposed then
         amount = math.floor(amount * 1.4 + 0.5)
@@ -38,7 +43,7 @@ local function expose(target, turns)
     local duration = turns or 1
     target.ten_shadows_exposed_turns = math.max(target.ten_shadows_exposed_turns or 0, duration)
     local state = target.ten_shadows_state
-    if state and state.expose then
+    if target.ten_shadows_role == "titan" and state and state.expose then
         state:expose(duration)
     end
 end

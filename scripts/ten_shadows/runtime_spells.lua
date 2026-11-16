@@ -3,8 +3,10 @@ local RuntimeSpells = {}
 
 function RuntimeSpells.damage(user, target, amount)
     local state = target and target.ten_shadows_state
+    local titan_armour_exposed = target and target.ten_shadows_role == "titan"
+        and state and state.boss and state.boss.exposed > 0
     local exposed = (target and target.ten_shadows_exposed_turns or 0) > 0
-        or (state and state.boss and state.boss.exposed > 0)
+        or titan_armour_exposed
     if exposed then amount = math.floor(amount * 1.4 + 0.5) end
     target:hurt(amount, user)
     return amount

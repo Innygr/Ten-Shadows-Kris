@@ -151,8 +151,15 @@ function KnightTitanAssault:onEnd(death)
     local enemy = getStateOwner()
     local state = enemy and enemy.ten_shadows_state or nil
     local Shadows = modRequire("scripts/ten_shadows/runtime_shadows")
-    if enemy then
-        Shadows.onEnemyTurnEnd(enemy)
+
+    -- Per-enemy statuses (for example Divine Dog exposure) must tick on both
+    -- battlers. The runtime helper only advances once-per-encounter timers such
+    -- as Mahoraga on the first active enemy, so calling it for each target is safe.
+    local battle = Game.battle
+    local active_enemies = battle and battle.getActiveEnemies
+        and battle:getActiveEnemies() or {}
+    for _, active_enemy in ipairs(active_enemies) do
+        Shadows.onEnemyTurnEnd(active_enemy)
     end
 
     if state then
