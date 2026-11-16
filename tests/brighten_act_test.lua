@@ -81,6 +81,8 @@ end
 modRequire = function(path)
     if path == "scripts/ten_shadows/runtime_spells" then
         return Effects
+    elseif path == "scripts/ten_shadows/boss_actions" then
+        return dofile("scripts/ten_shadows/boss_actions.lua")
     end
     error("Unexpected module requested by BRIGHTEN test: " .. tostring(path))
 end
