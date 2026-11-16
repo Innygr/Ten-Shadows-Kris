@@ -36,6 +36,9 @@ function modRequire(path)
     if path == "scripts/ten_shadows/runtime_shadows" then
         return dofile("scripts/ten_shadows/runtime_shadows.lua")
     end
+    if path == "scripts/ten_shadows/boss_actions" then
+        return dofile("scripts/ten_shadows/boss_actions.lua")
+    end
     error("Unexpected module: " .. tostring(path))
 end
 
@@ -146,6 +149,15 @@ assert(survivor_attack and survivor_source == "knight",
     "Knight must continue attacking without Titan actions")
 assert(survivor_attack.id == "black_flash",
     "surviving Knight must receive the phase-three Roaring signature")
+
+-- When the Titan is gone, the Knight must still receive the custom boss ACTs.
+-- The effect is applied to the currently selected Knight's own HP pool.
+local surviving_knight_hp = surviving_knight.health
+local survivor_act_text = surviving_knight:onAct(nil, "NUE")
+assert(type(survivor_act_text) == "string" and survivor_act_text:find("NUE", 1, true),
+    "the surviving Knight must still accept Ten Shadows ACTs")
+assert(surviving_knight.health < surviving_knight_hp and surviving_titan.health == 0,
+    "survivor Ten Shadows damage must hit the Knight, not the defeated Titan")
 
 -- The shared Wave ticks per-enemy statuses on every active boss, but advances
 -- encounter-wide timers exactly once after the complete Wave.

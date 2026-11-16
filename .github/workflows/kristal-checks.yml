@@ -172,6 +172,9 @@ jobs:
           grep -q 'function KnightTitanPreview:onBattleEnd()' scripts/battle/encounters/knight_titan_preview.lua
           grep -q 'CHIMERA SHADOW GARDEN' mod.lua
           test -f scripts/battle/enemies/roaring_knight_titan.lua
+          test -f scripts/ten_shadows/boss_actions.lua
+          grep -q 'BossActions.onAct(self, battler, name, super.onAct)' scripts/battle/enemies/roaring_knight_titan.lua
+          grep -q 'BossActions.onAct(self, battler, name, super.onAct)' scripts/battle/enemies/roaring_knight.lua
           test -f scripts/ten_shadows/boss_phase.lua
           test -f tests/boss_phase_test.lua
           test -f scripts/battle/enemies/runtime_dummy.lua

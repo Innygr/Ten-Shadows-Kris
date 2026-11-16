@@ -72,7 +72,8 @@ function RoaringKnight:onAct(battler, name)
         }
     end
 
-    return super.onAct(self, battler, name)
+    local BossActions = modRequire("scripts/ten_shadows/boss_actions")
+    return BossActions.onAct(self, battler, name, super.onAct)
 end
 
 function RoaringKnight:onDefeat(amount, battler)
