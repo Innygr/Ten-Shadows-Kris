@@ -17,8 +17,8 @@ expect(state:expandFusionDomain(false), true, "Kris and Vessel can create the fu
 expect(state.tp, 40, "fusion Domain costs 60 TP")
 expect(state.fusion_domain.active, true, "fusion Domain barrier is active")
 expect(state.player_domain.active, true, "Kris's shadow garden is active")
-expect(state.fusion_domain.turns, 3, "fusion Domain lasts three enemy turns")
-expect(state.player_domain.turns, 3, "shadow garden shares the Domain duration")
+expect(state.fusion_domain.turns, -1, "fusion Domain has no fixed turn limit")
+expect(state.player_domain.turns, -1, "shadow garden follows the upkeep-based Domain")
 
 local spell = {
     id = "ice_wave",
@@ -61,10 +61,23 @@ expect(partial.output, 1, "Granite Blast output is clamped to 100%")
 local low = state:createGraniteBlast({x = 0, y = 0}, {x = 1, y = 1}, -1)
 expect(low.output, 0, "Granite Blast output cannot be negative")
 
-for _ = 1, 3 do state:tickEnemyTurnEffects() end
-expect(state.fusion_domain.active, false, "fusion Domain expires after three enemy turns")
-expect(state.player_domain.active, false, "shadow garden expires with the fusion Domain")
-expect(state:expandFusionDomain(true), false, "fusion Domain is once per battle")
+local upkeep = CombatState.new()
+upkeep.tp = 6
+expect(upkeep:expandFusionDomain(true), true, "upkeep test starts the fusion Domain")
+for turn = 1, 3 do
+    upkeep:tickEnemyTurnEffects()
+    expect(upkeep.tp, 6 - turn * 2, "fusion Domain drains 2 TP after enemy turn " .. turn)
+    expect(upkeep.fusion_domain.active, true, "fusion Domain remains active while upkeep is paid")
+    expect(upkeep.player_domain.active, true, "shadow garden remains active while upkeep is paid")
+end
+expect(upkeep.fusion_domain.turns, -1, "fusion Domain does not expire after three turns")
+local upkeep_result = upkeep:tickEnemyTurnEffects()
+expect(upkeep_result.domain_cancelled, true, "unpayable upkeep reports Domain cancellation")
+expect(upkeep.tp, 0, "failed upkeep never makes TP negative")
+expect(upkeep.fusion_domain.active, false, "unpayable upkeep cancels the Fusion Domain")
+expect(upkeep.player_domain.active, false, "unpayable upkeep cancels the shadow garden too")
+expect(upkeep.fusion_domain.cancel_reason, "insufficient_tp", "cancellation records the TP reason")
+expect(upkeep:expandFusionDomain(true), false, "cancelled Fusion Domain remains once per battle")
 
 local down_vessel = CombatState.new()
 down_vessel:getMember("vessel").hp = 0
@@ -83,8 +96,10 @@ expect(ordinary.fusion_domain.active, false,
 local inactive = CombatState.new()
 local denied = inactive:routePartySpell(spell, {x = 0, y = 0}, {x = 1, y = 1})
 expect(denied, false, "shadow portal routing is unavailable outside the fusion Domain")
-local denied_blast = inactive:createGraniteBlast({x = 0, y = 0}, {x = 1, y = 1}, 1)
-expect(denied_blast, false, "free-position Granite Blast requires the fusion Domain")
+local direct_blast = inactive:createGraniteBlast({x = 0, y = 0}, {x = 1, y = 1}, 1)
+expect(type(direct_blast), "table", "Granite Blast remains available outside the Fusion Domain")
+expect(direct_blast.redirected_by_shadow_portal, false,
+    "Granite Blast is a direct shot when the Fusion Domain is inactive")
 
 local menu_file = assert(io.open("mod.lua", "r"))
 local menu_source = menu_file:read("*a")
