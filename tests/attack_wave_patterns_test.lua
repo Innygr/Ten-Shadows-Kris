@@ -475,6 +475,28 @@ for _, sets in pairs(CombatState.SOUL_MODE_ATTACKS) do
         end
     end
 end
+-- Ricochet Blades are not merely aimed shots: they start inside the arena and
+-- carry two wall rebounds for the live projectile class to execute.
+local ricochet_shots, ricochet_family = Patterns.build({
+    id = "yellow_knight_ricochet",
+    source = "knight",
+    pattern = "ricochet-blades",
+}, 2, 1, arena, target, false)
+assert(ricochet_family == "soul_mode" and #ricochet_shots == 4,
+    "Yellow SOUL Ricochet Blades must use four dedicated projectiles")
+for _, shot in ipairs(ricochet_shots) do
+    local marker = shot.mechanic
+    assert(marker.variant == "ricochet_blade",
+        "Ricochet Blade must keep its dedicated projectile variant")
+    assert(marker.ricochet_bounces == 2 and type(marker.ricochet_bounds) == "table",
+        "Ricochet Blade must carry two rebounds and arena bounds")
+    assert(shot.x > marker.ricochet_bounds.left and shot.x < marker.ricochet_bounds.right
+        and shot.y > marker.ricochet_bounds.top and shot.y < marker.ricochet_bounds.bottom,
+        "Ricochet Blade must begin inside its bounce bounds")
+    assert(shot.warning.kind == "target" and shot.warning.duration > 0,
+        "Ricochet Blade must show its initial direction before arming")
+end
+
 local soul_pattern_count = 0
 for _ in pairs(soul_pattern_keys) do soul_pattern_count = soul_pattern_count + 1 end
 assert(soul_pattern_count == 30,
