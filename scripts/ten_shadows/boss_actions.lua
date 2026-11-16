@@ -64,14 +64,16 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
     if name == "GRANITE BLAST" then
         local battle = Game and Game.battle
         local arena = battle and battle.arena
-        if not state or not state.fusion_domain or not state.fusion_domain.active
-            or not arena or not arena.width or not arena.height then
-            return "* GRANITE BLAST requires the active Fusion Domain."
+        if not battler or not battler.chara or battler.chara.id ~= "vessel" then
+            return "* Only Vessel can shape Granite Blast."
+        end
+        if not state or not arena or not arena.width or not arena.height then
+            return "* Granite Blast cannot find a clear path to its target."
         end
 
-        -- The exit portal follows the SOUL's current arena position. This
-        -- gives the player meaningful placement from their last movement
-        -- without adding a second targeting UI to Kristal's ACT flow.
+        -- Granite Blast is always available. Outside the Fusion Domain it
+        -- fires directly from the SOUL's current position. Inside the Domain,
+        -- the same shot is routed through the paired shadow portals.
         local soul = battle.soul
         local arena_x, arena_y = arena.x or 0, arena.y or 0
         local origin_x = arena.width * 0.5
@@ -81,13 +83,6 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
             origin_y = math.max(8, math.min(arena.height - 8, soul.y - arena_y))
         end
 
-        -- The entry gate is placed across the Domain from the exit gate.
-        -- routePartySpell copies the descriptor and preserves the chosen boss
-        -- target while moving the launch origin to the exit portal.
-        local entry = {
-            x = math.max(8, math.min(arena.width - 8, arena.width - origin_x)),
-            y = math.max(8, math.min(arena.height - 8, arena.height - origin_y)),
-        }
         local target = {
             x = (enemy.x or 0) + (enemy.width or 0) * 0.5,
             y = (enemy.y or 0) + (enemy.height or 0) * 0.5,
@@ -99,18 +94,25 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
             return "* " .. tostring(reason or "Granite Blast could not form.")
         end
 
-        local routed, route_reason = state:routePartySpell(descriptor, entry, {
-            x = origin_x, y = origin_y,
-        })
-        if not routed then
-            return "* " .. tostring(route_reason or "The shadow portals could not connect.")
+        local entry = {x = origin_x, y = origin_y}
+        local routed = descriptor
+        if state.fusion_domain and state.fusion_domain.active then
+            entry = {
+                x = math.max(8, math.min(arena.width - 8, arena.width - origin_x)),
+                y = math.max(8, math.min(arena.height - 8, arena.height - origin_y)),
+            }
+            routed, reason = state:routePartySpell(descriptor, entry, {
+                x = origin_x, y = origin_y,
+            })
+            if not routed then
+                return "* " .. tostring(reason or "The shadow portals could not connect.")
+            end
         end
 
         local damage = math.floor(58 * routed.output + 0.5)
         enemy:hurt(damage, battler)
 
-        -- The visual is attached to the live battle stage and never owns
-        -- damage; the ACT above applies the hit exactly once.
+        -- The visual is presentation only; the ACT above applies the hit once.
         local GraniteBlast = modRequire("scripts/battle/objects/granite_blast")
         local visual = GraniteBlast(
             arena_x + entry.x, arena_y + entry.y,
@@ -122,9 +124,32 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
             parent:addChild(visual)
         end
 
+        if routed.redirected_by_shadow_portal then
+            return {
+                "* VESSEL FIRES GRANITE BLAST THROUGH THE SHADOW PORTALS!",
+                "* The 100% output blast deals " .. tostring(damage) .. " damage.",
+            }
+        end
         return {
-            "* VESSEL FIRES GRANITE BLAST THROUGH THE SHADOW PORTALS!",
+            "* VESSEL FIRES GRANITE BLAST!",
             "* The 100% output blast deals " .. tostring(damage) .. " damage.",
+        }
+    end
+
+    if name == "ULTIMATE BEAM" then
+        if not battler or not battler.chara or battler.chara.id ~= "vessel" then
+            return "* Only Vessel can charge the ultimate beam."
+        end
+        if not state then
+            return "* Vessel cannot reach the ultimate beam's charge state."
+        end
+        local started, reason = state:beginUltimateBeam(enemy, battler)
+        if not started then
+            return "* " .. tostring(reason or "The ultimate beam cannot charge right now.")
+        end
+        return {
+            "* VESSEL BEGINS CHARGING THE ULTIMATE BEAM.",
+            "* The beam will release after one full enemy turn.",
         }
     end
 
