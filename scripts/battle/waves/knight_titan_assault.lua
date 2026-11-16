@@ -68,8 +68,8 @@ function KnightTitanAssault:onStart()
 
     -- Kris's domain is rendered inside the arena mask, below live projectiles.
     -- The Wave owns this object, so it is removed automatically when the
-    -- current defending turn ends; the next wave recreates it while the
-    -- three-turn Chimera Shadow Garden state remains active.
+    -- current defending turn ends. The next Wave recreates it while either
+    -- the ordinary Chimera duration or the Fusion Domain upkeep remains active.
     local garden_visual = nil
     if state and state.player_domain.active and arena and arena.mask then
         local GardenVisual = modRequire("scripts/battle/objects/chimera_shadow_garden")
