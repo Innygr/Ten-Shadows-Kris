@@ -45,7 +45,7 @@ function BaseSoul:init(x, y, color)
     self.speed = 4
     self.can_move = true
     self.transitioning = false
-    self.inv_timer = 0
+    self.inv_flash_timer = 0
 end
 function BaseSoul:update()
     if self.can_move then self:doMovement() end
@@ -285,6 +285,7 @@ Game.battle.swapSoul = function(self, replacement)
     self.swap_count = (self.swap_count or 0) + 1
 end
 Game.battle.soul = newBaseSoul(22, 33, {1, 0, 0})
+Game.battle.soul.inv_flash_timer = 0.42
 local old_soul = Game.battle.soul
 local BossActions = dofile("scripts/ten_shadows/boss_actions.lua")
 local mode_enemy = {ten_shadows_state = state}
@@ -298,5 +299,6 @@ expect(Game.battle.soul == old_soul, false, "previous SOUL object is replaced")
 expect(Game.battle.soul.ten_shadows_mode, "yellow", "replacement Soul uses the selected mode")
 expect(Game.battle.soul.x, 22, "Soul swap preserves x-position")
 expect(Game.battle.soul.y, 33, "Soul swap preserves y-position")
+expect(Game.battle.soul.inv_flash_timer, 0.42, "Soul swap preserves damage-flash animation time")
 
 print("Blue gravity, Green shield, Yellow shooting/charge, Orange dash, Purple tracks, and SOUL factory tests passed.")
