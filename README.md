@@ -36,6 +36,9 @@ architecture contract.
   attack sets only run while the matching coloured SOUL is active.
 - Yellow SOUL's Ricochet Blades now behave as actual bouncing projectiles: four blades are
   telegraphed, then rebound from arena walls twice with a dedicated blade silhouette.
+- Vessel's GRANITE BLAST is now gated behind the active Kris + Vessel Fusion Domain. It uses
+  the SOUL's current arena position as its exit portal, routes through a paired shadow gate,
+  applies its 58-damage hit once to the selected boss, and displays an animated charge/beam effect.
 - `scripts/ten_shadows/boss_actions.lua` centralizes the encounter's Ten Shadows, SOUL-mode,
   BRIGHTEN, Domain, and V-ACT handling for either living boss. The Cyan Execution Counter is
   dispatched to the Knight and damages its independent HP pool; the shared scheduler and Titan
