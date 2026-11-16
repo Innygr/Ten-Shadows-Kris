@@ -41,7 +41,11 @@ function KnightTitanPreview:createSoul(x, y, color)
     local battle = Game.battle
     local enemy = nil
     if battle then
-        for _, candidate in ipairs(battle:getActiveEnemies()) do
+        local active_enemies = battle.getActiveEnemies
+            and battle:getActiveEnemies()
+            or battle.enemies
+            or {}
+        for _, candidate in ipairs(active_enemies) do
             if candidate.ten_shadows_state then
                 enemy = candidate
                 break
