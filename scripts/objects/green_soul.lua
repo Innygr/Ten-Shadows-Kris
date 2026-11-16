@@ -13,7 +13,6 @@ function GreenSoul:init(x, y)
     self.green_direction = "right"
     self.green_key_down = {}
     self.green_blocked = 0
-    self.can_move = false
 end
 
 function GreenSoul:doMovement()
