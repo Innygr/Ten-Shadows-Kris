@@ -244,8 +244,13 @@ input_down.right = false
 assert(purple.x > purple_x, "Purple moves horizontally along its track")
 
 -- The encounter factory must build the matching live controller for every mode.
+local function newBaseSoul(x, y, color)
+    local soul = setmetatable({}, Soul)
+    soul:init(x, y, color)
+    return soul
+end
 Encounter = {
-    createSoul = function(_, x, y, color) return Soul(x, y, color) end,
+    createSoul = function(_, x, y, color) return newBaseSoul(x, y, color) end,
 }
 local Preview = dofile("scripts/battle/encounters/knight_titan_preview.lua")
 modRequire = function(path)
@@ -279,7 +284,7 @@ Game.battle.swapSoul = function(self, replacement)
     self.soul = replacement
     self.swap_count = (self.swap_count or 0) + 1
 end
-Game.battle.soul = Soul(22, 33, {1, 0, 0})
+Game.battle.soul = newBaseSoul(22, 33, {1, 0, 0})
 local old_soul = Game.battle.soul
 local BossActions = dofile("scripts/ten_shadows/boss_actions.lua")
 local mode_enemy = {ten_shadows_state = state}
