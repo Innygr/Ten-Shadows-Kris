@@ -153,6 +153,7 @@ jobs:
           test -f scripts/battle/encounters/knight_titan_preview.lua
           test -f scripts/battle/waves/knight_titan_assault.lua
           test -f scripts/battle/objects/chimera_shadow_garden.lua
+          test -f scripts/battle/objects/vessel_domain_barrier.lua
           test -f scripts/battle/objects/granite_blast.lua
           test -f scripts/battle/objects/ultimate_beam.lua
           test -f tests/ultimate_beam_test.lua
