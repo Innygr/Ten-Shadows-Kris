@@ -24,6 +24,9 @@ function UltimateBeam:release(hit)
     if self.released then return false end
     self.released = true
     self.hit = hit == true
+    -- One full enemy turn has elapsed, regardless of how short a frozen
+    -- turn's Wave is in real time.
+    self.charge_time = CHARGE_TIME
     self.release_time = RELEASE_TIME
     return true
 end
