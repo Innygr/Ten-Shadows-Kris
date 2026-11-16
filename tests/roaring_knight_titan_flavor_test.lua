@@ -18,7 +18,7 @@ Mod = {
 local BossPhase = dofile("scripts/ten_shadows/boss_phase.lua")
 local CombatState = {
     new = function()
-        return {boss = {hp = 260, max_hp = 260}}
+        return {boss = {hp = 21000, max_hp = 21000}}
     end,
 }
 function modRequire(path)
@@ -96,9 +96,11 @@ assert(updated == "* The Titan studies xem from behind the armour.",
 -- Crossing the phase-two threshold installs a one-shot engine dialogue override.
 -- The identity-aware dialogue selector must not consume and replace this line.
 enemy.ten_shadows_phase = 1
-enemy.health = 14000
+enemy.health = 14010
 enemy:onHurt(30)
 assert(enemy.ten_shadows_phase == 2, "Damage across the threshold must advance to phase two")
+assert(enemy.ten_shadows_state.boss.hp == enemy.health,
+    "the scheduler HP must mirror Titan health after a real enemy hit")
 local phase_dialogue = enemy:getEnemyDialogue()
 assert(phase_dialogue == BossPhase.TEXT[2],
     "Phase transition dialogue must take priority over normal flavor dialogue")

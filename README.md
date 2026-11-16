@@ -19,7 +19,8 @@ architecture contract.
 
 - mod.json and mod.lua provide the initial Kristal project configuration and load hook.
 - A new file now starts the Knight + Titan playtest encounter (`knight_titan_preview`), using
-  the shared 260 HP boss, six-member party, and Knight + Titan assault Wave.
+  two independent enemies (Titan: 21,000 HP / 40 ATK / 800 DEF; Knight: 1,460 HP),
+  a six-member party, and a coordinated Knight + Titan assault Wave.
 - `runtime_smoke_test.lua`, `runtime_dummy.lua`, and `runtime_smoke.lua` remain available as a
   separate engine-integration diagnostic path.
 - `scripts/objects/soul_ejection.lua`: detached SOUL controller foundation.

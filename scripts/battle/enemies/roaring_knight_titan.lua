@@ -4,6 +4,7 @@ function RoaringKnightTitan:init()
     super.init(self)
 
     self.name = "The Titan"
+    self.ten_shadows_role = "titan"
     -- Temporary Kris actor placeholder until dedicated Knight/Titan art is added.
     self:setActor("kris")
     self.max_health = 21000
@@ -14,7 +15,7 @@ function RoaringKnightTitan:init()
     self.experience = 0
     self.spare_points = 0
 
-    -- This encounter is one continuous boss with no TIRED or MERCY route.
+    -- The Titan owns the phase-bearing HP pool; the Knight has a separate battler.
     self.tired_percentage = 0
     self.can_freeze = false
     self.disable_mercy = true
@@ -88,6 +89,13 @@ function RoaringKnightTitan:getEnemyDialogue()
     }) or fallback
     self._previous_enemy_dialogue = text
     return text
+end
+
+function RoaringKnightTitan:onDefeat(amount, battler)
+    if self.ten_shadows_state and self.ten_shadows_state.setTitanAlive then
+        self.ten_shadows_state:setTitanAlive(false)
+    end
+    return super.onDefeat(self, amount, battler)
 end
 
 function RoaringKnightTitan:onHurt(damage, battler)

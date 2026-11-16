@@ -1,5 +1,16 @@
 local KnightTitanAssault, super = Class(Wave)
 
+local function getStateOwner()
+    local battle = Game.battle
+    if not battle then return nil end
+    for _, enemy in ipairs(battle:getActiveEnemies()) do
+        if enemy.ten_shadows_state then
+            return enemy
+        end
+    end
+    return nil
+end
+
 function KnightTitanAssault:init()
     super.init(self)
     -- Leave enough room for the final telegraphed volley to cross the arena.
@@ -7,12 +18,14 @@ function KnightTitanAssault:init()
 end
 
 function KnightTitanAssault:onStart()
-    local enemy = Game.battle.enemies and Game.battle.enemies[1] or nil
+    local enemy = getStateOwner()
     local state = enemy and enemy.ten_shadows_state or nil
     local attack, frozen, domain_started, disrupted
 
     if state then
-        state.boss.hp = enemy.health
+        if enemy.ten_shadows_role == "titan" then
+            state.boss.hp = enemy.health
+        end
         local soul = Game.battle.soul
         local active_soul_mode = soul and soul.ten_shadows_mode or nil
         attack, frozen, domain_started, disrupted = state:chooseEnemyAttack(active_soul_mode)
@@ -53,7 +66,7 @@ function KnightTitanAssault:onStart()
         self:spawnObjectTo(arena.mask, roaring_visual, 0, 0)
     end
 
-    if frozen then
+    if frozen or not attack then
         self.time = 2
         return
     end
@@ -135,10 +148,12 @@ function KnightTitanAssault:onEnd(death)
 
     if death then return end
 
-    local enemy = Game.battle.enemies and Game.battle.enemies[1] or nil
+    local enemy = getStateOwner()
     local state = enemy and enemy.ten_shadows_state or nil
     local Shadows = modRequire("scripts/ten_shadows/runtime_shadows")
-    Shadows.onEnemyTurnEnd(enemy)
+    if enemy then
+        Shadows.onEnemyTurnEnd(enemy)
+    end
 
     if state then
         -- Status durations are measured in enemy turns, not individual

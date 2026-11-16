@@ -4,6 +4,7 @@ function RoaringKnight:init()
     super.init(self)
 
     self.name = "The Roaring Knight"
+    self.ten_shadows_role = "knight"
     -- Temporary Kris actor placeholder until dedicated Knight art is added.
     self:setActor("kris")
     self.max_health = 1460
@@ -20,13 +21,26 @@ function RoaringKnight:init()
     self.auto_spare = false
     self.mercy = 0
 
-    self.waves = {}
+    -- Both enemies select one coordinated Wave. Kristal de-duplicates the
+    -- shared Wave instance while retaining both attackers in getAttackers().
+    -- This lets either survivor keep the encounter active.
+    self.waves = {"knight_titan_assault"}
     self.dialogue = {"* The Roaring Knight raises its blade."}
     self.text = {
         "* The Roaring Knight has 1,460 HP.",
         "* Its health is separate from the Titan's.",
     }
-    self.check = "AT 40 DF 0\n* HP: 1,460.\n* The Knight has its own health pool."
+    self.check = {
+        "HP: 1,460.",
+        "Its health is independent from the Titan's.",
+    }
+end
+
+function RoaringKnight:onDefeat(amount, battler)
+    if self.ten_shadows_state and self.ten_shadows_state.setKnightAlive then
+        self.ten_shadows_state:setKnightAlive(false)
+    end
+    return super.onDefeat(self, amount, battler)
 end
 
 return RoaringKnight

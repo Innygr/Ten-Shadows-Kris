@@ -84,6 +84,22 @@ assert(Game.party[1] == kris_member, "battle-end cleanup must restore Kris to th
 assert(kris_battler.chara == kris_member, "battle-end cleanup must restore Kris's battler")
 assert(not Shadows.isMahoragaSummoned(), "battle-end cleanup must clear summon state")
 
+-- A surviving Knight becomes the first active enemy after the Titan is defeated.
+local surviving_summon = Shadows.use("MAHORAGA", user, target)
+assert(string.find(surviving_summon, "SUMMONED"), "Mahoraga must summon before survivor-turn test")
+local defeated_titan = {}
+local surviving_knight = {}
+Game.battle.enemies = {defeated_titan, surviving_knight}
+Game.battle.getActiveEnemies = function() return {surviving_knight} end
+Shadows.onEnemyTurnEnd(defeated_titan)
+assert(Shadows.isMahoragaSummoned(), "a defeated Titan must not consume the survivor's summon turn")
+Shadows.onEnemyTurnEnd(surviving_knight)
+Shadows.onEnemyTurnEnd(surviving_knight)
+assert(Shadows.isMahoragaSummoned(), "Mahoraga must remain for two survivor turns")
+Shadows.onEnemyTurnEnd(surviving_knight)
+assert(not Shadows.isMahoragaSummoned(), "Mahoraga must return after three survivor turns")
+assert(Game.party[1] == kris_member, "survivor-turn cleanup must restore Kris")
+
 local enemy = {waves = {"test_wave"}, ten_shadows_disrupted = true}
 assert(Shadows.onEnemyTurnStart(enemy) == true, "disruption must suppress the next wave")
 assert(#enemy.waves == 0, "disrupted enemy must not launch its wave")
@@ -96,7 +112,7 @@ assert(Shadows.onEnemyTurnStart(enemy) == false, "disruption must not suppress a
 local CombatState = dofile("scripts/ten_shadows/combat_state.lua")
 local boss_state = CombatState.new()
 local boss_target = {
-    hp = 260,
+    hp = 21000,
     waves = {"knight_titan_assault"},
     ten_shadows_state = boss_state,
 }
@@ -119,7 +135,7 @@ assert(boss_chill.ten_shadows_state.boss.exposed == 1,
 
 local domain_state = CombatState.new()
 domain_state.player_domain.active = true
-local domain_target = {hp = 260, ten_shadows_state = domain_state}
+local domain_target = {hp = 21000, ten_shadows_state = domain_state}
 function domain_target:hurt(amount) self.last_damage = amount end
 Shadows.use("NUE", user, domain_target)
 assert(domain_target.last_damage == 34,

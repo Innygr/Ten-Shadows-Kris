@@ -17,9 +17,11 @@ function KnightTitanPreview:init()
     self.music = "battle"
     self.background = true
 
-    -- Independent enemies: each boss has its own HP pool and status bar.
-    self:addEnemy("roaring_knight_titan")
-    self:addEnemy("roaring_knight")
+    -- Separate EnemyBattlers preserve each HP pool. They share only the
+    -- coordinator that chooses Titan, Knight, and combined attack turns.
+    local titan = self:addEnemy("roaring_knight_titan")
+    local knight = self:addEnemy("roaring_knight")
+    knight.ten_shadows_state = titan.ten_shadows_state
 end
 
 function KnightTitanPreview:getInitialEncounterText()
@@ -37,7 +39,15 @@ end
 
 function KnightTitanPreview:createSoul(x, y, color)
     local battle = Game.battle
-    local enemy = battle and battle.enemies and battle.enemies[1] or nil
+    local enemy = nil
+    if battle then
+        for _, candidate in ipairs(battle:getActiveEnemies()) do
+            if candidate.ten_shadows_state then
+                enemy = candidate
+                break
+            end
+        end
+    end
     local state = enemy and enemy.ten_shadows_state
     local mode = state and state.soul_mode
 

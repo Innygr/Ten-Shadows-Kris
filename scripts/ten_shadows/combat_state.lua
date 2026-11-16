@@ -1,4 +1,4 @@
--- Ten Shadows Kris: Kristal-native shared Knight + Titan combat state.
+-- Coordinated Knight + Titan scheduler state; each EnemyBattler owns its own HP.
 -- Pure Lua 5.1 module: no browser APIs and no HTML prototype dependencies.
 -- Battle/Encounter/Wave scripts should call this module rather than duplicating
 -- TP, status, phase, and scheduler rules.
@@ -198,11 +198,13 @@ function CombatState.new()
     local state = {
         party = copyParty(),
         boss = {
-            hp = 260, max_hp = 260, phase = 1, exposed = 0,
+            hp = 21000, max_hp = 21000, phase = 1, exposed = 0,
             chill = 0, frozen_turns = 0, tired_immune = true,
             mercy_immune = true, status = "Normal",
             counter_ready = false, counter_turns = 0,
         },
+        titan_alive = true,
+        knight_alive = true,
         tp = 35,
         dark_candy = 3,
         turn = 1,
@@ -268,6 +270,35 @@ function CombatState.new()
         return true
     end
 
+    function state:setTitanAlive(alive)
+        self.titan_alive = alive == true
+        if not self.titan_alive then
+            self.boss.hp = 0
+            self.boss.phase = 3
+            self.encounter.phase = 3
+            self.encounter.last_class = ""
+            self.encounter.last_source = ""
+            self.encounter.last_attack = ""
+            self.encounter.turns = 0
+            self.encounter.phase_counts[3] = 0
+            self.encounter.roaring_pending = self.knight_alive
+        end
+        return self.titan_alive
+    end
+
+    function state:setKnightAlive(alive)
+        self.knight_alive = alive == true
+        if not self.knight_alive then
+            self.knight_disrupted = 0
+            self.boss.chill = 0
+            self.boss.frozen_turns = 0
+            self.knight_domain.active = false
+            self.knight_domain.turns = 0
+            self.encounter.roaring_pending = false
+        end
+        return self.knight_alive
+    end
+
     function state:damageBoss(amount)
         local multiplier = self.boss.exposed > 0 and 1.4 or 1
         local dealt = math.floor(amount * multiplier + 0.5)
@@ -277,7 +308,7 @@ function CombatState.new()
         -- scheduler in lockstep with the encounter's phase controller.
         while self.boss.phase < 3 do
             local next_phase = self.boss.phase + 1
-            local threshold = next_phase == 2 and 175 or 78
+            local threshold = next_phase == 2 and 14000 or 7000
             if self.boss.hp <= threshold then
                 self.boss.phase = next_phase
                 phase_changed = true
@@ -293,6 +324,9 @@ function CombatState.new()
             self.encounter.turns = 0
             self.encounter.phase_counts[self.boss.phase] = 0
             self.encounter.roaring_pending = self.boss.phase == 3
+        end
+        if self.boss.hp <= 0 then
+            self:setTitanAlive(false)
         end
         return dealt, phase_changed
     end
@@ -529,7 +563,7 @@ function CombatState.new()
     end
 
     function state:startKnightDomain()
-        if self.boss.phase ~= 3 or self.knight_domain.active then return false end
+        if not self.knight_alive or self.boss.phase ~= 3 or self.knight_domain.active then return false end
         self.knight_domain.active = true
         self.knight_domain.turns = 3
         return true
@@ -653,6 +687,8 @@ function CombatState.new()
         local frozen = self.boss.frozen_turns > 0
         if frozen then self.boss.frozen_turns = self.boss.frozen_turns - 1 end
 
+        local titan_alive = self.titan_alive ~= false
+        local knight_alive = self.knight_alive ~= false
         local eligible, titan, knight, combo = {}, {}, {}, nil
         -- SOUL-mode attack sets are valid only while the corresponding custom
         -- SOUL is actually active in the arena. A saved menu choice alone is
@@ -667,17 +703,23 @@ function CombatState.new()
         for _, group in ipairs(attack_groups) do
             for _, attack in ipairs(group) do
                 if attack.phases[1] == phase or attack.phases[2] == phase or attack.phases[3] == phase then
-                    eligible[#eligible + 1] = attack
                     local attack_source = attack.source
                     if not attack_source then
                         attack_source = attack.id == "titan_knight_combo" and "combo"
                             or (string.sub(attack.id, 1, 6) == "titan_" and "titan" or "knight")
                     end
                     if attack_source == "combo" then
-                        combo = attack
+                        if titan_alive and knight_alive then
+                            eligible[#eligible + 1] = attack
+                            combo = attack
+                        end
                     elseif attack_source == "titan" then
-                        titan[#titan + 1] = attack
-                    else
+                        if titan_alive then
+                            eligible[#eligible + 1] = attack
+                            titan[#titan + 1] = attack
+                        end
+                    elseif knight_alive then
+                        eligible[#eligible + 1] = attack
                         knight[#knight + 1] = attack
                     end
                 end
@@ -686,13 +728,24 @@ function CombatState.new()
 
         local source
         if frozen then
-            source = "titan"
-        elseif combo and encounter.turns % (CombatState.COMBO_CADENCE[phase] or 3) == 0 then
+            if titan_alive and #titan > 0 then
+                source = "titan"
+            else
+                -- The Knight is frozen; without the Titan there is no enemy
+                -- left able to take this defending turn.
+                return nil, true, false, false
+            end
+        elseif titan_alive and knight_alive and combo
+            and encounter.turns % (CombatState.COMBO_CADENCE[phase] or 3) == 0 then
             source = "combo"
-        elseif #titan > 0 and #knight > 0 then
+        elseif titan_alive and knight_alive and #titan > 0 and #knight > 0 then
             source = encounter.last_source == "titan" and "knight" or "titan"
+        elseif titan_alive and #titan > 0 then
+            source = "titan"
+        elseif knight_alive and #knight > 0 then
+            source = "knight"
         else
-            source = #titan > 0 and "titan" or "knight"
+            return nil, frozen, false, false
         end
 
         -- Tornado and several Ten Shadows effects disrupt the Knight's next
@@ -700,12 +753,17 @@ function CombatState.new()
         -- of silently spending the Knight's attack slot.
         local knight_disrupted = false
         if not frozen and source ~= "titan" and self:consumeKnightDisruption(false) then
-            source = "titan"
-            knight_disrupted = true
+            if titan_alive then
+                source = "titan"
+                knight_disrupted = true
+            else
+                -- A disrupted Knight cannot hand its turn to a defeated Titan.
+                return nil, false, false, true
+            end
         end
 
         local pool = source == "combo" and {combo} or (source == "titan" and titan or knight)
-        if #pool == 0 then pool = eligible end
+        if #pool == 0 then return nil, frozen, false, knight_disrupted end
         if source == "titan" and #pool > 1 then
             local alternate = {}
             for _, attack in ipairs(pool) do
@@ -765,7 +823,7 @@ function CombatState.new()
         end
 
         local domain_started = false
-        if not frozen and phase == 3 and not self.knight_domain.active and math.random() < 0.45 then
+        if knight_alive and not frozen and phase == 3 and not self.knight_domain.active and math.random() < 0.45 then
             domain_started = self:startKnightDomain()
         end
 

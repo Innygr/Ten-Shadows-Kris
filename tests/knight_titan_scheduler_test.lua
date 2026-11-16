@@ -1,24 +1,24 @@
 local CombatState = dofile("scripts/ten_shadows/combat_state.lua")
 local state = CombatState.new()
 
-assert(state.boss.hp == 260 and state.boss.phase == 1, "boss state must start at full health and phase one")
+assert(state.boss.hp == 21000 and state.boss.max_hp == 21000 and state.boss.phase == 1, "boss state must start at full health and phase one")
 assert(state:canSpare() == false, "Knight + Titan must never be spareable")
 assert(state:canBecomeTired() == false, "Knight + Titan must never become TIRED")
 
 -- A single damage event that crosses both thresholds must put the scheduler
 -- directly into phase three, matching the encounter's phase controller.
 local burst_state = CombatState.new()
-local burst_damage, burst_changed = burst_state:damageBoss(220)
-assert(burst_damage == 220 and burst_changed, "large damage must report a phase change")
-assert(burst_state.boss.hp == 40 and burst_state.boss.phase == 3,
-    "one hit below 78 HP must advance through both phases")
+local burst_damage, burst_changed = burst_state:damageBoss(14000)
+assert(burst_damage == 14000 and burst_changed, "large damage must report a phase change")
+assert(burst_state.boss.hp == 7000 and burst_state.boss.phase == 3,
+    "one hit reaching 7,000 HP must advance through both phases")
 assert(burst_state.encounter.phase == 3 and burst_state.encounter.turns == 0,
     "phase-crossing damage must reset the scheduler in the final phase")
 
 local boundary_state = CombatState.new()
-local _, boundary_changed = boundary_state:damageBoss(85)
+local _, boundary_changed = boundary_state:damageBoss(7000)
 assert(boundary_changed and boundary_state.boss.phase == 2,
-    "exactly reaching 175 HP must advance only to phase two")
+    "exactly reaching 14,000 HP must advance only to phase two")
 
 -- Combined attacks become more frequent as the Roaring progresses.
 for phase, cadence in pairs(CombatState.COMBO_CADENCE) do
@@ -36,12 +36,12 @@ for phase, cadence in pairs(CombatState.COMBO_CADENCE) do
     end
 end
 
-state.boss.hp = 175
+state.boss.hp = 14000
 state.boss.phase = 2
 local attack = state:chooseEnemyAttack()
 assert(attack and attack.id, "phase two must select a registered attack")
 
-state.boss.hp = 78
+state.boss.hp = 7000
 state.boss.phase = 3
 local phase_three_attack = state:chooseEnemyAttack()
 assert(phase_three_attack and phase_three_attack.id, "phase three must select a registered attack")
@@ -55,7 +55,7 @@ assert(valid[phase_three_attack.id], "phase three attack must belong to the shar
 -- first Knight-led turn. The phase controller updates boss.phase directly,
 -- so the scheduler must detect that transition as well as damageBoss().
 local roaring_intro = CombatState.new()
-roaring_intro.boss.hp = 78
+roaring_intro.boss.hp = 7000
 roaring_intro.boss.phase = 3
 local phase_three_titan = roaring_intro:chooseEnemyAttack()
 assert(phase_three_titan and string.sub(phase_three_titan.id, 1, 6) == "titan_",
@@ -71,7 +71,7 @@ assert(not roaring_intro.encounter.roaring_pending,
 -- A selected custom SOUL mode keeps its own attack pool. The pending Roaring
 -- intro survives until the player returns to the ordinary red-SOUL library.
 local mode_intro = CombatState.new()
-mode_intro.boss.hp = 78
+mode_intro.boss.hp = 7000
 mode_intro.boss.phase = 3
 assert(mode_intro:setSoulMode("blue"), "blue SOUL must be selectable before the phase-three intro")
 local blue_titan = mode_intro:chooseEnemyAttack("blue")
@@ -105,6 +105,27 @@ frozen_state:disruptKnight()
 local frozen_attack, was_frozen = frozen_state:chooseEnemyAttack()
 assert(was_frozen and frozen_attack, "the Titan still attacks while the Knight is frozen")
 assert(frozen_state.knight_disrupted == 1, "disruption must remain pending while the Knight is frozen")
+
+-- Each remaining boss gets only its own attack family.
+local titan_only = CombatState.new()
+titan_only:setKnightAlive(false)
+for _ = 1, 6 do
+    local selected = titan_only:chooseEnemyAttack()
+    local source = selected and (selected.source
+        or (string.sub(selected.id, 1, 6) == "titan_" and "titan" or "knight"))
+    assert(selected and source == "titan",
+        "Titan must continue attacking after the Knight is defeated")
+end
+
+local knight_only = CombatState.new()
+knight_only:setTitanAlive(false)
+local survivor_attack = knight_only:chooseEnemyAttack()
+local survivor_source = survivor_attack and (survivor_attack.source
+    or (string.sub(survivor_attack.id, 1, 6) == "titan_" and "titan" or "knight"))
+assert(survivor_attack and survivor_source == "knight",
+    "Knight must continue attacking after Titan defeat")
+assert(survivor_attack.id == "black_flash",
+    "the surviving Knight must receive the phase-three Roaring signature")
 
 -- Kris's domain lasts three turns and asks only its first Wave to play the
 -- opening animation. The active field remains available to the next Waves.

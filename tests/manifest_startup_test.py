@@ -17,6 +17,9 @@ assert 'self:addEnemy("roaring_knight_titan")' in encounter
 assert 'self:addEnemy("roaring_knight")' in encounter, (
     "the encounter must spawn the Knight separately from the Titan"
 )
+assert "knight.ten_shadows_state = titan.ten_shadows_state" in encounter, (
+    "bosses must share scheduler state without sharing HP"
+)
 
 enemy_path = root / "scripts" / "battle" / "enemies" / "roaring_knight_titan.lua"
 enemy = enemy_path.read_text(encoding="utf-8")
@@ -28,6 +31,9 @@ assert "self.attack = 40" in enemy and "self.defense = 800" in enemy
 knight_path = root / "scripts" / "battle" / "enemies" / "roaring_knight.lua"
 knight = knight_path.read_text(encoding="utf-8")
 assert "self.max_health = 1460" in knight and "self.health = self.max_health" in knight
+assert 'self.waves = {"knight_titan_assault"}' in knight, (
+    "the surviving Knight must keep the coordinated assault Wave available"
+)
 assert "self.disable_mercy = true" in enemy
 assert "self.can_freeze = false" in enemy
 

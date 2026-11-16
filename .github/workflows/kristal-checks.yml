@@ -57,6 +57,7 @@ jobs:
           luac5.1 -p /tmp/fsharp-hello.lua
           lua5.1 tests/boss_phase_test.lua
           lua5.1 tests/knight_titan_scheduler_test.lua
+          lua5.1 tests/boss_health_pools_test.lua
           lua5.1 tests/attack_wave_patterns_test.lua
           lua5.1 tests/shadow_projectile_test.lua
           lua5.1 tests/cyan_soul_test.lua

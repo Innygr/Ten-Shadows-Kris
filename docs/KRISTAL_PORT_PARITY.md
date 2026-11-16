@@ -11,16 +11,16 @@ and has been tested in Kristal.
 ## Current Kristal foundation
 
 - mod.json and mod.lua now provide a project manifest and initialization hook.
-- New files now start in `knight_titan_preview`: the shared Knight + Titan enemy and its
-  `knight_titan_assault` Wave are the default battle path. The older runtime smoke-test
+- New files now start in `knight_titan_preview`: separate Titan (21,000 HP) and Knight
+  (1,460 HP) enemies share the `knight_titan_assault` scheduler/Wave, not a health pool. The older runtime smoke-test
   encounter remains available as a separate engine diagnostic.
 - scripts/objects/soul_ejection.lua: detached SOUL movement/drawing controller. Not yet
   connected to Kris's overworld controls, collapse/restore sequence, or character dialogue.
 - scripts/ten_shadows/flavor_text.lua: Lua-native flavor text registry with multiple variants per key, conditional entries, fallback text, and repeat avoidance. It is wired into the Knight + Titan encounter's first-turn text, per-turn battle-box flavor, and identity-aware enemy dialogue. Phase conditions select the right line, and phase-transition announcements retain priority in both engine text channels. Story/route-state dialogue conditions are not wired yet.
-- scripts/ten_shadows/combat_state.lua: Lua-native party, TP, boss phase/status,
-  summon, ACT/spell, domain, and encounter-scheduling rules. The Knight + Titan preview
-  enemy and Wave now consume the shared attack scheduler; player-action and full battle-UI
-  integration are still incomplete.
+- scripts/ten_shadows/combat_state.lua: Lua-native party, TP, Titan phase/status,
+  summon, ACT/spell, domain, and encounter-scheduling rules. Knight and Titan use
+  separate EnemyBattler HP pools while sharing the attack scheduler; player-action and
+  full battle-UI integration are still incomplete.
 - The manifest selects six party IDs: Kris, Susie, Ralsei, Noelle, Berdly, and Vessel.
   Their PartyMember definitions are in `scripts/data/party/`;
   custom spells are in `scripts/data/spells/`. Noelle uses the built-in Noelle actor; Berdly currently
@@ -35,7 +35,7 @@ and has been tested in Kristal.
 - [x] Encounter registration path, enemy class, and a short no-projectile test wave.
 - [ ] Launch the project in Kristal v0.10.0-192-geaf9e0ef and confirm all six party members appear in the battle.
 - [ ] Confirm the six-member test wave ends cleanly and the battle can return to the menu without errors.
-- [x] Add the Knight + Titan encounter with one 260 HP shared-health enemy, disabled MERCY/TIRED/freeze, phase CHECK/dialogue at 175 HP and 78 HP, and a scheduler-backed assault Wave.
+- [x] Add the Knight + Titan encounter as two independent enemies: Titan (21,000 HP, 40 ATK, 800 DEF) and Knight (1,460 HP), both non-spareable and non-TIRED; Titan phase CHECK/dialogue transitions at 14,000 HP and 7,000 HP.
 - [x] Make the Knight + Titan encounter the new-file starting encounter; keep the runtime smoke-test path as a separate diagnostic.
 - [ ] Verify the new-file fight, party actions, wave lifecycle, victory/loss transitions, and asset loading in Kristal v0.10.0.
 - [x] Add custom PartyMember definitions for all six party IDs in `scripts/data/party/` and set the manifest party roster.
@@ -93,10 +93,10 @@ and has been tested in Kristal.
 - [x] Kristal visual integration: the active fusion Domain now layers Vessel’s animated enclosing barrier and six barrier nodes over Kris’s shadow garden in the live assault Wave.
 - [ ] Kristal runtime integration: connect the portal-routing descriptors to actual spell/projectile movement and add visible portal effects, target-position selection, and Granite Blast charge/launch presentation.
 
-### Knight + Titan shared encounter
+### Coordinated Knight + Titan encounter
 
-- [x] Core data: one 260 HP shared boss target; Knight and Titan are one continuous fight.
-- [x] Core rules: phase thresholds at 175 HP and 78 HP, advancing one phase at a time.
+- [x] Core data: separate Titan (21,000 HP, 40 ATK, 800 DEF) and Knight (1,460 HP) targets; both remain part of one coordinated fight.
+- [x] Core rules: Titan-driven phase thresholds at 14,000 HP and 7,000 HP, advancing one phase at a time.
 - [x] Core rules: exposed armour multiplies damage by 1.4.
 - [x] Core rules: CHILL stacks to 3; at 3 it freezes the Knight for one enemy turn and exposes armour.
 - [x] Core rules: frozen Knight does not attack; the Titan still attacks alone.
@@ -106,7 +106,8 @@ and has been tested in Kristal.
 - [x] Core rules: weighted attack selection, source alternation, Titan shield-class alternation,
   no immediate same attack when alternatives exist, and phase scheduler reset.
 - [x] Core rules: Knight/Titan cannot become TIRED and cannot receive MERCY/SPARE.
-- [ ] Kristal integration: actual shared enemy health/phase transitions and crossed-out Mercy UI.
+- [x] Automated regression: each EnemyBattler keeps its own HP; Titan damage alone advances the shared phase scheduler, and the surviving boss keeps attacking after the other is defeated.
+- [ ] Kristal runtime: visually confirm both independent HP bars, crossed-out Mercy UI, and survivor transitions.
 - [x] Kristal foundation: the selected attack now routes through six reusable projectile families (radial, safe-lane wall, aimed, crossfire, falling, and sweep), with separate Knight/Titan/combined projectile visuals and phase-scaled density.
 - [ ] Kristal integration: all 37 attacks have a matching bespoke Kristal Wave, with the same phase access,
   timing, movement, hit rules, and difficulty variations.
