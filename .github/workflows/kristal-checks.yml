@@ -168,7 +168,7 @@ jobs:
           grep -q 'name == "EXECUTION COUNTER"' scripts/battle/enemies/roaring_knight.lua
           test -f scripts/ten_shadows/wake_kris_actions.lua
           test -f tests/wake_kris_action_test.lua
-          grep -q 'WakeKrisActions.install()' mod.lua
+          grep -q 'Mod.wake_kris_actions.install()' mod.lua
           grep -q 'function RuntimeSpells.wakeKris()' scripts/ten_shadows/runtime_spells.lua
           grep -q 'name == "WAKE KRIS"' scripts/ten_shadows/boss_actions.lua
           grep -q 'WAKE KRIS' mod.lua
