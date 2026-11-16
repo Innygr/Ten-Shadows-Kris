@@ -189,7 +189,7 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
         if battle and old_soul and battle.encounter and battle.swapSoul then
             local x, y = old_soul:getExactPosition()
             local replacement = battle.encounter:createSoul(x, y)
-            replacement.inv_timer = old_soul.inv_timer or 0
+            replacement.inv_flash_timer = old_soul.inv_flash_timer or 0
             replacement.can_move = old_soul.can_move
             battle:swapSoul(replacement)
         end
