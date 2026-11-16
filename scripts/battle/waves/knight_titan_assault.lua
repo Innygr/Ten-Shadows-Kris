@@ -41,6 +41,31 @@ function KnightTitanAssault:onStart()
 
     local arena = Game.battle.arena
 
+    -- Vessel's ultimate beam begins its one-turn charge at the start of the
+    -- defending Wave. The pending target is locked when Vessel selects it.
+    if state and state.ultimate_beam and arena then
+        local pending = state.ultimate_beam
+        local soul = Game.battle.soul
+        local arena_x, arena_y = arena.x or 0, arena.y or 0
+        local origin_x = arena_x + arena.width * 0.5
+        local origin_y = arena_y + arena.height * 0.5
+        if soul then
+            origin_x = soul.x
+            origin_y = soul.y
+        end
+        local target = pending.target
+        local target_x = (target.x or 0) + (target.width or 0) * 0.5
+        local target_y = (target.y or 0) + (target.height or 0) * 0.5
+        local UltimateBeam = modRequire("scripts/battle/objects/ultimate_beam")
+        local visual = UltimateBeam(origin_x, origin_y, target_x, target_y)
+        pending.visual = visual
+        local parent = Game.battle.addChild and Game.battle
+            or (Game.stage and Game.stage.addChild and Game.stage)
+        if parent then
+            parent:addChild(visual)
+        end
+    end
+
     -- Kris's domain is rendered inside the arena mask, below live projectiles.
     -- The Wave owns this object, so it is removed automatically when the
     -- current defending turn ends; the next wave recreates it while the
@@ -163,9 +188,28 @@ function KnightTitanAssault:onEnd(death)
     end
 
     if state then
-        -- Status durations are measured in enemy turns, not individual
-        -- volleys. Tick once after the complete Wave has ended.
-        state:tickEnemyTurnEffects()
+        -- Status durations and fusion upkeep are measured in enemy turns,
+        -- not individual volleys. Tick once after the complete Wave has ended.
+        local effects = state:tickEnemyTurnEffects()
+        local charged_beam = effects and effects.ultimate_beam
+        if charged_beam then
+            local target = charged_beam.target
+            local hit = target and target.hurt
+                and (type(target.health) ~= "number" or target.health > 0)
+            local damage = 0
+            if hit then
+                damage = charged_beam.damage or 0
+                target:hurt(damage, charged_beam.user)
+            end
+            if charged_beam.visual and charged_beam.visual.release then
+                charged_beam.visual:release(hit == true)
+            end
+            state.last_ultimate_beam = {
+                target = target,
+                damage = damage,
+                hit = hit == true,
+            }
+        end
     end
 end
 
