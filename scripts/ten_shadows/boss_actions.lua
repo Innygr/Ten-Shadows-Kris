@@ -62,11 +62,69 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
     end
 
     if name == "GRANITE BLAST" then
-        -- Vessel's 100% output blast hits whichever boss is currently targeted.
-        enemy:hurt(58, battler)
+        local battle = Game and Game.battle
+        local arena = battle and battle.arena
+        if not state or not state.fusion_domain or not state.fusion_domain.active
+            or not arena or not arena.width or not arena.height then
+            return "* GRANITE BLAST requires the active Fusion Domain."
+        end
+
+        -- The exit portal follows the SOUL's current arena position. This
+        -- gives the player meaningful placement from their last movement
+        -- without adding a second targeting UI to Kristal's ACT flow.
+        local soul = battle.soul
+        local arena_x, arena_y = arena.x or 0, arena.y or 0
+        local origin_x = arena.width * 0.5
+        local origin_y = arena.height * 0.5
+        if soul then
+            origin_x = math.max(8, math.min(arena.width - 8, soul.x - arena_x))
+            origin_y = math.max(8, math.min(arena.height - 8, soul.y - arena_y))
+        end
+
+        -- The entry gate is placed across the Domain from the exit gate.
+        -- routePartySpell copies the descriptor and preserves the chosen boss
+        -- target while moving the launch origin to the exit portal.
+        local entry = {
+            x = math.max(8, math.min(arena.width - 8, arena.width - origin_x)),
+            y = math.max(8, math.min(arena.height - 8, arena.height - origin_y)),
+        }
+        local target = {
+            x = (enemy.x or 0) + (enemy.width or 0) * 0.5,
+            y = (enemy.y or 0) + (enemy.height or 0) * 0.5,
+        }
+        local descriptor, reason = state:createGraniteBlast(
+            {x = origin_x, y = origin_y}, target, 1
+        )
+        if not descriptor then
+            return "* " .. tostring(reason or "Granite Blast could not form.")
+        end
+
+        local routed, route_reason = state:routePartySpell(descriptor, entry, {
+            x = origin_x, y = origin_y,
+        })
+        if not routed then
+            return "* " .. tostring(route_reason or "The shadow portals could not connect.")
+        end
+
+        local damage = math.floor(58 * routed.output + 0.5)
+        enemy:hurt(damage, battler)
+
+        -- The visual is attached to the live battle stage and never owns
+        -- damage; the ACT above applies the hit exactly once.
+        local GraniteBlast = modRequire("scripts/battle/objects/granite_blast")
+        local visual = GraniteBlast(
+            arena_x + entry.x, arena_y + entry.y,
+            arena_x + routed.origin_x, arena_y + routed.origin_y,
+            routed.target_x, routed.target_y, routed.output
+        )
+        local parent = battle.addChild and battle or (Game.stage and Game.stage.addChild and Game.stage)
+        if parent then
+            parent:addChild(visual)
+        end
+
         return {
-            "* VESSEL FIRES GRANITE BLAST AT 100% OUTPUT!",
-            "* The concentrated blast deals 58 damage.",
+            "* VESSEL FIRES GRANITE BLAST THROUGH THE SHADOW PORTALS!",
+            "* The 100% output blast deals " .. tostring(damage) .. " damage.",
         }
     end
 
