@@ -36,6 +36,9 @@ architecture contract.
   attack sets only run while the matching coloured SOUL is active.
 - Yellow SOUL's Ricochet Blades now behave as actual bouncing projectiles: four blades are
   telegraphed, then rebound from arena walls twice with a dedicated blade silhouette.
+- Vessel's SOUL MODE menu changes the live controller: Blue gravity/jump, Green directional guard,
+  Yellow right-facing shots with charge, Orange charged forward dash, Purple rail movement, and
+  Cyan projectile purification/parry. Red restores Kristal's standard SOUL.
 - The encounter TP cap is 110. Titan starts behind a 1,200 HP shield: ordinary hits deal
   reduced shield damage, while Rude Buster, Ice Shock, and Fire Shock are dedicated shield
   breakers. The Titan's 21,000 HP pool is protected until the shield is depleted.

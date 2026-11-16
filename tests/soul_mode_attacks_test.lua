@@ -127,11 +127,13 @@ function Class(base)
 end
 local Preview = dofile("scripts/battle/encounters/knight_titan_preview.lua")
 modRequire = function(path)
-    expect(path, "scripts/objects/cyan_soul", "Cyan Soul factory module")
+    local mode = path:match("scripts/objects/(%a+)_soul")
+    assert(mode, "SOUL factory must request a mode-specific Soul class: " .. tostring(path))
     return function(x, y)
         return {
-            x = x, y = y, is_cyan_soul = true,
-            ten_shadows_mode = "cyan", color = {0.20, 0.90, 1.0},
+            x = x, y = y, is_cyan_soul = mode == "cyan",
+            custom_soul = true, ten_shadows_mode = mode,
+            color = {0.20, 0.90, 1.0},
         }
     end
 end
@@ -143,7 +145,7 @@ for _, mode in ipairs(expected_modes) do
     if mode == "cyan" then
         expect(soul.is_cyan_soul, true, "Cyan mode creates the special charge Soul")
     else
-        expect(soul.base_soul, true, mode .. " uses Kristal's standard Soul movement")
+        expect(soul.custom_soul, true, mode .. " creates its custom movement controller")
     end
     expect(soul.ten_shadows_mode, mode, mode .. " Soul is tagged with active mode")
     expect(type(soul.color), "table", mode .. " Soul has a distinct colour")

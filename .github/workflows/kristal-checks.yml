@@ -121,6 +121,9 @@ jobs:
       - name: Test Vessel SOUL-mode boss attacks
         run: lua5.1 tests/soul_mode_attacks_test.lua
 
+      - name: Test custom SOUL-mode movement and controls
+        run: lua5.1 tests/soul_mode_runtime_test.lua
+
       - name: Test six-member party registration and UI
         run: lua5.1 tests/six_party_test.lua
 
@@ -227,6 +230,13 @@ jobs:
           test -f scripts/battle/waves/runtime_smoke.lua
           test -f scripts/battle/bullets/runtime_test_bullet.lua
           test -f tests/soul_mode_attacks_test.lua
+          test -f tests/soul_mode_runtime_test.lua
+          test -f scripts/objects/blue_soul.lua
+          test -f scripts/objects/green_soul.lua
+          test -f scripts/objects/yellow_soul.lua
+          test -f scripts/objects/yellow_shot.lua
+          test -f scripts/objects/orange_soul.lua
+          test -f scripts/objects/purple_soul.lua
           test -f tests/six_party_test.lua
           test -f tests/berdly_actor_test.lua
           test -f tests/berdly_sprite_map_test.lua
