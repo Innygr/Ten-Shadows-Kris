@@ -34,6 +34,8 @@ architecture contract.
   queued Noelle, Berdly, and Vessel actions. Cyan SOUL charges and purges bullets on release; a
   timed Knight's Execution parry staggers the Knight and opens a one-use Kris counter ACT. SOUL-mode
   attack sets only run while the matching coloured SOUL is active.
+- Yellow SOUL's Ricochet Blades now behave as actual bouncing projectiles: four blades are
+  telegraphed, then rebound from arena walls twice with a dedicated blade silhouette.
 - `scripts/ten_shadows/boss_actions.lua` centralizes the encounter's Ten Shadows, SOUL-mode,
   BRIGHTEN, Domain, and V-ACT handling for either living boss. The Cyan Execution Counter is
   dispatched to the Knight and damages its independent HP pool; the shared scheduler and Titan
