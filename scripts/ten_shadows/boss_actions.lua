@@ -78,31 +78,40 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
         if not battler or not battler.chara or battler.chara.id ~= "vessel" then
             return "* Only Vessel can shape Granite Blast."
         end
-        if not state or not arena or not arena.width or not arena.height then
-            return "* Granite Blast cannot find a clear path to its target."
+        if not state then
+            return "* Vessel's Granite Blast is unavailable."
         end
 
-        -- Granite Blast is always available. Outside the Fusion Domain it
-        -- fires directly from the SOUL's current position. Inside the Domain,
-        -- the same shot is routed through the paired shadow portals.
-        local soul = battle.soul
-        local arena_x, arena_y = arena.x or 0, arena.y or 0
-        local origin_x = arena.width * 0.5
-        local origin_y = arena.height * 0.5
+        -- Always take the shot. If Kristal has no active arena (or a target
+        -- sprite has incomplete bounds), use a safe screen-space fallback
+        -- instead of telling the player that no path could be found.
+        local soul = battle and battle.soul
+        local arena_width = arena and arena.width or 142
+        local arena_height = arena and arena.height or 142
+        local arena_x, arena_y = arena and arena.x or 0, arena and arena.y or 0
+        local origin_x = arena_width * 0.5
+        local origin_y = arena_height * 0.5
         if soul then
-            origin_x = math.max(8, math.min(arena.width - 8, soul.x - arena_x))
-            origin_y = math.max(8, math.min(arena.height - 8, soul.y - arena_y))
+            origin_x = math.max(8, math.min(arena_width - 8, soul.x - arena_x))
+            origin_y = math.max(8, math.min(arena_height - 8, soul.y - arena_y))
         end
 
         local target = {
-            x = (enemy.x or 0) + (enemy.width or 0) * 0.5,
-            y = (enemy.y or 0) + (enemy.height or 0) * 0.5,
+            x = ((enemy and enemy.x) or arena_x + arena_width * 0.5)
+                - arena_x + ((enemy and enemy.width) or 0) * 0.5,
+            y = ((enemy and enemy.y) or arena_y + arena_height * 0.5)
+                - arena_y + ((enemy and enemy.height) or 0) * 0.5,
         }
-        local descriptor, reason = state:createGraniteBlast(
+        local descriptor = state:createGraniteBlast(
             {x = origin_x, y = origin_y}, target, 1
         )
         if not descriptor then
-            return "* " .. tostring(reason or "Granite Blast could not form.")
+            descriptor = {
+                kind = "granite_blast", source = "vessel",
+                origin_x = origin_x, origin_y = origin_y,
+                target_x = target.x, target_y = target.y,
+                output = 1, redirected_by_shadow_portal = false,
+            }
         end
 
         local entry = {x = origin_x, y = origin_y}
@@ -125,15 +134,15 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
         enemy:hurt(damage, battler)
 
         -- The visual is presentation only; the ACT above applies the hit once.
-        local GraniteBlast = modRequire("scripts/battle/objects/granite_blast")
-        local visual = GraniteBlast(
-            arena_x + entry.x, arena_y + entry.y,
-            arena_x + routed.origin_x, arena_y + routed.origin_y,
-            routed.target_x, routed.target_y, routed.output
-        )
-        local parent = battle.addChild and battle or (Game.stage and Game.stage.addChild and Game.stage)
-        if parent then
-            parent:addChild(visual)
+        if arena then
+            local GraniteBlast = modRequire("scripts/battle/objects/granite_blast")
+            local visual = GraniteBlast(
+                arena_x + entry.x, arena_y + entry.y,
+                arena_x + routed.origin_x, arena_y + routed.origin_y,
+                arena_x + routed.target_x, arena_y + routed.target_y, routed.output
+            )
+            local parent = battle.addChild and battle or (Game.stage and Game.stage.addChild and Game.stage)
+            if parent then parent:addChild(visual) end
         end
 
         if routed.redirected_by_shadow_portal then
@@ -172,6 +181,18 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
         end
         local changed, reason = state:setSoulMode(soul_mode)
         if not changed then return "* " .. tostring(reason) end
+
+        -- Replace the live battle Soul immediately; setting the scheduler flag
+        -- alone would leave the old movement/input controller active.
+        local battle = Game and Game.battle
+        local old_soul = battle and battle.soul
+        if battle and old_soul and battle.encounter and battle.swapSoul then
+            local x, y = old_soul:getExactPosition()
+            local replacement = battle.encounter:createSoul(x, y)
+            replacement.inv_timer = old_soul.inv_timer or 0
+            replacement.can_move = old_soul.can_move
+            battle:swapSoul(replacement)
+        end
         return "* The Vessel shifts to " .. string.upper(soul_mode) .. " SOUL. The Knight and Titan adapt."
     end
 
