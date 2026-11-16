@@ -123,4 +123,69 @@ mod_file:close()
 assert(mod_source:find("boss_state.fusion_domain.active", 1, true),
     "Vessel's V-ACT submenu must be gated by the active Fusion Domain")
 
+-- Exercise the real Vessel ACT menu builder: V-ACT is hidden before the
+-- fusion Domain, then exposes a 50-TP Granite Blast entry while it is active.
+Mod = {}
+dofile("mod.lua")
+
+local function buildVesselMenu(domain_active)
+    local target_enemy = {
+        ten_shadows_state = {
+            fusion_domain = {active = domain_active == true},
+        },
+    }
+    local battle = {
+        party = {{chara = {id = "vessel"}}},
+        current_selecting = 1,
+        menu_items = {},
+        _getEnemyByIndex = function(self, index)
+            expect(index, 1, "Vessel ACT targets the selected enemy")
+            return target_enemy
+        end,
+        getActiveEnemies = function()
+            return {target_enemy}
+        end,
+        clearMenuItems = function(self)
+            self.menu_items = {}
+        end,
+        addMenuItem = function(self, item)
+            self.menu_items[#self.menu_items + 1] = item
+        end,
+        setState = function(self, state, menu)
+            self.menu_state, self.menu_kind = state, menu
+        end,
+        pushAction = function(self, action, target, item)
+            self.pushed_action = {action = action, target = target, item = item}
+        end,
+    }
+    Game = {battle = battle}
+    expect(Mod:onBattleEnemySelect("ACT", 1), true,
+        "Vessel ACT menu opens for the selected enemy")
+    return battle, target_enemy
+end
+
+local hidden_battle = buildVesselMenu(false)
+for _, item in ipairs(hidden_battle.menu_items) do
+    assert(item.name ~= "V-ACT", "V-ACT is hidden before the Fusion Domain")
+end
+
+local active_battle, active_enemy = buildVesselMenu(true)
+local vact
+for _, item in ipairs(active_battle.menu_items) do
+    if item.name == "V-ACT" then vact = item end
+end
+assert(vact, "V-ACT appears while the Fusion Domain is active")
+vact.callback()
+local granite_entry
+for _, item in ipairs(active_battle.menu_items) do
+    if item.name == "GRANITE BLAST" then granite_entry = item end
+end
+assert(granite_entry, "V-ACT submenu contains GRANITE BLAST")
+expect(granite_entry.tp, 50, "Granite Blast retains its 50 TP cost")
+granite_entry.callback(granite_entry)
+expect(active_battle.pushed_action.action, "ACT", "Granite Blast queues an ACT")
+expect(active_battle.pushed_action.target, active_enemy, "Granite Blast targets the chosen boss")
+expect(active_battle.pushed_action.item, granite_entry, "Granite Blast queues its selected menu item")
+
+
 print("Granite Blast live routing, damage, visual, and Domain gating tests passed.")
