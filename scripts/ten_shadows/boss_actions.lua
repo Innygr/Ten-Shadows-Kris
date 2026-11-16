@@ -192,6 +192,11 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
             replacement.inv_flash_timer = old_soul.inv_flash_timer or 0
             replacement.can_move = old_soul.can_move
             battle:swapSoul(replacement)
+            -- Battle:swapSoul uses the integer position; restore fractional
+            -- movement coordinates so a mode change cannot snap the SOUL.
+            if replacement.setExactPosition then
+                replacement:setExactPosition(x, y)
+            end
         end
         return "* The Vessel shifts to " .. string.upper(soul_mode) .. " SOUL. The Knight and Titan adapt."
     end
