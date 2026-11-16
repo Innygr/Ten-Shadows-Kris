@@ -109,6 +109,9 @@ jobs:
       - name: Test live Granite Blast portal routing and visual
         run: lua5.1 tests/granite_blast_test.lua
 
+      - name: Test Vessel ultimate beam charge and release
+        run: lua5.1 tests/ultimate_beam_test.lua
+
       - name: Test Vessel SOUL-mode boss attacks
         run: lua5.1 tests/soul_mode_attacks_test.lua
 
@@ -145,6 +148,13 @@ jobs:
           test -f scripts/battle/waves/knight_titan_assault.lua
           test -f scripts/battle/objects/chimera_shadow_garden.lua
           test -f scripts/battle/objects/granite_blast.lua
+          test -f scripts/battle/objects/ultimate_beam.lua
+          test -f tests/ultimate_beam_test.lua
+          grep -q 'function state:beginUltimateBeam(target, user)' scripts/ten_shadows/combat_state.lua
+          grep -q 'function state:cancelFusionDomain(reason)' scripts/ten_shadows/combat_state.lua
+          grep -q 'FUSION_DOMAIN_UPKEEP = 2' scripts/ten_shadows/combat_state.lua
+          grep -q 'name == "ULTIMATE BEAM"' scripts/ten_shadows/boss_actions.lua
+          grep -q 'charged_beam = effects and effects.ultimate_beam' scripts/battle/waves/knight_titan_assault.lua
           test -f tests/granite_blast_test.lua
           grep -q 'state:routePartySpell(descriptor, entry' scripts/ten_shadows/boss_actions.lua
           grep -q 'GraniteBlast(' scripts/ten_shadows/boss_actions.lua
