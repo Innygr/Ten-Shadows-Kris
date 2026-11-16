@@ -91,8 +91,8 @@ expect(visual.target.y, 95, "blast targets the selected enemy's vertical centre"
 visual:update()
 expect(visual.fired, true, "the blast enters its launch phase after charging")
 visual:draw()
-expect(graphics.lines > 0, "the launch phase draws a beam through the exit portal")
-expect(graphics.circles > 0, "the blast draws entry, exit, and impact rings")
+assert(graphics.lines > 0, "the launch phase draws a beam through the exit portal")
+assert(graphics.circles > 0, "the blast draws entry, exit, and impact rings")
 expect(visual.base_draws, 1, "the visual preserves the base Object draw")
 DT = 0.5
 visual:update()
