@@ -527,18 +527,19 @@ function Mod:onBattleEnemySelect(reason, selected)
                 battle:pushAction("ACT", enemy, item)
             end}
         end
-        if boss_state and boss_state.fusion_domain and boss_state.fusion_domain.active then
-            root[#root + 1] = {"V-ACT", "Vessel's unique techniques.", 0, function()
-                local entries = {
-                    {"GRANITE BLAST", "Fire a 100% output blast through the Domain portals.", 50, function(item)
-                        battle:pushAction("ACT", enemy, item)
-                    end},
-                }
-                addMenu(battle, enemy, entries, function()
-                    addMenu(battle, enemy, root, nil)
-                end)
-            end}
-        end
+        root[#root + 1] = {"V-ACT", "Vessel's unique techniques.", 0, function()
+            local entries = {
+                {"GRANITE BLAST", "Fire a 100% output blast; portals enhance it inside the Domain.", 50, function(item)
+                    battle:pushAction("ACT", enemy, item)
+                end},
+                {"ULTIMATE BEAM", "Charge for one enemy turn, then unleash a 580-damage beam.", 100, function(item)
+                    battle:pushAction("ACT", enemy, item)
+                end},
+            }
+            addMenu(battle, enemy, entries, function()
+                addMenu(battle, enemy, root, nil)
+            end)
+        end}
         root[#root + 1] = {"SOUL MODE", "Choose the Vessel's SOUL mode.", 0, function()
             local entries = {}
             for _, mode in ipairs(SOUL_MODES) do
