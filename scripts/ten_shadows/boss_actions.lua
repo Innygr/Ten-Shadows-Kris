@@ -18,6 +18,18 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
         return enemy:getCheckText(battler)
     end
 
+    if name == "WAKE KRIS" then
+        local Effects = modRequire("scripts/ten_shadows/runtime_spells")
+        local restored, reason = Effects.wakeKris()
+        if not restored then
+            return "* " .. tostring(reason or "Kris cannot be woken right now.")
+        end
+        return {
+            "* The party calls Kris back to their feet!",
+            "* Kris returns with 1 HP.",
+        }
+    end
+
     local state = enemy.ten_shadows_state
     if name == "BRIGHTEN" then
         local Effects = modRequire("scripts/ten_shadows/runtime_spells")

@@ -61,6 +61,40 @@ function RuntimeSpells.revive(target)
     return true
 end
 
+-- Kris can be brought back by another party member's X-Action. The battle
+-- battler owns the downed state/status animation; update its PartyMember HP
+-- first, then let Kristal refresh the battler exactly as REVIVESONG does.
+function RuntimeSpells.wakeKris()
+    if not Game or not Game.battle then
+        return false, "There is no active battle."
+    end
+
+    for _, battler in ipairs(Game.battle.party or {}) do
+        local chara = battler and battler.chara
+        if chara and chara.id == "kris" then
+            local health = chara.getHealth and chara:getHealth() or chara.health
+            if not battler.is_down and not (type(health) == "number" and health <= 0) then
+                return false, "Kris is already standing."
+            end
+
+            if chara.setHealth then
+                chara:setHealth(1)
+            else
+                chara.health = 1
+            end
+            if battler.checkHealth then
+                battler:checkHealth(false)
+            end
+            if battler.statusMessage then
+                battler:statusMessage("msg", "up", nil, true)
+            end
+            return true
+        end
+    end
+
+    return false, "Kris cannot be reached right now."
+end
+
 function RuntimeSpells.brighten()
     if not Game or not Game.battle then return false end
     local eligible = {kris = true, susie = true, ralsei = true}

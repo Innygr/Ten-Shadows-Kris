@@ -88,6 +88,9 @@ jobs:
       - name: Test grouped BRIGHTEN ACT
         run: lua5.1 tests/brighten_act_test.lua
 
+      - name: Test Wake Kris X-Action and Vessel ACT routing
+        run: lua5.1 tests/wake_kris_action_test.lua
+
       - name: Test Ten Shadows effects and Attack scaling
         run: lua5.1 tests/runtime_shadows_test.lua
 
@@ -163,6 +166,12 @@ jobs:
           grep -q 'function state:parryExecution()' scripts/ten_shadows/combat_state.lua
           grep -q 'cyan_knights_execution' scripts/ten_shadows/attack_wave_patterns.lua
           grep -q 'name == "EXECUTION COUNTER"' scripts/battle/enemies/roaring_knight.lua
+          test -f scripts/ten_shadows/wake_kris_actions.lua
+          test -f tests/wake_kris_action_test.lua
+          grep -q 'WakeKrisActions.install()' mod.lua
+          grep -q 'function RuntimeSpells.wakeKris()' scripts/ten_shadows/runtime_spells.lua
+          grep -q 'name == "WAKE KRIS"' scripts/ten_shadows/boss_actions.lua
+          grep -q 'WAKE KRIS' mod.lua
           grep -q 'battle:pushAction("ACT", knight_enemy, item)' mod.lua
           grep -q 'self:consumeKnightDisruption(false)' scripts/ten_shadows/combat_state.lua
           grep -q 'state:tickEnemyTurnEffects()' scripts/battle/waves/knight_titan_assault.lua

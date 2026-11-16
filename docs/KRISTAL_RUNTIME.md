@@ -110,7 +110,11 @@ The Knight + Titan preview enemy dispatches the Kris Ten Shadows submenu into th
 summon effects, connects all seven Vessel SOUL-mode choices to the shared scheduler, and
 exposes Chimera Shadow Garden as a once-per-battle Kris ACT. BRIGHTEN remains a 4 TP grouped
 ACT for Kris, Susie, and Ralsei; it applies the DEF buff directly and returns ACT dialogue
-instead of injecting a second SPELL action into Kristal's action queue. The regression test invokes the real boss `onAct` handler with queued Noelle,
+instead of injecting a second SPELL action into Kristal's action queue. When Kris is down,
+Susie, Ralsei, Noelle, and Berdly receive WAKE KRIS in place of their normal X-Action, while
+Vessel receives the same action in the ACT menu. The action restores Kris to 1 HP and refreshes
+the actual Kristal battler; tests cover both the global X-Action hook and Vessel's menu callback.
+The regression test invokes the real boss `onAct` handler with queued Noelle,
 Berdly, and Vessel actions, then verifies those action records remain untouched. It also
 checks that exactly the three participants are buffed and that a blocked use applies no buff.
 The boss-bound CHILL and disruption effects update the shared boss state, so freezing the Knight

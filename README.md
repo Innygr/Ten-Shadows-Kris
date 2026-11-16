@@ -38,6 +38,9 @@ architecture contract.
   BRIGHTEN, Domain, and V-ACT handling for either living boss. The Cyan Execution Counter is
   dispatched to the Knight and damages its independent HP pool; the shared scheduler and Titan
   phase state remain separate from Knight health.
+- When Kris is down, the other four members' X-Actions switch to **WAKE KRIS**; Vessel receives
+  the same action in the ACT menu. It restores Kris at 1 HP through Kristal's battler health/status
+  refresh path. Automated tests cover the X-Action override, revival, and Vessel menu routing.
 
 ## Build artifacts
 

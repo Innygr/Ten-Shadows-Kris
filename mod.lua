@@ -16,6 +16,12 @@ function Mod:init()
     local berdly_actions_installed, berdly_actions_error = BerdlyActions.install()
     assert(berdly_actions_installed, "Ten Shadows Kris: could not install Berdly B-Action: " .. tostring(berdly_actions_error))
 
+    -- When Kris is down, every other member's X-Action becomes WAKE KRIS.
+    -- Vessel has no X-Action slot, so its equivalent is added to the ACT menu.
+    Mod.wake_kris_actions = modRequire("scripts/ten_shadows/wake_kris_actions")
+    local wake_kris_installed, wake_kris_error = Mod.wake_kris_actions.install()
+    assert(wake_kris_installed, "Ten Shadows Kris: could not install Wake Kris action: " .. tostring(wake_kris_error))
+
     -- Kristal 0.10.0's deep Utils.equal recursively compares nested tables
     -- without tracking visited pairs. Arena shapes are normally simple
     -- polygons, but a cyclic table reaching that comparison can overflow the
@@ -516,6 +522,11 @@ function Mod:onBattleEnemySelect(reason, selected)
             battle:pushAction("ACT", enemy, item)
         end}
     elseif chara == "vessel" then
+        if Mod.wake_kris_actions and Mod.wake_kris_actions.isKrisDown(battle) then
+            root[#root + 1] = {"WAKE KRIS", "Restore Kris to 1 HP while Kris is down.", 0, function(item)
+                battle:pushAction("ACT", enemy, item)
+            end}
+        end
         root[#root + 1] = {"V-ACT", "Vessel's unique techniques.", 0, function()
             local entries = {
                 {"GRANITE BLAST", "Fire a concentrated blast at 100% output.", 50, function(item)
