@@ -1,5 +1,20 @@
 local RoaringKnight, super = Class(EnemyBattler)
 
+local function formatHP(value)
+    local digits = tostring(math.max(0, math.floor(tonumber(value) or 0)))
+    local grouped = digits:reverse():gsub("(%d%d%d)", "%1,")
+    return grouped:reverse():gsub("^,", "")
+end
+
+function RoaringKnight:getCheckText(battler)
+    self.check = {
+        "AT 1 DF 0",
+        "HP: " .. formatHP(self.health) .. " / " .. formatHP(self.max_health) .. ".",
+        "Its health is independent from the Titan's.",
+    }
+    return super.getCheckText(self, battler)
+end
+
 function RoaringKnight:init()
     super.init(self)
 

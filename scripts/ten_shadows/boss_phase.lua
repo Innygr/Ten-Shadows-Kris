@@ -3,6 +3,12 @@
 
 local BossPhase = {}
 
+local function formatHP(value)
+    local digits = tostring(math.max(0, math.floor(tonumber(value) or 0)))
+    local grouped = digits:reverse():gsub("(%d%d%d)", "%1,")
+    return grouped:reverse():gsub("^,", "")
+end
+
 BossPhase.THRESHOLDS = {
     [2] = 14000,
     [3] = 7000,
@@ -32,14 +38,25 @@ function BossPhase.advance(health, phase)
     return phase, nil
 end
 
-function BossPhase.checkText(phase)
+function BossPhase.checkText(phase, health, max_health)
     phase = phase or 1
+    max_health = max_health or 21000
+    health = health == nil and max_health or health
+
+    local phase_description
     if phase == 3 then
-        return "AT 40 DF 800\n* Titan HP: 7,000 or less.\n* The final phase has begun."
+        phase_description = "The final phase has begun."
     elseif phase == 2 then
-        return "AT 40 DF 800\n* Titan HP: 14,000 or less.\n* The second phase has begun."
+        phase_description = "The second phase has begun."
+    else
+        phase_description = "The Knight has a separate 1,460 HP pool."
     end
-    return "AT 40 DF 800\n* Titan HP: 21,000.\n* The Knight has a separate 1,460 HP."
+
+    return {
+        "AT 40 DF 800",
+        "* HP: " .. formatHP(health) .. " / " .. formatHP(max_health) .. ".",
+        "* " .. phase_description,
+    }
 end
 
 return BossPhase

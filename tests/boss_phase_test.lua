@@ -27,8 +27,15 @@ local boundary_phase, boundary_message = BossPhase.advance(14000, 1)
 assert(boundary_phase == 2 and boundary_message == BossPhase.TEXT[2],
     "exactly reaching the first threshold must advance only to phase two")
 
-assert(BossPhase.checkText(1):find("21,000", 1, true), "phase one CHECK must show Titan HP")
-assert(BossPhase.checkText(2):find("second phase", 1, true), "phase two CHECK must update")
-assert(BossPhase.checkText(3):find("final phase", 1, true), "phase three CHECK must update")
+local function checkContains(phase_number, health, needle, label)
+    local actual = table.concat(BossPhase.checkText(phase_number, health, 21000), "\\n")
+    assert(actual:find(needle, 1, true), label)
+end
+checkContains(1, 21000, "21,000 / 21,000", "phase one CHECK must show full Titan HP")
+checkContains(1, 12345, "12,345 / 21,000", "phase one CHECK must show current Titan HP")
+checkContains(2, 14000, "14,000 / 21,000", "phase two CHECK must show current Titan HP")
+checkContains(2, 14000, "second phase", "phase two CHECK must update")
+checkContains(3, 0, "0 / 21,000", "phase three CHECK must show defeated Titan HP")
+checkContains(3, 0, "final phase", "phase three CHECK must update")
 
 print("Knight + Titan phase progression tests passed.")

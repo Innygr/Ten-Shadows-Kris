@@ -39,7 +39,7 @@ function RoaringKnightTitan:init()
     }
 
     local BossPhase = modRequire("scripts/ten_shadows/boss_phase")
-    self.check = BossPhase.checkText(self.ten_shadows_phase)
+    self.check = BossPhase.checkText(self.ten_shadows_phase, self.health, self.max_health)
 
     self:registerAct("Inspect", "Read the Titan status")
 end
@@ -95,6 +95,8 @@ function RoaringKnightTitan:onDefeat(amount, battler)
     if self.ten_shadows_state and self.ten_shadows_state.setTitanAlive then
         self.ten_shadows_state:setTitanAlive(false)
     end
+    local BossPhase = modRequire("scripts/ten_shadows/boss_phase")
+    self.check = BossPhase.checkText(3, 0, self.max_health)
     return super.onDefeat(self, amount, battler)
 end
 
@@ -109,7 +111,6 @@ function RoaringKnightTitan:onHurt(damage, battler)
     local next_phase, phase_text = BossPhase.advance(self.health, self.ten_shadows_phase)
     if next_phase ~= self.ten_shadows_phase then
         self.ten_shadows_phase = next_phase
-        self.check = BossPhase.checkText(next_phase)
         if self.ten_shadows_state then
             self.ten_shadows_state.boss.phase = next_phase
             self.ten_shadows_state.boss.hp = self.health
@@ -118,6 +119,9 @@ function RoaringKnightTitan:onHurt(damage, battler)
         self._phase_encounter_text = phase_text
         self.text = {phase_text}
     end
+
+    -- CHECK must report current HP after every hit, not just at phase changes.
+    self.check = BossPhase.checkText(self.ten_shadows_phase, self.health, self.max_health)
 end
 
 local SOUL_MODE_ACTIONS = {
@@ -130,9 +134,15 @@ local SOUL_MODE_ACTIONS = {
     ["CYAN SOUL"] = "cyan",
 }
 
+function RoaringKnightTitan:getCheckText()
+    local BossPhase = modRequire("scripts/ten_shadows/boss_phase")
+    self.check = BossPhase.checkText(self.ten_shadows_phase, self.health, self.max_health)
+    return self.check
+end
+
 function RoaringKnightTitan:onAct(battler, name)
     if name == "Inspect" or name == "Check" or name == "CHECK" then
-        return self.check
+        return self:getCheckText(battler)
     end
 
     local state = self.ten_shadows_state
