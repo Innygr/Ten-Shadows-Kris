@@ -135,6 +135,8 @@ end
 
 local surviving_titan, surviving_knight = spawnPair()
 local survivor_state = surviving_titan.ten_shadows_state
+-- Kristal zeroes an enemy's HP before invoking its defeat hook.
+surviving_titan.health = 0
 surviving_titan:onDefeat()
 assert(table.concat(surviving_titan:onAct(nil, "Inspect"), " "):find("0 / 21,000", 1, true),
     "defeated Titan Inspect must show zero current HP")
@@ -156,8 +158,10 @@ local surviving_knight_hp = surviving_knight.health
 local survivor_act_text = surviving_knight:onAct(nil, "NUE")
 assert(type(survivor_act_text) == "string" and survivor_act_text:find("NUE", 1, true),
     "the surviving Knight must still accept Ten Shadows ACTs")
-assert(surviving_knight.health < surviving_knight_hp and surviving_titan.health == 0,
-    "survivor Ten Shadows damage must hit the Knight, not the defeated Titan")
+assert(surviving_knight.health < surviving_knight_hp,
+    "survivor Ten Shadows damage must reduce the Knight's own HP")
+assert(surviving_titan.health == 0,
+    "survivor Ten Shadows damage must not restore or modify the defeated Titan's HP")
 
 -- The shared Wave ticks per-enemy statuses on every active boss, but advances
 -- encounter-wide timers exactly once after the complete Wave.
