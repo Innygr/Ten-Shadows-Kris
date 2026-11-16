@@ -8,6 +8,8 @@ function PurpleSoul:init(x, y)
     self.ten_shadows_mode = "purple"
     self.purple_lane = 3
     self.purple_lane_y = y
+    self.purple_up_down = false
+    self.purple_down_down = false
     self:syncLaneFromPosition()
 end
 
@@ -38,11 +40,15 @@ function PurpleSoul:doMovement()
     local bottom = arena.getBottom and arena:getBottom() or arena.bottom or (top + 142)
     local span = math.max(1, bottom - top - PADDING * 2)
 
-    if Input.pressed and Input.pressed("up") then
+    local up_down = Input.down("up")
+    local down_down = Input.down("down")
+    if up_down and not self.purple_up_down then
         self.purple_lane = math.max(1, self.purple_lane - 1)
-    elseif Input.pressed and Input.pressed("down") then
+    elseif down_down and not self.purple_down_down then
         self.purple_lane = math.min(LANE_COUNT, self.purple_lane + 1)
     end
+    self.purple_up_down = up_down
+    self.purple_down_down = down_down
     self.purple_lane_y = top + PADDING + span * ((self.purple_lane - 1) / (LANE_COUNT - 1))
 
     local move_x = 0

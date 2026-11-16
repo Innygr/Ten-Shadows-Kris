@@ -11,16 +11,21 @@ function GreenSoul:init(x, y)
     super.init(self, x, y, {0.24, 1.00, 0.42})
     self.ten_shadows_mode = "green"
     self.green_direction = "right"
+    self.green_key_down = {}
     self.green_blocked = 0
     self.can_move = false
 end
 
 function GreenSoul:doMovement()
     for _, direction in ipairs({"up", "right", "down", "left"}) do
-        if Input.pressed and Input.pressed(direction) then
+        local down = Input.down(direction)
+        if down and not self.green_key_down[direction] then
             self.green_direction = direction
             break
         end
+    end
+    for _, direction in ipairs({"up", "right", "down", "left"}) do
+        self.green_key_down[direction] = Input.down(direction)
     end
     self.moving_x = 0
     self.moving_y = 0
