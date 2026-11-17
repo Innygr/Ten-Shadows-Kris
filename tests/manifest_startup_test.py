@@ -1,53 +1,18 @@
 import json
 from pathlib import Path
-
 root = Path(__file__).resolve().parents[1]
 manifest = json.loads((root / "mod.json").read_text(encoding="utf-8"))
-
-assert manifest.get("map") == "test_room", "new files must load the known test-room map"
-encounter_id = manifest.get("encounter")
-assert encounter_id == "knight_titan_preview", (
-    "new files must start the Knight + Titan playtest, not the diagnostic smoke test"
-)
-
-encounter_path = root / "scripts" / "battle" / "encounters" / f"{encounter_id}.lua"
-assert encounter_path.is_file(), f"manifest encounter is missing: {encounter_path}"
-encounter = encounter_path.read_text(encoding="utf-8")
-assert 'self:addEnemy("roaring_knight_titan")' in encounter
-assert 'self:addEnemy("roaring_knight")' in encounter, (
-    "the encounter must spawn the Knight separately from the Titan"
-)
-assert "knight.ten_shadows_state = titan.ten_shadows_state" in encounter, (
-    "bosses must share scheduler state without sharing HP"
-)
-
-enemy_path = root / "scripts" / "battle" / "enemies" / "roaring_knight_titan.lua"
-enemy = enemy_path.read_text(encoding="utf-8")
-assert 'self.waves = {"knight_titan_assault"}' in enemy, (
-    "the boss must select the dedicated Knight + Titan assault wave"
-)
-assert "self.max_health = 21000" in enemy and "self.health = self.max_health" in enemy
-assert "self.attack = 40" in enemy and "self.defense = 800" in enemy
-knight_path = root / "scripts" / "battle" / "enemies" / "roaring_knight.lua"
-knight = knight_path.read_text(encoding="utf-8")
-assert "self.max_health = 7300" in knight and "self.health = self.max_health" in knight
-assert "self.attack = 40" in knight and "self.defense = 0" in knight
-assert 'self.waves = {"knight_titan_assault"}' in knight, (
-    "the surviving Knight must keep the coordinated assault Wave available"
-)
-assert "self.disable_mercy = true" in enemy
-assert "self.can_freeze = false" in enemy
-
-wave_path = root / "scripts" / "battle" / "waves" / "knight_titan_assault.lua"
-wave = wave_path.read_text(encoding="utf-8")
-assert 'modRequire("scripts/ten_shadows/attack_wave_patterns")' in wave
-assert '"shadow_projectile"' in wave
-
-bullet_path = root / "scripts" / "battle" / "bullets" / "shadow_projectile.lua"
-assert bullet_path.is_file(), "the boss wave projectile class must exist"
-
-assert manifest.get("party") == [
-    "kris", "susie", "ralsei", "noelle", "berdly", "vessel"
-], "the new-file route must keep the six-member party"
-
-print("New-file manifest route starts the Knight + Titan playtest encounter.")
+assert manifest.get("map") == "testing-room_001", "new files must start in the testing hub"
+assert "encounter" not in manifest, "the game must not launch a battle on startup"
+assert manifest.get("party") == ["kris", "susie", "ralsei", "noelle", "berdly", "vessel"]
+map_source = (root / "scripts/world/maps/testing-room_001.lua").read_text(encoding="utf-8")
+for script_id in ("gaster_fight_test", "final_fight_test", "runtime_test"):
+    assert f'script="{script_id}"' in map_source
+    assert (root / "scripts/world/scripts" / f"{script_id}.lua").is_file()
+assert 'Game:encounter("knight_titan_preview")' in (root / "scripts/world/scripts/final_fight_test.lua").read_text()
+assert 'Game:encounter("runtime_smoke_test")' in (root / "scripts/world/scripts/runtime_test.lua").read_text()
+assert "not been implemented yet" in (root / "scripts/world/scripts/gaster_fight_test.lua").read_text()
+encounter = (root / "scripts/battle/encounters/knight_titan_preview.lua").read_text()
+assert 'self:addEnemy("roaring_knight_titan")' in encounter and 'self:addEnemy("roaring_knight")' in encounter
+assert "knight.ten_shadows_state = titan.ten_shadows_state" in encounter
+print("New-file startup opens testing-room_001 with three manual test stations.")

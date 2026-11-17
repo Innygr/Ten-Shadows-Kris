@@ -168,6 +168,10 @@ jobs:
           grep -q 'self:setActor("roaring_knight")' scripts/battle/enemies/roaring_knight.lua
           grep -q 'self:setActor("roaring_knight_titan")' scripts/battle/enemies/roaring_knight_titan.lua
           test -f scripts/battle/encounters/runtime_smoke_test.lua
+          test -f scripts/world/maps/testing-room_001.lua
+          test -f scripts/world/scripts/gaster_fight_test.lua
+          test -f scripts/world/scripts/final_fight_test.lua
+          test -f scripts/world/scripts/runtime_test.lua
           test -f scripts/battle/encounters/knight_titan_preview.lua
           test -f scripts/battle/waves/knight_titan_assault.lua
           test -f scripts/battle/objects/chimera_shadow_garden.lua
