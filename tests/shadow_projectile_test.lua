@@ -194,6 +194,41 @@ for _, sample in ipairs(mode_samples) do
     shot:draw()
 end
 
+-- Exercise the marker contract end-to-end for all 30 scheduled SOUL-mode
+-- attack definitions, not only one representative from each colour.
+local CombatState = dofile("scripts/ten_shadows/combat_state.lua")
+local Patterns = dofile("scripts/ten_shadows/attack_wave_patterns.lua")
+local arena = {left = 250, right = 390, top = 150, bottom = 292}
+local target = {x = 320, y = 230, previous = {x = 314, y = 224}}
+local checked_patterns = 0
+for mode, groups in pairs(CombatState.SOUL_MODE_ATTACKS) do
+    for _, group in ipairs({groups.titan, groups.knight, groups.combo}) do
+        for _, attack in ipairs(group) do
+            local descriptors, family = Patterns.build(
+                attack, attack.phases[1], 2, arena, target, false, false
+            )
+            assert(family == "soul_mode" and #descriptors > 0,
+                attack.id .. " must build a dedicated SOUL-mode Wave")
+            for _, descriptor in ipairs(descriptors) do
+                local shot = ShadowProjectile(
+                    descriptor.x, descriptor.y, descriptor.direction,
+                    descriptor.speed, descriptor.kind, descriptor.warning,
+                    descriptor.mechanic
+                )
+                assert(shot.is_soul_mode_projectile and shot.soul_mode_style == mode,
+                    attack.id .. " must resolve to its " .. mode .. " projectile visual")
+                if attack.pattern == "cyan-parry-window" then
+                    assert(shot.is_execution_slash,
+                        "Cyan's scheduled Execution projectile must trigger the parry detector")
+                end
+                shot:draw()
+            end
+            checked_patterns = checked_patterns + 1
+        end
+    end
+end
+assert(checked_patterns == 30, "All 30 SOUL-mode attack visuals must be covered")
+
 local collision_shot = ShadowProjectile(72, 82, 0, 4, "knight", nil, {
     kind = "knight_titan_collision", source = "knight", path = 1,
     collision_x = 320, collision_y = 220,
