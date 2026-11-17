@@ -8,6 +8,15 @@ local defaults = Identity.load()
 assert(defaults.name == "Vessel" and defaults.gender == "unspecified")
 assert(defaults.pronouns == "they/them" and defaults.presentation == "androgynous")
 assert(not Identity.hasSavedProfile(), "A new install must be recognized as an unset identity")
+
+-- A blank/corrupt Kristal JSON save must not crash mod initialization.
+Kristal.loadData = function() error("unexpected character at line 1 col 1") end
+local recovered = Identity.load()
+assert(recovered.name == "Vessel" and recovered.pronouns == "they/them",
+    "A corrupt identity save must fall back to defaults")
+assert(not Identity.hasSavedProfile(), "A corrupt identity save must be treated as unset")
+Kristal.loadData = function(key) assert(key == "vessel_identity"); return saved end
+
 local profile = Identity.save({name = "  Rowan  ", gender = "nonbinary", pronouns = "they/them", presentation = "androgynous", ignored = "x"})
 assert(profile.name == "Rowan" and profile.gender == "nonbinary" and profile.ignored == nil and saves == 1)
 assert(Identity.hasSavedProfile(), "Saving an identity must mark the profile as existing")
