@@ -208,8 +208,8 @@ installSixPartySupport = function()
             end
         end
 
-        -- Six battlers use a viewport-relative two-column formation on
-        -- the party side. The same helper places fallback spawns above.
+        -- Six battlers use a viewport-relative three-column, two-row layout
+        -- on the party side. The same helper places fallback spawns above.
         local original_party_position = Encounter.getPartyPosition
         Encounter.getPartyPosition = function(encounter, index)
             if #Game.battle.party ~= 6 then
