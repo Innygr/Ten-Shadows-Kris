@@ -538,7 +538,7 @@ function Mod:onBattleEnemySelect(reason, selected)
                     battle:pushAction("ACT", enemy, item)
                 end}
             end
-            entries[#entries + 1] = {"GRANITE BLAST", "Fire a 100% output blast; portals enhance it inside either Vessel or Fusion Domain.", 50, function(item)
+            entries[#entries + 1] = {"GRANITE BLAST", "A quick 100% output blast; portals enhance it inside either Domain.", 10, function(item)
                 battle:pushAction("ACT", enemy, item)
             end}
             entries[#entries + 1] = {"ULTIMATE BEAM", "Charge for one enemy turn, then unleash a 580-damage beam.", 100, function(item)
