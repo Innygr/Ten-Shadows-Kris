@@ -30,7 +30,8 @@ assert "self.max_health = 21000" in enemy and "self.health = self.max_health" in
 assert "self.attack = 40" in enemy and "self.defense = 800" in enemy
 knight_path = root / "scripts" / "battle" / "enemies" / "roaring_knight.lua"
 knight = knight_path.read_text(encoding="utf-8")
-assert "self.max_health = 1460" in knight and "self.health = self.max_health" in knight
+assert "self.max_health = 7300" in knight and "self.health = self.max_health" in knight
+assert "self.attack = 40" in knight and "self.defense = 0" in knight
 assert 'self.waves = {"knight_titan_assault"}' in knight, (
     "the surviving Knight must keep the coordinated assault Wave available"
 )
