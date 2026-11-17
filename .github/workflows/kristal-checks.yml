@@ -106,6 +106,9 @@ jobs:
       - name: Test Ten Shadows effects and Attack scaling
         run: lua5.1 tests/runtime_shadows_test.lua
 
+      - name: Test Kris's Idea Titan summon
+        run: lua5.1 tests/kris_idea_titan_test.lua
+
       - name: Test Chimera Shadow Garden visuals
         run: lua5.1 tests/chimera_shadow_garden_test.lua
 
@@ -174,6 +177,8 @@ jobs:
           test -f scripts/world/scripts/runtime_test.lua
           test -f scripts/world/scripts/gaster_dialogue_test.lua
           lua5.1 tests/yellow_soul_orientation_test.lua
+          test -f scripts/battle/objects/summoned_titan_visual.lua
+          test -f tests/kris_idea_titan_test.lua
           test -f scripts/data/actors/gaster_secret.lua
           test -f scripts/battle/enemies/gaster_secret.lua
           test -f scripts/battle/encounters/gaster_secret.lua
@@ -297,7 +302,7 @@ jobs:
           grep -q 'Class(Actor, "berdly")' scripts/data/actors/berdly.lua
           grep -q 'self:setActor("berdly")' scripts/data/party/berdly.lua
           grep -q 'Registry.getActor("kris")' scripts/data/actors/vessel.lua
-          grep -q 'vessel_gray_red_outline' scripts/data/actors/vessel.lua
+          grep -q 'vessel_grayscale' scripts/data/actors/vessel.lua
           grep -q 'self:setActor("vessel")' scripts/data/party/vessel.lua
           test -f scripts/world/maps/test_room.lua
           for gear in shadow_cloak ironhide_vest healing_sash frost_guard aero_cape soul_anchor; do
