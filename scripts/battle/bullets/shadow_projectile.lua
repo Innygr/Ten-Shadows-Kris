@@ -6,6 +6,89 @@ local COLORS = {
     combo = {1.0, 0.78, 0.24},
 }
 
+local SOUL_MODE_STYLES = {
+    ["falling-columns"] = "blue",
+    ["updraft-sweep"] = "blue",
+    ["gravity-arc"] = "blue",
+    ["gravity-inversion"] = "blue",
+    ["gravity-slam"] = "blue",
+    ["timed-laser-grid"] = "green",
+    ["shieldbreaker-strike"] = "green",
+    ["feint-then-lunge"] = "green",
+    ["directional-blade-barrage"] = "green",
+    ["guardbreak-grid"] = "green",
+    ["aimed-projectile-volley"] = "yellow",
+    ["target-barricade"] = "yellow",
+    ["ricochet-blades"] = "yellow",
+    ["armored-artillery"] = "yellow",
+    ["aimed-crossfire"] = "yellow",
+    ["closing-thread-grid"] = "purple",
+    ["severed-thread-lanes"] = "purple",
+    ["thread-lane-snare"] = "purple",
+    ["crossing-thread-projectiles"] = "purple",
+    ["thread-cage-crosscut"] = "purple",
+    ["moving-hazard-lanes"] = "orange",
+    ["chasing-embers"] = "orange",
+    ["moving-target-slashes"] = "orange",
+    ["shifting-safe-zones"] = "orange",
+    ["chase-and-sweep"] = "orange",
+    ["timed-pulse-rings"] = "cyan",
+    ["dark-interval-pulses"] = "cyan",
+    ["pause-then-strike"] = "cyan",
+    ["cyan-parry-window"] = "cyan",
+    ["timed-cross-pulse"] = "cyan",
+}
+
+local SOUL_MODE_COLORS = {
+    blue = {0.38, 0.66, 1.0},
+    green = {0.48, 1.0, 0.66},
+    yellow = {1.0, 0.89, 0.28},
+    purple = {0.80, 0.52, 1.0},
+    orange = {1.0, 0.50, 0.20},
+    cyan = {0.30, 0.94, 1.0},
+}
+
+local function drawSoulModeGlyph(mode, size, alpha)
+    local color = SOUL_MODE_COLORS[mode]
+    if not color then return end
+
+    love.graphics.push("all")
+    love.graphics.setColor(color[1], color[2], color[3], alpha or 1)
+    love.graphics.setLineWidth(2)
+
+    if mode == "blue" then
+        love.graphics.polygon("line", 0, -size, size * 0.72, 0, 0, size, -size * 0.72, 0)
+        love.graphics.line(0, -size * 0.42, 0, size * 0.48)
+        love.graphics.line(-size * 0.28, size * 0.18, 0, size * 0.48, size * 0.28, size * 0.18)
+    elseif mode == "green" then
+        love.graphics.polygon("line", 0, -size, size * 0.76, -size * 0.55,
+            size * 0.62, size * 0.45, 0, size, -size * 0.62, size * 0.45,
+            -size * 0.76, -size * 0.55)
+        love.graphics.line(-size * 0.35, 0, size * 0.35, 0)
+    elseif mode == "yellow" then
+        love.graphics.circle("line", 0, 0, size * 0.72)
+        love.graphics.line(-size, 0, size, 0)
+        love.graphics.line(0, -size, 0, size)
+        love.graphics.circle("fill", 0, 0, size * 0.17)
+    elseif mode == "purple" then
+        love.graphics.polygon("line", 0, -size, size, 0, 0, size, -size, 0)
+        love.graphics.line(-size * 0.55, -size * 0.55, size * 0.55, size * 0.55)
+        love.graphics.line(-size * 0.55, size * 0.55, size * 0.55, -size * 0.55)
+    elseif mode == "orange" then
+        for i = -1, 1 do
+            local x = i * size * 0.46
+            love.graphics.line(x - size * 0.28, -size * 0.45,
+                x + size * 0.18, 0, x - size * 0.28, size * 0.45)
+        end
+    elseif mode == "cyan" then
+        love.graphics.circle("line", 0, 0, size * 0.82)
+        love.graphics.circle("line", 0, 0, size * 0.42)
+        love.graphics.circle("fill", 0, 0, size * 0.13)
+    end
+
+    love.graphics.pop()
+end
+
 function ShadowProjectile:init(x, y, direction, speed, kind, warning, mechanic)
     super.init(self, x, y)
 
@@ -14,7 +97,14 @@ function ShadowProjectile:init(x, y, direction, speed, kind, warning, mechanic)
     self.is_chimera_domain_blade = type(mechanic) == "table" and mechanic.kind == "chimera_domain_blade"
     self.is_roaring_shard = type(mechanic) == "table" and mechanic.kind == "roaring_shard"
     self.is_roaring_flame = type(mechanic) == "table" and mechanic.kind == "roaring_flame"
-    self.is_execution_slash = type(mechanic) == "table" and mechanic.kind == "execution_slash"
+    self.is_execution_slash = type(mechanic) == "table" and (
+        mechanic.kind == "execution_slash"
+        or (mechanic.kind == "soul_mode_pattern" and mechanic.variant == "cyan_execution")
+    )
+    self.soul_mode_style = type(mechanic) == "table"
+        and mechanic.kind == "soul_mode_pattern"
+        and SOUL_MODE_STYLES[mechanic.pattern] or nil
+    self.is_soul_mode_projectile = self.soul_mode_style ~= nil
     self.is_titan_hand = type(mechanic) == "table" and mechanic.kind == "titan_hand"
     self.is_titan_big_shot = type(mechanic) == "table" and mechanic.kind == "titan_big_shot"
     self.is_titan_desperation_shot = type(mechanic) == "table" and mechanic.kind == "titan_desperation_shot"
@@ -145,6 +235,10 @@ function ShadowProjectile:draw()
         love.graphics.setColor(color[1], color[2], color[3], 0.88)
         love.graphics.line(0, 0, length, 0)
 
+        if self.is_soul_mode_projectile then
+            drawSoulModeGlyph(self.soul_mode_style, 8, 0.9)
+        end
+
         love.graphics.setColor(1, 1, 1, 0.8)
         if self.telegraph.kind == "target" then
             love.graphics.circle("line", length, 0, 8)
@@ -170,6 +264,15 @@ function ShadowProjectile:draw()
         love.graphics.polygon("fill", -11, -3, 5, -3, 12, 0, 5, 3, -11, 3, -6, 0)
         love.graphics.setColor(1, 1, 1, 0.95)
         love.graphics.line(-6, 0, 8, 0)
+        super.draw(self)
+        return
+    end
+
+    if self.is_soul_mode_projectile and not self.is_ricochet_blade then
+        local color = SOUL_MODE_COLORS[self.soul_mode_style]
+        love.graphics.setColor(color[1], color[2], color[3], 0.26)
+        love.graphics.circle("fill", 0, 0, 11)
+        drawSoulModeGlyph(self.soul_mode_style, 7, 1)
         super.draw(self)
         return
     end
