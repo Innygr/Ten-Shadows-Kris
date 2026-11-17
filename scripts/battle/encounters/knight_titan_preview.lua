@@ -17,10 +17,15 @@ function KnightTitanPreview:init()
     self.music = "battle"
     self.background = true
 
+    -- Place both bosses deliberately instead of relying on the engine's
+    -- default stacked enemy offsets near the far edge of the viewport.
+    local Formation = modRequire("scripts/ten_shadows/battle_formation")
+    local positions = Formation.enemyPositions(SCREEN_WIDTH, SCREEN_HEIGHT)
+
     -- Separate EnemyBattlers preserve each HP pool. They share only the
     -- coordinator that chooses Titan, Knight, and combined attack turns.
-    local titan = self:addEnemy("roaring_knight_titan")
-    local knight = self:addEnemy("roaring_knight")
+    local titan = self:addEnemy("roaring_knight_titan", positions.titan.x, positions.titan.y)
+    local knight = self:addEnemy("roaring_knight", positions.knight.x, positions.knight.y)
     knight.ten_shadows_state = titan.ten_shadows_state
 end
 
