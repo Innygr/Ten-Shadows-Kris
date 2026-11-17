@@ -114,8 +114,8 @@ assert(sprite.vessel_grayscale.uniforms.vessel_presentation() == 1,
 current_presentation = "feminine"
 assert(sprite.vessel_grayscale.uniforms.vessel_presentation() == 2,
     "Feminine presentation must select its shader palette")
-assert(sprite.vessel_grayscale.shader.source:find("vec2 px = 1.0 / love_ScreenSize.xy", 1, true),
-    "Vessel outline sampling must use LÖVE 11.5's supported pixel-shader dimensions")
+assert(sprite.vessel_grayscale.shader.source:find("vec3 steel", 1, true),
+    "Vessel shader must use the neutral steel palette")
 assert(not sprite.vessel_grayscale.shader.source:find("love_PixelSize", 1, true),
     "Vessel shader must not reference the undeclared pixel-size identifier")
 assert(sprite.vessel_grayscale.shader.source:find("dot(pixel.rgb", 1, true),
