@@ -79,6 +79,7 @@ end
 
 installSixPartySupport = function()
     local roster = PARTY_ROSTER
+    local BattleFormation = modRequire("scripts/ten_shadows/battle_formation")
     for _, id in ipairs(roster) do
         assert(Registry.getPartyMember(id), "Ten Shadows Kris: party member '" .. id .. "' was not registered")
     end
@@ -192,33 +193,32 @@ installSixPartySupport = function()
                 end
 
                 if not created then
-                    local battler = PartyBattler(party_member, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
+                    -- Missing overworld followers must not all spawn at the
+                    -- same center point. Give each one its own formation slot.
+                    local actor = party_member:getActor()
+                    local ox, oy = party_member:getBattleOffset()
+                    local x, y = BattleFormation.partyPosition(i, SCREEN_WIDTH, SCREEN_HEIGHT,
+                        actor:getWidth(), actor:getHeight(), ox, oy)
+                    local battler = PartyBattler(party_member, x, y)
                     battler:setAnimation("battle/transition")
                     battle:addChild(battler)
                     table.insert(battle.party, battler)
-                    table.insert(battle.party_beginning_positions, {battler.x, battler.y})
+                    table.insert(battle.party_beginning_positions, {x, y})
                 end
             end
         end
 
-        -- Six battlers use a compact two-column formation on the party side.
+        -- Six battlers use a viewport-relative two-column formation on
+        -- the party side. The same helper places fallback spawns above.
         local original_party_position = Encounter.getPartyPosition
         Encounter.getPartyPosition = function(encounter, index)
             if #Game.battle.party ~= 6 then
                 return original_party_position(encounter, index)
             end
-            -- Keep the six battlers in a centered, compact formation rather
-            -- than anchoring the entire group against the upper-left edge.
-            -- The engine adds each actor's battle offset after this anchor.
-            local column = math.floor((index - 1) / 3)
-            local row = (index - 1) % 3
             local battler = Game.battle.party[index]
             local ox, oy = battler.chara:getBattleOffset()
-            local x = (SCREEN_WIDTH * 0.20) + (column * SCREEN_WIDTH * 0.15625)
-                + (battler.actor:getWidth() / 2 + ox) * 2
-            local y = (SCREEN_HEIGHT * 0.135) + (row * SCREEN_HEIGHT * 0.15625)
-                + (battler.actor:getHeight() + oy) * 2
-            return x, y
+            return BattleFormation.partyPosition(index, SCREEN_WIDTH, SCREEN_HEIGHT,
+                battler.actor:getWidth(), battler.actor:getHeight(), ox, oy)
         end
 
         -- Temporary runtime trace for the six-member hand-off. If the final
