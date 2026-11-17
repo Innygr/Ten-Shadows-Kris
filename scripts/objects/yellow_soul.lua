@@ -10,7 +10,6 @@ function YellowSoul:init(x, y)
     self.yellow_charging = false
     self.yellow_fired = false
     self.yellow_fire_count = 0
-    self.sprite.rotation = math.pi / 2
 end
 
 function YellowSoul:fire(charged)
