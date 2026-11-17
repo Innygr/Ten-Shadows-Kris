@@ -4,6 +4,7 @@ local CHARGE_SECONDS = 0.65
 
 function YellowSoul:init(x, y)
     super.init(self, x, y, {1.00, 0.88, 0.18})
+    self.sprite.rotation = math.pi / 2
     self.ten_shadows_mode = "yellow"
     self.yellow_charge = 0
     self.yellow_was_down = false
@@ -52,11 +53,7 @@ function YellowSoul:update()
 end
 
 function YellowSoul:draw()
-    -- The heart's point faces right, matching the Yellow firing direction.
-    love.graphics.push()
-    love.graphics.rotate(-math.pi / 2)
     super.draw(self)
-    love.graphics.pop()
     love.graphics.push("all")
     if self.yellow_charging then
         local radius = 12 + self.yellow_charge * 12
