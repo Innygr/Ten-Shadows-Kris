@@ -1,8 +1,8 @@
 local soul_file = assert(io.open("scripts/objects/yellow_soul.lua", "r"))
 local soul = soul_file:read("*a")
 soul_file:close()
-assert(soul:find("love.graphics.rotate(-math.pi / 2)", 1, true),
-    "Yellow SOUL point must face right")
+assert(soul:find("self.sprite.rotation = math.pi / 2", 1, true),
+    "Yellow SOUL point must face right with a 90-degree clockwise sprite rotation")
 assert(soul:find("YellowShot(self.x + 18, self.y, charged)", 1, true),
     "Yellow shots must originate on the SOUL's right side")
 local shot_file = assert(io.open("scripts/objects/yellow_shot.lua", "r"))
