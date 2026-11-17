@@ -109,19 +109,19 @@ function ChimeraShadowGarden:draw()
         local inset = math.min(width, height) * 0.075
         local bx, by = inset, inset
         local bw, bh = math.max(0, width - inset * 2), math.max(0, height - inset * 2)
-        color(0.34, 0.055, 0.12, (0.26 + barrier_pulse * 0.10) * fade)
+        color(0.22, 0.12, 0.48, (0.30 + barrier_pulse * 0.10) * fade)
         graphics.setLineWidth(3)
         graphics.rectangle("line", bx, by, bw, bh, 8, 8)
-        color(0.88, 0.30, 0.43, (0.48 + barrier_pulse * 0.20) * fade)
+        color(0.38, 0.72, 1.0, (0.48 + barrier_pulse * 0.20) * fade)
         graphics.setLineWidth(1)
         graphics.rectangle("line", bx + 4, by + 4, math.max(0, bw - 8), math.max(0, bh - 8), 6, 6)
         for node = 0, 5 do
             local angle = node * TAU / 6 - math.pi / 2
             local nx, ny = point(cx, cy, radius * 0.91, angle)
             local node_pulse = 0.5 + 0.5 * math.sin(self.time * 4 + node)
-            color(0.42, 0.045, 0.13, (0.40 + node_pulse * 0.20) * fade)
+            color(0.22, 0.12, 0.52, (0.40 + node_pulse * 0.20) * fade)
             graphics.circle("fill", nx, ny, 5 + node_pulse * 2)
-            color(1.0, 0.62, 0.68, 0.88 * fade)
+            color(0.72, 0.88, 1.0, 0.88 * fade)
             graphics.setLineWidth(1)
             graphics.circle("line", nx, ny, 4 + node_pulse * 2)
         end
