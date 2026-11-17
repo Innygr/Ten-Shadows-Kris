@@ -684,13 +684,6 @@ function CombatState.new()
         local result = {domain_cancelled = false, vessel_domain_cancelled = false, ultimate_beam = nil}
 
         if self.boss.exposed > 0 then self.boss.exposed = self.boss.exposed - 1 end
-        if self.boss.counter_turns > 0 then
-            self.boss.counter_turns = self.boss.counter_turns - 1
-            if self.boss.counter_turns <= 0 then
-                self.boss.counter_ready = false
-                self.boss.counter_turns = 0
-            end
-        end
         if self.titan.brighten_turns > 0 then
             self.titan.brighten_turns = self.titan.brighten_turns - 1
             if self.titan.brighten_turns == 0 then
