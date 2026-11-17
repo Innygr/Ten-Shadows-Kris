@@ -130,6 +130,9 @@ jobs:
       - name: Test Berdly actor configuration isolation
         run: lua5.1 tests/berdly_actor_test.lua
 
+      - name: Test dedicated Knight and Titan actor configuration
+        run: lua5.1 tests/enemy_actor_test.lua
+
       - name: Test Vessel identity profile and save import
         run: lua5.1 tests/vessel_identity_test.lua
       - name: Test Vessel identity in Knight + Titan dialogue
@@ -152,6 +155,12 @@ jobs:
         run: |
           set -euxo pipefail
           test -f mod.lua
+          test -f scripts/ten_shadows/actor_fallback.lua
+          test -f scripts/data/actors/roaring_knight.lua
+          test -f scripts/data/actors/roaring_knight_titan.lua
+          test -f tests/enemy_actor_test.lua
+          grep -q 'self:setActor("roaring_knight")' scripts/battle/enemies/roaring_knight.lua
+          grep -q 'self:setActor("roaring_knight_titan")' scripts/battle/enemies/roaring_knight_titan.lua
           test -f scripts/battle/encounters/runtime_smoke_test.lua
           test -f scripts/battle/encounters/knight_titan_preview.lua
           test -f scripts/battle/waves/knight_titan_assault.lua

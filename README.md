@@ -78,11 +78,14 @@ package is only for installing into a working Kristal installation.
 The HTML/JavaScript browser prototype and documentation are source/reference material; they are
 not included in either game package.
 
-A new file now enters the Knight + Titan playtest directly. The boss still uses Kris's built-in
-actor as a temporary visual stand-in until dedicated Knight/Titan art is added, and the current
-six-member turn flow, boss presentation, and battle transitions still need verification in a
-local Kristal launch. The six project party members are Kris, Susie, Ralsei, Noelle, Berdly, and
-Vessel. Berdly's actor also remains a temporary visual fallback.
+A new file now enters the Knight + Titan playtest directly. The Knight and Titan each have a
+dedicated Kristal Actor ID and isolated animation configuration. Until their own sprite frames
+are added, those actor configs intentionally reuse Kris's existing sprite paths as a safe visual
+fallback; the future asset roots are documented in `assets/sprites/enemies/README.md`. This is
+not yet the final Knight/Titan artwork, and the six-member turn flow, boss presentation, and
+battle transitions still need verification in a local Kristal launch. The six project party
+members are Kris, Susie, Ralsei, Noelle, Berdly, and Vessel. Berdly's actor also remains a
+temporary visual fallback.
 
 ## Startup troubleshooting
 

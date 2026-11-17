@@ -17,8 +17,8 @@ function RoaringKnightTitan:init()
 
     self.name = "The Titan"
     self.ten_shadows_role = "titan"
-    -- Temporary Kris actor placeholder until dedicated Knight/Titan art is added.
-    self:setActor("kris")
+    -- Keep a dedicated actor identity; its config safely falls back to Kris until Titan art exists.
+    self:setActor("roaring_knight_titan")
     self.max_health = 21000
     self.health = self.max_health
     self.attack = 40

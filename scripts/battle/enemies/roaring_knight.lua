@@ -20,8 +20,8 @@ function RoaringKnight:init()
 
     self.name = "The Roaring Knight"
     self.ten_shadows_role = "knight"
-    -- Temporary Kris actor placeholder until dedicated Knight art is added.
-    self:setActor("kris")
+    -- Keep a dedicated actor identity; its config safely falls back to Kris until Knight art exists.
+    self:setActor("roaring_knight")
     self.max_health = 1460
     self.health = self.max_health
     self.attack = 1
