@@ -6,7 +6,7 @@ assert(state.knight_fight.hp == 7300 and state.knight_fight.max_hp == 7300,
 assert(state.knight_fight.damage_taken_multiplier == 0.20,
     "Knight must begin at 20% incoming damage")
 
-local EnemyBattler = {
+EnemyBattler = {
     init = function(self) self.width, self.height = 24, 40 end,
     setActor = function() end,
     registerAct = function() end,
