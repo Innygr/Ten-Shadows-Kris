@@ -544,6 +544,12 @@ function Mod:onBattleEnemySelect(reason, selected)
             entries[#entries + 1] = {"ULTIMATE BEAM", "Charge for one enemy turn, then unleash a 580-damage beam.", 100, function(item)
                 battle:pushAction("ACT", enemy, item)
             end}
+            if enemy.name == "W.D. Gaster" and enemy.health <= enemy.max_health * 0.5
+                and not enemy.ten_shadows_own_titan_summoned then
+                entries[#entries + 1] = {"KRIS'S IDEA", "Kris and Vessel summon their own Titan.", 0, function(item)
+                    battle:pushAction("ACT", enemy, item)
+                end}
+            end
             addMenu(battle, enemy, entries, function()
                 addMenu(battle, enemy, root, nil)
             end)
