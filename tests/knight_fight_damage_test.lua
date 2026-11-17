@@ -65,13 +65,13 @@ local kris = attacker("kris")
 
 assert(knight:getAttackDamage(100, susie, 100) == 20,
     "ordinary Fight damage must use the 20% multiplier")
-assert(knight:getAttackDamage(100, kris, 100) == 10,
-    "Kris damage is halved while Susie and Ralsei are standing")
+assert(knight:getAttackDamage(100, kris, 100) == 20,
+    "Kris receives the same Knight damage scaling as every other party member")
 
 Game.battle.party[1].chara.health = 0
 Game.battle.party[2].chara.health = 0
-assert(knight:getAttackDamage(100, kris, 100) == 40,
-    "Kris damage is doubled while Susie and Ralsei are both down")
+assert(knight:getAttackDamage(100, kris, 100) == 20,
+    "Kris damage must not change based on Susie or Ralsei status")
 
 Game.battle.party[1].chara.health = 100
 Game.battle.party[2].chara.health = 100
@@ -86,4 +86,4 @@ for _ = 1, 20 do state:tickEnemyTurnEffects() end
 assert(state.knight_fight.damage_taken_multiplier == 0.35,
     "Knight damage intake rises by 1% each turn and caps at 35%")
 
-print("Knight HP, ATK, incoming damage multiplier, Kris modifier, and Rude Buster formula passed")
+print("Knight HP, ATK, incoming damage multiplier, uniform party scaling and Rude Buster formula passed")
