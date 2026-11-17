@@ -25,8 +25,16 @@ function Identity.normalize(data)
 end
 
 function Identity.load()
-    local data = Kristal.loadData("vessel_identity")
-    saved_profile_exists = type(data) == "table"
+    -- Kristal.loadData decodes its save file as JSON before returning. A
+    -- zero-byte or partially-written profile therefore throws inside the
+    -- engine's JSON parser; treat that as an unset profile instead of
+    -- preventing the mod from starting.
+    local ok, data = pcall(Kristal.loadData, "vessel_identity")
+    if not ok then
+        print("[Ten Shadows Kris] Could not read Vessel identity; using defaults.")
+        data = nil
+    end
+    saved_profile_exists = ok and type(data) == "table"
     profile = Identity.normalize(data)
     return profile
 end
