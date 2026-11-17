@@ -112,3 +112,23 @@ local berdly_actor = read("scripts/data/actors/berdly.lua")
 assert(berdly_party:find('self:setActor("berdly")', 1, true), "Berdly must use his dedicated actor registry entry")
 assert(berdly_actor:find('Class(Actor, "berdly")', 1, true), "Berdly actor must be registered independently from Kris")
 assert(berdly_actor:find('Registry.getActor("kris")', 1, true), "Berdly fallback must preserve working animation definitions until dedicated frames exist")
+
+
+-- The primary test room must expose every station, a healing save point,
+-- and a fully enclosed perimeter. The mod's spawnParty hook supplies all
+-- six overworld followers, including Berdly and Vessel.
+local test_room = read("scripts/world/maps/testing-room_001.lua")
+for _, station in ipairs({"gaster_fight_test", "final_fight_test", "runtime_test", "gaster_dialogue_test", "room_help"}) do
+    assert(test_room:find('script="' .. station .. '"', 1, true),
+        "testing-room_001 is missing interactable " .. station)
+end
+assert(test_room:find('name="savepoint"', 1, true)
+    and test_room:find('heals=true', 1, true),
+    "testing-room_001 must contain a healing save point")
+for _, wall in ipairs({"north_wall", "south_wall", "west_wall", "east_wall"}) do
+    assert(test_room:find('name="' .. wall .. '"', 1, true),
+        "testing-room_001 is missing perimeter wall " .. wall)
+end
+assert(source:find('local full_roster = {}', 1, true)
+    and source:find('original_spawn_party(world, marker, full_roster, extra, facing)', 1, true),
+    "overworld spawn must include the full six-member party, including Berdly and Vessel")
