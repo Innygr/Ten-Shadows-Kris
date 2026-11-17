@@ -18,6 +18,41 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
         return enemy:getCheckText(battler)
     end
 
+    if name == "KRIS'S IDEA" then
+        if not battler or not battler.chara or battler.chara.id ~= "vessel" then
+            return "* This idea needs both Kris and Vessel."
+        end
+        local kris_alive = false
+        for _, ally in ipairs(Game and Game.battle and Game.battle.party or {}) do
+            local chara = ally and ally.chara
+            if chara and chara.id == "kris" then
+                local hp = chara.getHealth and chara:getHealth() or chara.health or 0
+                kris_alive = hp > 0 and not ally.is_down
+                break
+            end
+        end
+        if not kris_alive then return "* Kris needs to be standing for this idea." end
+        if enemy.ten_shadows_own_titan_summoned then
+            return "* Their Titan has already answered the call."
+        end
+        if enemy.health > enemy.max_health * 0.5 then
+            return "* Kris is still working on the idea..."
+        end
+        enemy.ten_shadows_own_titan_summoned = true
+        enemy:hurt(1100, battler)
+        local battle = Game and Game.battle
+        local arena = battle and battle.arena
+        if arena and arena.mask then
+            local Visual = modRequire("scripts/battle/objects/summoned_titan_visual")
+            arena.mask:addChild(Visual(arena.width, arena.height))
+        end
+        return {
+            "* KRIS HAS AN IDEA.",
+            "* Vessel joins Kris, and their own Titan answers the call.",
+            "* The shadow Titan strikes for 1,100 damage!",
+        }
+    end
+
     if name == "WAKE KRIS" then
         local Effects = modRequire("scripts/ten_shadows/runtime_spells")
         local restored, reason = Effects.wakeKris()
