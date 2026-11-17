@@ -169,6 +169,31 @@ ricochet:draw()
 assert(draw_polygons > ricochet_polygons_before,
     "Ricochet Blade draws a dedicated blade silhouette")
 
+-- Vessel's six custom SOUL modes use distinct projectile glyphs. Cyan's
+-- special execution marker must also be understood by CyanSoul's parry check.
+local mode_samples = {
+    {pattern = "gravity-slam", variant = "gravity_slam", style = "blue"},
+    {pattern = "guardbreak-grid", variant = "upper_guard_grid", style = "green"},
+    {pattern = "cyan-parry-window", variant = "cyan_execution", style = "cyan", parry = true},
+    {pattern = "ricochet-blades", variant = "ricochet_blade", style = "yellow"},
+    {pattern = "thread-cage-crosscut", variant = "thread_cage", style = "purple"},
+    {pattern = "chase-and-sweep", variant = "chase", style = "orange"},
+}
+for _, sample in ipairs(mode_samples) do
+    local shot = ShadowProjectile(100, 100, 0, 4, "knight", {
+        kind = "target", duration = 0.4, length = 90,
+    }, {
+        kind = "soul_mode_pattern", pattern = sample.pattern, variant = sample.variant,
+    })
+    assert(shot.is_soul_mode_projectile and shot.soul_mode_style == sample.style,
+        sample.style .. " SOUL attack must retain its dedicated visual family")
+    if sample.parry then
+        assert(shot.is_execution_slash,
+            "Cyan-mode Knight Execution must be recognized by the Cyan parry")
+    end
+    shot:draw()
+end
+
 local collision_shot = ShadowProjectile(72, 82, 0, 4, "knight", nil, {
     kind = "knight_titan_collision", source = "knight", path = 1,
     collision_x = 320, collision_y = 220,
