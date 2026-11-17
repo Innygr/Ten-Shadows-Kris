@@ -104,26 +104,6 @@ function RoaringKnight:onHurt(damage, battler)
 end
 
 function RoaringKnight:onAct(battler, name)
-    if name == "EXECUTION COUNTER" then
-        local state = self.ten_shadows_state
-        if not state then
-            return "* The Knight's stagger has already faded."
-        end
-
-        local ready, damage = state:consumeExecutionCounter()
-        if not ready then
-            return "* The Knight is no longer open to a counter."
-        end
-
-        -- The parry staggered the Knight, so the counter must hit this
-        -- battler's independent 1,460 HP pool, never the Titan's.
-        self:hurt(damage, battler)
-        return {
-            "* Kris strikes through the Knight's opening!",
-            "* The counter deals " .. tostring(damage) .. " damage.",
-        }
-    end
-
     local BossActions = modRequire("scripts/ten_shadows/boss_actions")
     return BossActions.onAct(self, battler, name, super.onAct)
 end
