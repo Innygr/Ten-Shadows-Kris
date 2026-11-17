@@ -112,26 +112,15 @@ knight:onHurt(500)
 assert(knight.health == 6400 and titan.health == 14000 and scheduler.boss.hp == 14000,
     "further Knight damage must remain independent")
 
--- The Cyan parry counter must be offered against the Knight and spend its
--- damage from the Knight's pool only.
+-- Cyan parries still stagger the Knight, but no Knight-vs-Kris counter ACT exists.
 scheduler:parryExecution()
-local titan_hp_before_counter = titan.health
-local knight_hp_before_counter = knight.health
-local counter_text = knight:onAct(nil, "EXECUTION COUNTER")
-assert(type(counter_text) == "table", "Knight should accept the ready Execution Counter ACT")
-assert(knight.health == knight_hp_before_counter - 36,
-    "Execution Counter must deal its 36 damage to the Knight")
-assert(titan.health == titan_hp_before_counter and scheduler.boss.hp == titan_hp_before_counter,
-    "Execution Counter must never reduce Titan HP")
-assert(not scheduler.boss.counter_ready,
-    "Execution Counter must be consumed exactly once")
+assert(scheduler.knight_disrupted == 1 and scheduler.boss.exposed == 2,
+    "Cyan parry must retain its stagger and expose effects")
+assert(scheduler.boss.counter_ready == nil and scheduler.boss.counter_turns == nil,
+    "Knight must not create a counter interaction for Kris")
 
--- Defeating the Knight clears a counter if the player did not spend it.
-scheduler:parryExecution()
 knight.health = 0
 knight:onDefeat()
-assert(not scheduler.boss.counter_ready and scheduler.boss.counter_turns == 0,
-    "Knight defeat must clear an unused Execution Counter")
 assert(table.concat(knight:getCheckText(), " "):find("0 / 7,300", 1, true),
     "defeated Knight CHECK must show zero current HP")
 assert(not scheduler.knight_alive, "Knight defeat must remove its attack source")
