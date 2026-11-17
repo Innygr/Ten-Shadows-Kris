@@ -7,21 +7,6 @@ extern number vessel_presentation;
 vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
     vec4 pixel = Texel(texture, texture_coords);
     if (pixel.a < 0.01) {
-        // LÖVE 11.5 exposes the current render target dimensions through
-        // love_ScreenSize, which provides a one-render-pixel texture offset.
-        vec2 px = 1.0 / love_ScreenSize.xy;
-        float around = 0.0;
-        around = max(around, Texel(texture, texture_coords + vec2(-px.x, 0.0)).a);
-        around = max(around, Texel(texture, texture_coords + vec2( px.x, 0.0)).a);
-        around = max(around, Texel(texture, texture_coords + vec2(0.0, -px.y)).a);
-        around = max(around, Texel(texture, texture_coords + vec2(0.0,  px.y)).a);
-        around = max(around, Texel(texture, texture_coords + vec2(-px.x, -px.y)).a);
-        around = max(around, Texel(texture, texture_coords + vec2( px.x, -px.y)).a);
-        around = max(around, Texel(texture, texture_coords + vec2(-px.x,  px.y)).a);
-        around = max(around, Texel(texture, texture_coords + vec2( px.x,  px.y)).a);
-        if (around > 0.01) {
-            return vec4(0.95, 0.035, 0.08, around) * color;
-        }
         return vec4(0.0);
     }
 
@@ -87,7 +72,7 @@ function actor:init()
     self.gender = identity.gender or "unspecified"
     self.pronouns = identity.pronouns or "they/them"
     self.presentation = identity.presentation or "androgynous"
-    self.color = {1, 0.035, 0.08}
+    self.color = {0.72, 0.72, 0.72}
 end
 
 function actor:onSpriteInit(sprite)
@@ -100,7 +85,7 @@ function actor:onSpriteInit(sprite)
     -- vertical stretch. Set an absolute scale so repeated init calls do not stack.
     sprite.scale_y = 1.15
 
-    if not sprite:getFX("vessel_gray_red_outline") then
+    if not sprite:getFX("vessel_grayscale") then
         local presentation_values = {androgynous = 0, masculine = 1, feminine = 2}
         if not vessel_shader and not vessel_shader_unavailable then
             local ok, compiled = pcall(love.graphics.newShader, VESSEL_SHADER_SOURCE)
@@ -109,7 +94,7 @@ function actor:onSpriteInit(sprite)
             else
                 vessel_shader_unavailable = true
                 local reason = ok and "LÖVE returned no shader" or tostring(compiled)
-                print("[Deltarune: Shadowbender] Vessel outline shader unavailable; continuing without the visual effect: " .. reason)
+                print("[Deltarune: Shadowbender] Vessel grayscale shader unavailable; continuing without the visual effect: " .. reason)
             end
         end
         if vessel_shader then
