@@ -172,7 +172,7 @@ CombatState.SOUL_MODE_ATTACKS = {
         },
         knight = {
             soulAttack("cyan_knight_stop_start", "KNIGHT · STOP-START", "knight", "pause-then-strike", "The Knight alternates pauses with sudden strikes."),
-            soulAttack("cyan_knights_execution", "KNIGHT'S EXECUTION", "knight", "cyan-parry-window", "Compress the Cyan light circle; release as the blade reaches the SOUL to parry and earn a counter.", {2, 3}),
+            soulAttack("cyan_knights_execution", "KNIGHT'S EXECUTION", "knight", "cyan-parry-window", "A timed Cyan parry staggers the Knight and grants TP.", {2, 3}),
         },
         combo = {soulAttack("cyan_knight_titan_sync", "KNIGHT + TITAN · SYNCHRONIZED", "combo", "timed-cross-pulse", "A Knight strike lands between the Titan's timed pulses.")},
     },
@@ -207,7 +207,6 @@ function CombatState.new()
             hp = 21000, max_hp = 21000, phase = 1, exposed = 0,
             chill = 0, frozen_turns = 0, tired_immune = true,
             mercy_immune = true, status = "Normal",
-            counter_ready = false, counter_turns = 0,
         },
         titan_alive = true,
         knight_alive = true,
@@ -318,8 +317,6 @@ function CombatState.new()
         if not self.knight_alive then
             self.knight_fight.hp = 0
             self.knight_disrupted = 0
-            self.boss.counter_ready = false
-            self.boss.counter_turns = 0
             self.boss.chill = 0
             self.boss.frozen_turns = 0
             self.knight_domain.active = false
@@ -340,35 +337,9 @@ function CombatState.new()
         return self.knight_fight.hp
     end
 
-    function state:scaleKnightFightDamage(damage, battler)
+    function state:scaleKnightFightDamage(damage)
         local amount = math.max(0, tonumber(damage) or 0)
         if amount <= 0 then return 0 end
-
-        local chara = battler and battler.chara
-        if chara and chara.id == "kris" then
-            local standing = {}
-            for _, party_battler in ipairs(Game and Game.battle and Game.battle.party or {}) do
-                if party_battler.chara then
-                    standing[party_battler.chara.id] = (party_battler.chara.health or 0) > 0
-                end
-            end
-            local susie_up = standing.susie
-            local ralsei_up = standing.ralsei
-            if susie_up == nil then
-                local member = self:getMember("susie")
-                susie_up = member and member.hp > 0 or false
-            end
-            if ralsei_up == nil then
-                local member = self:getMember("ralsei")
-                ralsei_up = member and member.hp > 0 or false
-            end
-            if susie_up and ralsei_up then
-                amount = amount * 0.5
-            elseif not susie_up and not ralsei_up then
-                amount = amount * 2
-            end
-        end
-
         return math.max(1, math.ceil(amount * self.knight_fight.damage_taken_multiplier))
     end
 
@@ -431,19 +402,12 @@ function CombatState.new()
     end
 
     function state:parryExecution()
+        -- Cyan parries remain a SOUL mechanic, but no longer create a
+        -- Kris-specific counter interaction against the Knight.
         self:disruptKnight()
         self:expose(2)
-        self.boss.counter_ready = true
-        self.boss.counter_turns = 2
         self:addTP(12)
         return true
-    end
-
-    function state:consumeExecutionCounter()
-        if not self.boss.counter_ready then return false end
-        self.boss.counter_ready = false
-        self.boss.counter_turns = 0
-        return true, 36
     end
 
     function state:consumeKnightDisruption(knight_is_frozen)
