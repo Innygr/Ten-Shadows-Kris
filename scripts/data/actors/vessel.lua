@@ -103,7 +103,7 @@ function actor:onSpriteInit(sprite)
                     local identity = Mod and Mod.vessel_identity and Mod.vessel_identity.get() or {}
                     return presentation_values[identity.presentation] or 0
                 end,
-            }, false, 0), "vessel_gray_red_outline")
+            }, false, 0), "vessel_grayscale")
         end
     end
 end
