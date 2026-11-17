@@ -103,7 +103,7 @@ local sprite = {
 vessel:onSpriteInit(sprite)
 assert(sprite.kris_callback_called, "Vessel must preserve Kris sprite initialization")
 assert(sprite.scale_y == 1.15, "Vessel sprite must be stretched vertically by exactly 1.15x")
-assert(sprite.vessel_gray_red_outline, "Vessel must install its grayscale/red-outline shader")
+assert(sprite.vessel_grayscale, "Vessel must install its grayscale-only shader")
 assert(type(sprite.vessel_gray_red_outline.uniforms.vessel_presentation) == "function",
     "Vessel shader must read the saved visual presentation dynamically")
 assert(sprite.vessel_gray_red_outline.uniforms.vessel_presentation() == 0,
@@ -121,7 +121,7 @@ assert(not sprite.vessel_gray_red_outline.shader.source:find("love_PixelSize", 1
 assert(sprite.vessel_gray_red_outline.shader.source:find("dot(pixel.rgb", 1, true),
     "Vessel shader must convert the sprite to grayscale")
 assert(sprite.vessel_gray_red_outline.shader.source:find("0.95, 0.035, 0.08", 1, true),
-    "Vessel shader must retain its red outline")
+    "Vessel shader must not add red outline pixels")
 
 -- Reinitialization must not stack shader effects or scale multipliers.
 vessel:onSpriteInit(sprite)
@@ -150,7 +150,7 @@ assert(fallback_ok, "a Vessel shader compile failure must not crash sprite creat
 assert(fallback_sprite.scale_y == 1.15,
     "Vessel must retain its normal sprite setup when the optional shader is unavailable")
 assert(not fallback_sprite.vessel_gray_red_outline,
-    "Vessel must skip only the optional outline effect when shader compilation fails")
+    "Vessel must skip only the optional grayscale effect when shader compilation fails")
 
 local party_source = assert(io.open("scripts/data/party/vessel.lua", "r"))
 local party_text = party_source:read("*a")
@@ -158,4 +158,4 @@ party_source:close()
 assert(party_text:find('self:setActor("vessel")', 1, true),
     "Vessel party member must use the dedicated actor")
 
-print("Vessel Kris-copy isolation, 1.15x vertical scale, and grayscale/red-outline shader passed")
+print("Vessel Kris-copy isolation, 1.15x vertical scale, and grayscale-only shader passed")
