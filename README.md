@@ -36,7 +36,7 @@ architecture contract.
   through to generic radial/wall/aimed patterns. Wall, aimed, and falling attacks telegraph their
   paths before projectiles become dangerous. BRIGHTEN resolves as one grouped ACT and preserves
   queued Noelle, Berdly, and Vessel actions. Cyan SOUL charges and purges bullets on release; a
-  timed Knight's Execution parry staggers the Knight and opens a one-use Kris counter ACT. SOUL-mode
+  timed Knight's Execution parry staggers the Knight and grants TP without a Kris-specific counter. SOUL-mode
   attack sets only run while the matching coloured SOUL is active.
 - SOUL-mode boss attacks use 30 mode-specific wave patterns and six distinct projectile
   glyph families. Yellow Ricochet Blades rebound from arena walls twice; Cyan's marked
@@ -55,9 +55,8 @@ architecture contract.
   independently, or both can use FUSION DOMAIN together. A solo Vessel barrier and Kris's
   three-turn garden can coexist; the joint Domain pays one shared 2 TP upkeep.
 - `scripts/ten_shadows/boss_actions.lua` centralizes the encounter's Ten Shadows, SOUL-mode,
-  BRIGHTEN, Domain, and V-ACT handling for either living boss. The Cyan Execution Counter is
-  dispatched to the Knight and damages its independent HP pool; the shared scheduler and Titan
-  phase state remain separate from Knight health.
+  BRIGHTEN, Domain, and V-ACT handling for either living boss. Knight damage scaling is uniform
+  across the party; no Kris-specific counter or damage modifier is applied.
 - When Kris is down, the other four members' X-Actions switch to **WAKE KRIS**; Vessel receives
   the same action in the ACT menu. It restores Kris at 1 HP through Kristal's battler health/status
   refresh path. Automated tests cover the X-Action override, revival, and Vessel menu routing.
