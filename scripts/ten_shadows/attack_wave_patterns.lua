@@ -131,7 +131,7 @@ end
 
 -- SOUL-mode attacks use dedicated geometry rather than falling through to
 -- one of the six broad Red-mode projectile families. Each descriptor keeps
--- its source styling and carries a stable pattern key for future visuals.
+-- its source styling and carries a stable key for its mode-specific projectile glyph.
 local SOUL_MODE_PATTERN_KEYS = {
     ["falling-columns"] = true, ["updraft-sweep"] = true,
     ["gravity-arc"] = true, ["gravity-inversion"] = true, ["gravity-slam"] = true,
