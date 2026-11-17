@@ -104,7 +104,7 @@ soul:update()
 released = false
 
 expect(soul.cyan_last_parry, true, "releasing near the armed execution slash parries it")
-expect(state.boss.counter_ready, true, "successful parry opens the counter ACT")
+expect(state.boss.counter_ready, nil, "successful parry does not create a counter ACT")
 expect(state.boss.exposed, 2, "successful parry exposes the shared boss")
 expect(state.knight_disrupted, 1, "successful parry staggers the Knight")
 expect(state.tp, 47, "successful parry awards 12 internal TP")
@@ -113,19 +113,6 @@ expect(bullets[1].removed, true, "parry slash is purified")
 expect(bullets[2].removed, true, "all other visible bullets are purified")
 expect(soul.cyan_charge, 0, "release resets the charge meter")
 assert(soul.cyan_pulse_timer > 0, "release starts the expanding purification pulse")
-
-local ready, counter_damage = state:consumeExecutionCounter()
-expect(ready, true, "successful parry grants one counter")
-expect(counter_damage, 36, "counter damage is defined")
-expect(state.boss.counter_ready, false, "counter is consumed once")
-expect(state:consumeExecutionCounter(), false, "counter cannot be reused")
-
-local expiring = CombatState.new()
-expiring:parryExecution()
-expiring:tickEnemyTurnEffects()
-expect(expiring.boss.counter_ready, true, "counter survives through the immediate player action window")
-expiring:tickEnemyTurnEffects()
-expect(expiring.boss.counter_ready, false, "unused counter expires after its next action window")
 
 -- A short release still purifies bullets, but it cannot parry the Knight.
 local missed_state = CombatState.new()
@@ -142,7 +129,7 @@ released = true
 miss_soul:update()
 released = false
 expect(miss_soul.cyan_last_parry, false, "undercharged release misses the parry window")
-expect(missed_state.boss.counter_ready, false, "mistimed release does not grant a counter")
+expect(missed_state.boss.counter_ready, nil, "mistimed release does not create a counter ACT")
 expect(bullets[1].removed, true, "mistimed release still purifies the slash")
 expect(bullets[2].removed, true, "mistimed release still purifies other projectiles")
 
@@ -172,4 +159,4 @@ assert(graphics_calls.circles > 0, "Cyan SOUL draws charge and parry pulse rings
 assert((soul.base_updates or 0) >= 4, "base Soul update is preserved")
 expect(soul.base_draws, 1, "base Soul drawing is preserved")
 
-print("Cyan SOUL charge, purge, execution parry, counter, and factory tests passed.")
+print("Cyan SOUL charge, purge, execution parry, and factory tests passed.")
