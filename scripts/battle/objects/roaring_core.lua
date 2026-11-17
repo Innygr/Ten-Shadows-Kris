@@ -57,12 +57,12 @@ function RoaringCoreVisual:draw()
     graphics.push("all")
 
     -- Dark core and two thin rings give the radial attack a clear focal point.
-    graphics.setColor(0.035, 0.004, 0.018, 0.82 * alpha)
+    graphics.setColor(0.018, 0.012, 0.045, 0.88 * alpha)
     graphics.circle("fill", cx, cy, radius * 0.57)
-    graphics.setColor(0.42, 0.025, 0.10, 0.72 * alpha)
+    graphics.setColor(0.24, 0.12, 0.52, 0.72 * alpha)
     graphics.setLineWidth(2)
     graphics.circle("line", cx, cy, radius * (0.78 + pulse * 0.06))
-    graphics.setColor(0.76, 0.075, 0.19, 0.36 * alpha)
+    graphics.setColor(0.38, 0.25, 0.78, 0.42 * alpha)
     graphics.setLineWidth(1)
     graphics.circle("line", cx, cy, radius * (1.08 + pulse * 0.10))
 
@@ -79,20 +79,20 @@ function RoaringCoreVisual:draw()
             graphics.circle("fill", outer_x, outer_y, 2.6 + pulse * 0.8)
 
             -- A small outward chevron makes the open direction legible even
-            -- when the eight red projectile tells are moving across it.
+            -- when the incoming projectile tells are moving across it.
             local tip_x, tip_y = point(cx, cy, radius * 1.42, angle)
             local left_x, left_y = point(cx, cy, radius * 1.05, angle - 0.12)
             local right_x, right_y = point(cx, cy, radius * 1.05, angle + 0.12)
             graphics.polygon("fill", tip_x, tip_y, left_x, left_y, right_x, right_y)
         else
-            graphics.setColor(0.50, 0.045, 0.12, 0.58 * alpha)
+            graphics.setColor(0.30, 0.18, 0.62, 0.58 * alpha)
             graphics.setLineWidth(1)
             graphics.line(inner_x, inner_y, outer_x, outer_y)
             graphics.circle("fill", outer_x, outer_y, 1.3)
         end
     end
 
-    graphics.setColor(0.90, 0.14, 0.28, 0.90 * alpha)
+    graphics.setColor(0.62, 0.78, 1.0, 0.92 * alpha)
     graphics.circle("fill", cx, cy, 2.0 + pulse * 0.7)
 
     graphics.pop()
