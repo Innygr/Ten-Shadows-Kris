@@ -17,6 +17,10 @@ EnemyBattler = {
         if name == "Check" then return self:getCheckText(battler) end
     end,
     onDefeat = function(self) self.defeated = true end,
+    addChild = function(self, child)
+        self.children = self.children or {}
+        self.children[#self.children + 1] = child
+    end,
     getCheckText = function(self)
         local lines = {}
         for i, line in ipairs(self.check or {}) do
@@ -31,6 +35,9 @@ function Class(base)
     return class, base
 end
 function modRequire(path)
+    if path == "scripts/battle/objects/knight_shield_visual" then
+        return function() return {visual_only = true} end
+    end
     if path == "scripts/ten_shadows/combat_state" then return CombatState end
     if path == "scripts/ten_shadows/boss_phase" then return BossPhase end
     if path == "scripts/ten_shadows/runtime_shadows" then
@@ -76,8 +83,10 @@ assert(titan.tired_percentage == 0 and knight.tired_percentage == 0,
     "neither boss can enter the TIRED state")
 assert(table.concat(titan:getCheckText(), " "):find("21,000 / 21,000", 1, true),
     "Titan Inspect must show current HP and maximum HP")
-assert(knight.ten_shadows_role == "knight" and knight.max_health == 1460
-    and knight.health == 1460, "Knight must start with 1,460 independent HP")
+assert(knight.ten_shadows_role == "knight" and knight.max_health == 7300
+    and knight.health == 7300, "Knight must start with 7,300 independent HP")
+assert(knight.attack == 40 and knight.defense == 0,
+    "Knight must use 40 ATK and zero conventional DEF")
 assert(titan ~= knight and titan.ten_shadows_state == knight.ten_shadows_state,
     "bosses must be separate battlers with one shared scheduler")
 assert(titan.waves[1] == knight.waves[1] and knight.waves[1] == "knight_titan_assault",
@@ -85,8 +94,8 @@ assert(titan.waves[1] == knight.waves[1] and knight.waves[1] == "knight_titan_as
 
 local scheduler = titan.ten_shadows_state
 knight:onHurt(400)
-assert(knight.health == 1060 and titan.health == 21000, "Knight damage must not damage Titan")
-assert(table.concat(knight:getCheckText(), " "):find("1,060 / 1,460", 1, true),
+assert(knight.health == 6900 and titan.health == 21000, "Knight damage must not damage Titan")
+assert(table.concat(knight:getCheckText(), " "):find("6,900 / 7,300", 1, true),
     "Knight CHECK must show its current independent HP")
 assert(table.concat(titan:onAct(nil, "Inspect"), " "):find("21,000 / 21,000", 1, true),
     "Titan Inspect must retain its current independent HP")
@@ -100,7 +109,7 @@ assert(titan.ten_shadows_phase == 2 and scheduler.boss.phase == 2,
 assert(table.concat(titan:onAct(nil, "CHECK"), " "):find("14,000 / 21,000", 1, true),
     "Titan CHECK must refresh after damage, even when the player explicitly inspects")
 knight:onHurt(500)
-assert(knight.health == 560 and titan.health == 14000 and scheduler.boss.hp == 14000,
+assert(knight.health == 6400 and titan.health == 14000 and scheduler.boss.hp == 14000,
     "further Knight damage must remain independent")
 
 -- The Cyan parry counter must be offered against the Knight and spend its
@@ -123,7 +132,7 @@ knight.health = 0
 knight:onDefeat()
 assert(not scheduler.boss.counter_ready and scheduler.boss.counter_turns == 0,
     "Knight defeat must clear an unused Execution Counter")
-assert(table.concat(knight:getCheckText(), " "):find("0 / 1,460", 1, true),
+assert(table.concat(knight:getCheckText(), " "):find("0 / 7,300", 1, true),
     "defeated Knight CHECK must show zero current HP")
 assert(not scheduler.knight_alive, "Knight defeat must remove its attack source")
 for _ = 1, 6 do

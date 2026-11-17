@@ -211,6 +211,12 @@ function CombatState.new()
         },
         titan_alive = true,
         knight_alive = true,
+        knight_fight = {
+            hp = 7300,
+            max_hp = 7300,
+            turns = 0,
+            damage_taken_multiplier = 0.20,
+        },
         tp = 35,
         dark_candy = 3,
         turn = 1,
@@ -310,6 +316,7 @@ function CombatState.new()
     function state:setKnightAlive(alive)
         self.knight_alive = alive == true
         if not self.knight_alive then
+            self.knight_fight.hp = 0
             self.knight_disrupted = 0
             self.boss.counter_ready = false
             self.boss.counter_turns = 0
@@ -320,6 +327,56 @@ function CombatState.new()
             self.encounter.roaring_pending = false
         end
         return self.knight_alive
+    end
+
+    -- The Knight's effective durability is a per-turn damage multiplier,
+    -- not conventional DEF. It starts at 20% and rises to a 35% cap.
+    function state:syncKnightHP(hp)
+        self.knight_fight.hp = math.max(0, math.min(self.knight_fight.max_hp,
+            tonumber(hp) or self.knight_fight.hp))
+        if self.knight_fight.hp <= 0 then
+            self:setKnightAlive(false)
+        end
+        return self.knight_fight.hp
+    end
+
+    function state:scaleKnightFightDamage(damage, battler)
+        local amount = math.max(0, tonumber(damage) or 0)
+        if amount <= 0 then return 0 end
+
+        local chara = battler and battler.chara
+        if chara and chara.id == "kris" then
+            local standing = {}
+            for _, party_battler in ipairs(Game and Game.battle and Game.battle.party or {}) do
+                if party_battler.chara then
+                    standing[party_battler.chara.id] = (party_battler.chara.health or 0) > 0
+                end
+            end
+            local susie_up = standing.susie
+            local ralsei_up = standing.ralsei
+            if susie_up == nil then
+                local member = self:getMember("susie")
+                susie_up = member and member.hp > 0 or false
+            end
+            if ralsei_up == nil then
+                local member = self:getMember("ralsei")
+                ralsei_up = member and member.hp > 0 or false
+            end
+            if susie_up and ralsei_up then
+                amount = amount * 0.5
+            elseif not susie_up and not ralsei_up then
+                amount = amount * 2
+            end
+        end
+
+        return math.max(1, math.ceil(amount * self.knight_fight.damage_taken_multiplier))
+    end
+
+    function state:scaleKnightRudeBusterDamage(damage)
+        local amount = math.max(0, tonumber(damage) or 0)
+        if amount <= 0 then return 0 end
+        local multiplier = self.knight_fight.damage_taken_multiplier
+        return math.max(1, math.ceil(amount * (multiplier + 0.65) / 2))
     end
 
     function state:damageBoss(amount)
@@ -720,6 +777,12 @@ function CombatState.new()
                 self.knight_domain.active = false
                 self.knight_domain.turns = 0
             end
+        end
+
+        if self.knight_alive then
+            local knight = self.knight_fight
+            knight.turns = knight.turns + 1
+            knight.damage_taken_multiplier = math.min(0.35, 0.20 + knight.turns * 0.01)
         end
 
         return result

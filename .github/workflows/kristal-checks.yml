@@ -88,6 +88,12 @@ jobs:
       - name: Test Titan shield damage routing and spell multipliers
         run: lua5.1 tests/titan_shield_test.lua
 
+      - name: Test Knight damage intake and turn scaling
+        run: lua5.1 tests/knight_fight_damage_test.lua
+
+      - name: Test visual-only Knight shield
+        run: lua5.1 tests/knight_shield_visual_test.lua
+
       - name: Test independent Vessel Domain and upkeep
         run: lua5.1 tests/vessel_domain_test.lua
 
