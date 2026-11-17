@@ -19,9 +19,13 @@ architecture contract.
 
 - mod.json and mod.lua provide the initial Kristal project configuration and load hook.
 - A new file now starts the Knight + Titan playtest encounter (`knight_titan_preview`), using
-  two independent enemies (Titan: 21,000 HP / 40 ATK / 800 DEF; Knight: 1,460 HP),
+  two independent enemies (Titan: 21,000 HP / 40 ATK / 800 DEF; Knight: 7,300 HP / 40 ATK),
   a six-member party, and a coordinated Knight + Titan assault Wave. CHECK/Inspect now displays
   each boss's live current and maximum HP; both enemies have Mercy disabled.
+- The Knight's effective durability is a damage-taken multiplier that starts at 20% and
+  rises by 1 percentage point per defending turn to a 35% cap; conventional DEF remains 0.
+  Rude Buster uses a separate reduced-damage formula. Its blue shield outline is visual-only
+  and has no shield HP, collision, or damage interception.
 - `runtime_smoke_test.lua`, `runtime_dummy.lua`, and `runtime_smoke.lua` remain available as a
   separate engine-integration diagnostic path.
 - `scripts/objects/soul_ejection.lua`: detached SOUL controller foundation.
