@@ -14,7 +14,7 @@ end
 
 function YellowSoul:fire(charged)
     local YellowShot = modRequire("scripts/objects/yellow_shot")
-    local shot = YellowShot(self.x + 10, self.y, charged)
+    local shot = YellowShot(self.x + 18, self.y, charged)
     local parent = Game.battle and Game.battle.addChild and Game.battle
         or (Game.stage and Game.stage.addChild and Game.stage)
     if parent then parent:addChild(shot) end
@@ -52,7 +52,11 @@ function YellowSoul:update()
 end
 
 function YellowSoul:draw()
+    -- The heart's point faces right, matching the Yellow firing direction.
+    love.graphics.push()
+    love.graphics.rotate(-math.pi / 2)
     super.draw(self)
+    love.graphics.pop()
     love.graphics.push("all")
     if self.yellow_charging then
         local radius = 12 + self.yellow_charge * 12

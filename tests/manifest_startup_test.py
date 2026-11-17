@@ -6,6 +6,8 @@ assert manifest.get("map") == "testing-room_001", "new files must start in the t
 assert "encounter" not in manifest, "the game must not launch a battle on startup"
 assert manifest.get("party") == ["kris", "susie", "ralsei", "noelle", "berdly", "vessel"]
 map_source = (root / "scripts/world/maps/testing-room_001.lua").read_text(encoding="utf-8")
+assert 'script="gaster_dialogue_test"' in map_source, "missing Gaster statue dialogue interactable"
+assert (root / "scripts/world/scripts/gaster_dialogue_test.lua").is_file()
 for script_id in ("gaster_fight_test", "final_fight_test", "runtime_test"):
     assert f'script="{script_id}"' in map_source
     assert (root / "scripts/world/scripts" / f"{script_id}.lua").is_file()

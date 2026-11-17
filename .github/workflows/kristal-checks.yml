@@ -172,6 +172,8 @@ jobs:
           test -f scripts/world/scripts/gaster_fight_test.lua
           test -f scripts/world/scripts/final_fight_test.lua
           test -f scripts/world/scripts/runtime_test.lua
+          test -f scripts/world/scripts/gaster_dialogue_test.lua
+          lua5.1 tests/yellow_soul_orientation_test.lua
           test -f scripts/battle/encounters/knight_titan_preview.lua
           test -f scripts/battle/waves/knight_titan_assault.lua
           test -f scripts/battle/objects/chimera_shadow_garden.lua

@@ -110,6 +110,14 @@ function KnightTitanAssault:onStart()
 
     local Patterns = modRequire("scripts/ten_shadows/attack_wave_patterns")
     local phase = state and state.boss.phase or 1
+    -- One-time visual gag: Kris tosses the SOUL and Vessel dives straight for it.
+    -- Presentation only: no battle state, collision, damage, or party HP changes.
+    if state and state.encounter and state.encounter.turns >= 4
+        and not state.soul_toss_scene_played and arena and arena.mask then
+        state.soul_toss_scene_played = true
+        local SoulTossScene = modRequire("scripts/battle/objects/soul_toss_scene")
+        self:spawnObjectTo(arena.mask, SoulTossScene(arena.width, arena.height), 0, 0)
+    end
     local volley = 0
     local previous_target = nil
 
