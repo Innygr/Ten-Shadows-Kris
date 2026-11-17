@@ -18,7 +18,7 @@ architecture contract.
 ## Current Kristal foundation
 
 - mod.json and mod.lua provide the initial Kristal project configuration and load hook.
-- A new file now starts the Knight + Titan playtest encounter (`knight_titan_preview`), using
+- A new file starts in `testing-room_001`; the Knight + Titan playtest is launched manually from its test station. The encounter (`knight_titan_preview`) uses
   two independent enemies (Titan: 21,000 HP / 40 ATK / 800 DEF; Knight: 7,300 HP / 40 ATK),
   a six-member party, and a coordinated Knight + Titan assault Wave. CHECK/Inspect now displays
   each boss's live current and maximum HP; both enemies have Mercy disabled.

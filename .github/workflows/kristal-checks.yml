@@ -28,7 +28,7 @@ jobs:
           manifest_path = Path("mod.json")
           manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
 
-          required = ("id", "name", "version", "engineVer", "chapter", "encounter", "party")
+          required = ("id", "name", "version", "engineVer", "chapter", "map", "party")
           missing = [key for key in required if key not in manifest]
           if missing:
               raise SystemExit("mod.json is missing required fields: " + ", ".join(missing))
@@ -42,7 +42,7 @@ jobs:
           print("mod.json is valid")
           print("Project:", manifest["name"])
           print("Engine target:", manifest["engineVer"])
-          print("Initial encounter:", manifest["encounter"])
+          print("Initial map:", manifest["map"])
           PY
 
       - name: Verify new-file boss entry point
@@ -174,6 +174,11 @@ jobs:
           test -f scripts/world/scripts/runtime_test.lua
           test -f scripts/world/scripts/gaster_dialogue_test.lua
           lua5.1 tests/yellow_soul_orientation_test.lua
+          test -f scripts/data/actors/gaster_secret.lua
+          test -f scripts/battle/enemies/gaster_secret.lua
+          test -f scripts/battle/encounters/gaster_secret.lua
+          test -f docs/GASTER_SECRET_BOSS_PLAN.md
+          grep -q 'Game:encounter("gaster_secret")' scripts/world/scripts/gaster_fight_test.lua
           test -f scripts/battle/encounters/knight_titan_preview.lua
           test -f scripts/battle/waves/knight_titan_assault.lua
           test -f scripts/battle/objects/chimera_shadow_garden.lua

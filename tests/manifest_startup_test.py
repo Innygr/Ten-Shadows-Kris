@@ -13,7 +13,11 @@ for script_id in ("gaster_fight_test", "final_fight_test", "runtime_test"):
     assert (root / "scripts/world/scripts" / f"{script_id}.lua").is_file()
 assert 'Game:encounter("knight_titan_preview")' in (root / "scripts/world/scripts/final_fight_test.lua").read_text()
 assert 'Game:encounter("runtime_smoke_test")' in (root / "scripts/world/scripts/runtime_test.lua").read_text()
-assert "not been implemented yet" in (root / "scripts/world/scripts/gaster_fight_test.lua").read_text()
+assert 'Game:encounter("gaster_secret")' in (root / "scripts/world/scripts/gaster_fight_test.lua").read_text()
+gaster = (root / "scripts/battle/encounters/gaster_secret.lua").read_text()
+assert 'self:addEnemy("gaster_secret")' in gaster
+assert (root / "scripts/battle/enemies/gaster_secret.lua").is_file()
+assert (root / "scripts/data/actors/gaster_secret.lua").is_file()
 encounter = (root / "scripts/battle/encounters/knight_titan_preview.lua").read_text()
 assert 'self:addEnemy("roaring_knight_titan")' in encounter and 'self:addEnemy("roaring_knight")' in encounter
 assert "knight.ten_shadows_state = titan.ten_shadows_state" in encounter
