@@ -122,6 +122,15 @@ for _, station in ipairs({"gaster_fight_test", "final_fight_test", "runtime_test
     assert(test_room:find('script="' .. station .. '"', 1, true),
         "testing-room_001 is missing interactable " .. station)
 end
+for _, station_id in ipairs({6, 7, 8, 10, 11}) do
+    assert(test_room:find("{id=" .. station_id .. ',name="interactable"', 1, true),
+        "testing-room_001 is missing visible station " .. station_id)
+end
+assert(select(2, test_room:gsub("usetile=true", "")) == 5,
+    "all five interactables must render their tileset artwork with usetile=true")
+assert(select(2, test_room:gsub("gid=4", "")) >= 5,
+    "all five station interactables must reference the cyan station tile")
+
 assert(test_room:find('name="savepoint"', 1, true)
     and test_room:find('heals=true', 1, true),
     "testing-room_001 must contain a healing save point")
