@@ -62,30 +62,55 @@ assert(source:find('action.action == "ATTACK" or action.action == "AUTOATTACK"',
 
 print("Six-member party registration, save migration, battler creation, UI paging, and Vessel identity checks passed")
 
-assert(source:find("local column = math.floor((index - 1) / 3)", 1, true), "six-member battle formation must use two columns and three rows")
-assert(source:find("SCREEN_WIDTH * 0.20", 1, true), "party formation must scale horizontally with the battle viewport")
-assert(source:find("SCREEN_HEIGHT * 0.135", 1, true), "party formation must scale vertically with the battle viewport")
+local formation_source = read("scripts/ten_shadows/battle_formation.lua")
+local encounter_source = read("scripts/battle/encounters/knight_titan_preview.lua")
+assert(source:find('local BattleFormation = modRequire("scripts/ten_shadows/battle_formation")', 1, true),
+    "battle hooks must load the shared formation helper")
+assert(source:find("BattleFormation.partyPosition(i, SCREEN_WIDTH, SCREEN_HEIGHT", 1, true),
+    "fallback party battlers must receive individual formation slots")
+assert(source:find("BattleFormation.partyPosition(index, SCREEN_WIDTH, SCREEN_HEIGHT", 1, true),
+    "the final six-member formation must use the same position helper")
+assert(not source:find("SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2", 1, true),
+    "missing followers must not all spawn at one shared point")
+assert(encounter_source:find('Formation.enemyPositions(SCREEN_WIDTH, SCREEN_HEIGHT)', 1, true),
+    "the two bosses must use deliberate viewport-relative positions")
+assert(formation_source:find("function Formation.partyPosition", 1, true),
+    "the formation helper must expose party placement")
+assert(formation_source:find("function Formation.enemyPositions", 1, true),
+    "the formation helper must expose boss placement")
 
--- Sanity-check the viewport-relative layout at Kristal's standard 640x480
--- battle resolution using representative 32x32 party actors.
-local test_width, test_height = 640, 480
-local positions = {}
-for index = 1, 6 do
-    local column = math.floor((index - 1) / 3)
-    local row = (index - 1) % 3
-    local x = (test_width * 0.20) + (column * test_width * 0.15625) + 32
-    local y = (test_height * 0.135) + (row * test_height * 0.15625) + 64
-    positions[index] = {x, y}
-    assert(x > 80 and x < test_width * 0.55,
-        "party member " .. index .. " must stay in the party-side battle area")
-    assert(y > 80 and y < test_height - 40,
-        "party member " .. index .. " must stay clear of the top and bottom corners")
-end
-for i = 1, #positions do
-    for j = i + 1, #positions do
-        assert(positions[i][1] ~= positions[j][1] or positions[i][2] ~= positions[j][2],
-            "party battlers must not share the same target position")
+-- Exercise the actual formation helper across common viewport sizes.
+-- Representative 32x32 actors must be separated and stay well inside the box.
+for _, dimensions in ipairs({{640, 480}, {800, 600}, {1280, 720}}) do
+    local width, height = dimensions[1], dimensions[2]
+    local positions = {}
+    for index = 1, 6 do
+        local x, y = dofile("scripts/ten_shadows/battle_formation.lua").partyPosition(
+            index, width, height, 32, 32, 0, 0
+        )
+        positions[index] = {x, y}
+        assert(x > width * 0.08 and x < width * 0.48,
+            "party member " .. index .. " must stay in the party-side formation")
+        assert(y > height * 0.10 and y < height * 0.85,
+            "party member " .. index .. " must stay clear of the top and bottom edges")
     end
+    for i = 1, #positions do
+        for j = i + 1, #positions do
+            local dx = math.abs(positions[i][1] - positions[j][1])
+            local dy = math.abs(positions[i][2] - positions[j][2])
+            assert(dx >= 64 or dy >= 48,
+                "party battlers must have enough separation to avoid sprite overlap")
+        end
+    end
+
+    local bosses = dofile("scripts/ten_shadows/battle_formation.lua").enemyPositions(width, height)
+    assert(bosses.titan.x > width * 0.72 and bosses.titan.x < width * 0.90,
+        "Titan must occupy the inner-right side instead of the screen corner")
+    assert(bosses.knight.x > width * 0.60 and bosses.knight.x < width * 0.80,
+        "Knight must stand left of the Titan")
+    assert(math.abs(bosses.titan.x - bosses.knight.x) > width * 0.08
+        and math.abs(bosses.titan.y - bosses.knight.y) > height * 0.12,
+        "Knight and Titan must not stack on top of one another")
 end
 
 local berdly_party = read("scripts/data/party/berdly.lua")
