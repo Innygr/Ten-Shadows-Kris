@@ -34,8 +34,9 @@ architecture contract.
   queued Noelle, Berdly, and Vessel actions. Cyan SOUL charges and purges bullets on release; a
   timed Knight's Execution parry staggers the Knight and opens a one-use Kris counter ACT. SOUL-mode
   attack sets only run while the matching coloured SOUL is active.
-- Yellow SOUL's Ricochet Blades now behave as actual bouncing projectiles: four blades are
-  telegraphed, then rebound from arena walls twice with a dedicated blade silhouette.
+- SOUL-mode boss attacks use 30 mode-specific wave patterns and six distinct projectile
+  glyph families. Yellow Ricochet Blades rebound from arena walls twice; Cyan's marked
+  Knight Execution projectile opens the charge-release parry window.
 - Vessel's SOUL MODE menu changes the live controller: Blue gravity/jump, Green directional guard,
   Yellow right-facing shots with charge, Orange charged forward dash, Purple rail movement, and
   Cyan projectile purification/parry. Red restores Kristal's standard SOUL.
