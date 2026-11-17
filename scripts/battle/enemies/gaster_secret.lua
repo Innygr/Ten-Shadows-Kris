@@ -16,6 +16,7 @@ function GasterSecret:init()
     self.mercy = 0
     -- No attack wave yet: this is a safe encounter shell, not the finished fight.
     self.waves = {}
+    self:registerAct("KRIS'S IDEA", "Kris and Vessel summon their own Titan.")
     self.dialogue = {
         "* ...",
         "* [A voice echoes from somewhere far away.]",
@@ -31,6 +32,11 @@ function GasterSecret:init()
         "* SECRET BOSS SCAFFOLD — stats are provisional.",
         "* Its battle mechanics have not been implemented.",
     }
+end
+
+function GasterSecret:onAct(battler, name)
+    local BossActions = modRequire("scripts/ten_shadows/boss_actions")
+    return BossActions.onAct(self, battler, name, super.onAct)
 end
 
 function GasterSecret:getCheckText(battler)
