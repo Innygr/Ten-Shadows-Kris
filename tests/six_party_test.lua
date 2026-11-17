@@ -72,12 +72,13 @@ assert(source:find("BattleFormation.partyPosition(index, SCREEN_WIDTH, SCREEN_HE
     "the final six-member formation must use the same position helper")
 assert(not source:find("SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2", 1, true),
     "missing followers must not all spawn at one shared point")
-assert(encounter_source:find('Formation.enemyPositions(SCREEN_WIDTH, SCREEN_HEIGHT)', 1, true),
-    "the two bosses must use deliberate viewport-relative positions")
+assert(encounter_source:find('self:addEnemy("roaring_knight_titan")', 1, true)
+    and encounter_source:find('self:addEnemy("roaring_knight")', 1, true),
+    "bosses must retain their existing encounter-defined positions")
+assert(not formation_source:find("enemyPositions", 1, true),
+    "party formation helper must not alter enemy positions")
 assert(formation_source:find("function Formation.partyPosition", 1, true),
     "the formation helper must expose party placement")
-assert(formation_source:find("function Formation.enemyPositions", 1, true),
-    "the formation helper must expose boss placement")
 
 -- Exercise the actual formation helper across common viewport sizes.
 -- Representative 32x32 actors must be separated and stay well inside the box.
@@ -89,10 +90,10 @@ for _, dimensions in ipairs({{640, 480}, {800, 600}, {1280, 720}}) do
             index, width, height, 32, 32, 0, 0
         )
         positions[index] = {x, y}
-        assert(x > width * 0.08 and x < width * 0.48,
-            "party member " .. index .. " must stay in the party-side formation")
-        assert(y > height * 0.10 and y < height * 0.85,
-            "party member " .. index .. " must stay clear of the top and bottom edges")
+        assert(x > width * 0.10 and x < width * 0.62,
+            "party member " .. index .. " must be spread across the center-left formation")
+        assert(y > height * 0.22 and y < height * 0.78,
+            "party member " .. index .. " must stay away from the top and bottom corners")
     end
     for i = 1, #positions do
         for j = i + 1, #positions do
@@ -103,14 +104,7 @@ for _, dimensions in ipairs({{640, 480}, {800, 600}, {1280, 720}}) do
         end
     end
 
-    local bosses = dofile("scripts/ten_shadows/battle_formation.lua").enemyPositions(width, height)
-    assert(bosses.titan.x > width * 0.72 and bosses.titan.x < width * 0.90,
-        "Titan must occupy the inner-right side instead of the screen corner")
-    assert(bosses.knight.x > width * 0.60 and bosses.knight.x < width * 0.80,
-        "Knight must stand left of the Titan")
-    assert(math.abs(bosses.titan.x - bosses.knight.x) > width * 0.08
-        and math.abs(bosses.titan.y - bosses.knight.y) > height * 0.12,
-        "Knight and Titan must not stack on top of one another")
+
 end
 
 local berdly_party = read("scripts/data/party/berdly.lua")
