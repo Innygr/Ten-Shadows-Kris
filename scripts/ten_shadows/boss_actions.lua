@@ -48,7 +48,9 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
         end
         return {
             "* KRIS HAS AN IDEA.",
-            "* A Dark World reflects the values of its maker.",
+             "* A Dark World reflects the values of its maker.",
+            "* RALSEI: NO, KRIS! DON'T SUMMON A TITAN!",
+            "* VESSEL: dw bruh, I will GRANITE BLASTA it when we don't need it anymore.",
             "* Vessel joins Kris, and their own Titan answers the call.",
             "* The shadow Titan strikes for 1,100 damage!",
         }
