@@ -104,29 +104,29 @@ vessel:onSpriteInit(sprite)
 assert(sprite.kris_callback_called, "Vessel must preserve Kris sprite initialization")
 assert(sprite.scale_y == 1.15, "Vessel sprite must be stretched vertically by exactly 1.15x")
 assert(sprite.vessel_grayscale, "Vessel must install its grayscale-only shader")
-assert(type(sprite.vessel_gray_red_outline.uniforms.vessel_presentation) == "function",
+assert(type(sprite.vessel_grayscale.uniforms.vessel_presentation) == "function",
     "Vessel shader must read the saved visual presentation dynamically")
-assert(sprite.vessel_gray_red_outline.uniforms.vessel_presentation() == 0,
+assert(sprite.vessel_grayscale.uniforms.vessel_presentation() == 0,
     "Androgynous presentation must select the neutral steel palette")
 current_presentation = "masculine"
-assert(sprite.vessel_gray_red_outline.uniforms.vessel_presentation() == 1,
+assert(sprite.vessel_grayscale.uniforms.vessel_presentation() == 1,
     "Masculine presentation must select its shader palette")
 current_presentation = "feminine"
-assert(sprite.vessel_gray_red_outline.uniforms.vessel_presentation() == 2,
+assert(sprite.vessel_grayscale.uniforms.vessel_presentation() == 2,
     "Feminine presentation must select its shader palette")
-assert(sprite.vessel_gray_red_outline.shader.source:find("vec2 px = 1.0 / love_ScreenSize.xy", 1, true),
+assert(sprite.vessel_grayscale.shader.source:find("vec2 px = 1.0 / love_ScreenSize.xy", 1, true),
     "Vessel outline sampling must use LÖVE 11.5's supported pixel-shader dimensions")
-assert(not sprite.vessel_gray_red_outline.shader.source:find("love_PixelSize", 1, true),
+assert(not sprite.vessel_grayscale.shader.source:find("love_PixelSize", 1, true),
     "Vessel shader must not reference the undeclared pixel-size identifier")
-assert(sprite.vessel_gray_red_outline.shader.source:find("dot(pixel.rgb", 1, true),
+assert(sprite.vessel_grayscale.shader.source:find("dot(pixel.rgb", 1, true),
     "Vessel shader must convert the sprite to grayscale")
-assert(sprite.vessel_gray_red_outline.shader.source:find("0.95, 0.035, 0.08", 1, true),
-    "Vessel shader must not add red outline pixels")
+assert(not sprite.vessel_grayscale.shader.source:find("0.95, 0.035, 0.08", 1, true),
+    "Vessel shader must not contain red outline color values")
 
 -- Reinitialization must not stack shader effects or scale multipliers.
 vessel:onSpriteInit(sprite)
 assert(sprite.scale_y == 1.15, "Repeated sprite initialization must not compound Vessel's scale")
-assert(sprite.vessel_gray_red_outline, "Vessel shader must remain installed after reinitialization")
+assert(sprite.vessel_grayscale, "Vessel shader must remain installed after reinitialization")
 assert(shader_compile_count == 1, "Vessel shader should be compiled once and reused across sprite initialization")
 
 -- A graphics driver can reject an optional shader. Vessel initialization must
@@ -149,7 +149,7 @@ love.graphics.newShader = original_new_shader
 assert(fallback_ok, "a Vessel shader compile failure must not crash sprite creation: " .. tostring(fallback_error))
 assert(fallback_sprite.scale_y == 1.15,
     "Vessel must retain its normal sprite setup when the optional shader is unavailable")
-assert(not fallback_sprite.vessel_gray_red_outline,
+assert(not fallback_sprite.vessel_grayscale,
     "Vessel must skip only the optional grayscale effect when shader compilation fails")
 
 local party_source = assert(io.open("scripts/data/party/vessel.lua", "r"))
