@@ -54,6 +54,31 @@ assert(not state.vessel_domain.active,
 assert(state.vessel_domain.cancel_reason == "insufficient_tp",
     "Domain cancellation must retain its reason")
 
+-- Granite Blast must work against an ordinary enemy even when the encounter
+-- has no arena object (the regression that originally caused the nil-arena crash).
+local BossActions = dofile("scripts/ten_shadows/boss_actions.lua")
+local target = {x = 300, y = 120, width = 32, height = 32, health = 900}
+function target:hurt(amount)
+    self.health = self.health - amount
+end
+local vessel_battler = battle.party[2]
+local blast_message = BossActions.onAct(target, vessel_battler, "GRANITE BLAST", function()
+    error("Granite Blast must not fall through to the base ACT handler")
+end)
+assert(target.health == 842, "ordinary-battle Granite Blast must deal its 58 damage")
+assert(type(blast_message) == "table", "Granite Blast must return its action dialogue")
+
+-- The Ultimate Beam also matures after one ordinary enemy turn.
+local beam_target = {x = 250, y = 90, width = 20, height = 20, health = 1000}
+function beam_target:hurt(amount)
+    self.health = self.health - amount
+end
+assert(state:beginUltimateBeam(beam_target, vessel_battler),
+    "ordinary battles can begin Vessel's Ultimate Beam")
+Abilities.tickEnemyTurn(battle)
+assert(beam_target.health == 420,
+    "ordinary-battle Ultimate Beam must resolve 580 damage after one enemy turn")
+
 Abilities.endBattle(battle)
 assert(battle.ten_shadows_ability_state == nil,
     "battle end must discard the ordinary encounter state")
