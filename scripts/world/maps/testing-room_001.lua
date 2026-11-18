@@ -12,8 +12,8 @@ return {
  {id=7,name="station",class="station",shape="rectangle",x=255,y=190,width=130,height=64,rotation=0,visible=true,properties={script="final_fight_test",label="KNIGHT + TITAN",color="red"}},
  {id=8,name="station",class="station",shape="rectangle",x=445,y=190,width=130,height=64,rotation=0,visible=true,properties={script="runtime_test",label="RUNTIME TEST",color="cyan"}},
  {id=9,name="savepoint",class="savepoint",shape="rectangle",x=300,y=285,width=40,height=40,rotation=0,visible=true,properties={marker="spawn",heals=true,text1_1="* Welcome to testing-room_001.",text1_2="* Your party is restored. Choose a test station."}},
- {id=10,name="station",class="station",shape="rectangle",x=300,y=95,width=40,height=54,rotation=0,visible=true,properties={script="gaster_dialogue_test",label="GASTER STATUE",color="violet"}},
- {id=11,name="station",class="station",shape="rectangle",x=65,y=285,width=130,height=54,rotation=0,visible=true,properties={script="room_help",label="FIELD GUIDE",color="gold"}}
+ {id=10,name="station",class="station",shape="rectangle",x=300,y=95,width=40,height=54,rotation=0,visible=true,properties={label="GASTER STATUE",color="violet",text1_1="* You approach the Gaster statue.",text1_2="* Its expression is impossible to read.",text1_3="* ...",text1_4="* A small plaque reads: PLEASE DO NOT FEED THE VOID.",text1_5="* The statue does not respond.",text1_6="* Somehow, you feel like you just failed a dialogue test."}},
+ {id=11,name="station",class="station",shape="rectangle",x=65,y=285,width=130,height=54,rotation=0,visible=true,properties={label="FIELD GUIDE",color="gold",text1_1="* FIELD GUIDE",text1_2="* Welcome to the Shadowbender test room.",text1_3="* Move around the room and interact with a station to run its test.",text1_4="* GASTER FIGHT TEST opens the secret-boss encounter.",text1_5="* FINAL FIGHT TEST opens the Knight + Titan encounter.",text1_6="* RUNTIME TEST checks that a basic encounter can start and end.",text1_7="* The Gaster statue is a dialogue-only test.",text1_8="* The savepoint restores your party before you begin.",text1_9="* Tests are separate: finishing one will not launch another."}}
  }}
  }
 }
