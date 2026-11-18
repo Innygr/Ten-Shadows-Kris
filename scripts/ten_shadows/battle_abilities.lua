@@ -74,6 +74,32 @@ function Abilities.tickEnemyTurn(battle)
     Abilities.syncParty(battle, state)
     local result = state:tickEnemyTurnEffects()
     if Game and Game.setTension then Game:setTension(state.tp) end
+    if result and result.ultimate_beam then
+        local pending = result.ultimate_beam
+        local target = pending.target
+        local hit = target and target.hurt
+            and (type(target.health) ~= "number" or target.health > 0)
+        local damage = 0
+        if hit then
+            damage = pending.damage or 0
+            target:hurt(damage, pending.user)
+        end
+        local arena = battle.arena
+        local soul = battle.soul
+        local origin_x = soul and soul.x or ((arena and arena.x or 0) + ((arena and arena.width) or 142) * 0.5)
+        local origin_y = soul and soul.y or ((arena and arena.y or 0) + ((arena and arena.height) or 142) * 0.5)
+        local target_x = (target and target.x or 0) + (target and target.width or 0) * 0.5
+        local target_y = (target and target.y or 0) + (target and target.height or 0) * 0.5
+        local Beam = modRequire("scripts/battle/objects/ultimate_beam")
+        local visual = Beam(origin_x, origin_y, target_x, target_y)
+        local parent = battle.addChild and battle
+            or (Game.stage and Game.stage.addChild and Game.stage)
+        if parent then
+            parent:addChild(visual)
+            visual:release(hit == true)
+        end
+        state.last_ultimate_beam = {target = target, damage = damage, hit = hit == true}
+    end
     Abilities.refreshDomainVisual(battle, state)
     return result
 end
