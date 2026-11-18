@@ -20,6 +20,15 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
         return "* Nothing happens."
     end
 
+    -- Susie's S-Action is Kristal's default X-Action. The character's
+    -- xact_name controls the menu label ("S-Action"), while EnemyBattler's
+    -- getXAction supplies the resolved name ("Standard"). Boss enemies route
+    -- X-Actions through this handler, so return battle text for both names.
+    if battler and battler.chara and battler.chara.id == "susie"
+        and (name == "Standard" or name == "S-Action") then
+        return "* SUSIE swings her axe with all her strength!"
+    end
+
     if name == "Inspect" or name == "Check" or name == "CHECK" then
         return enemy:getCheckText(battler)
     end
