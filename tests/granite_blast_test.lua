@@ -119,15 +119,17 @@ expect(spawned[#spawned].entry.x, spawned[#spawned].exit.x,
 expect(spawned[#spawned].entry.y, spawned[#spawned].exit.y,
     "direct Granite Blast launches from its own origin")
 
--- Exercise the real Vessel ACT menu builder: V-ACT is always present and
--- contains both the 50-TP normal blast and 100-TP one-turn ultimate beam.
+-- Exercise the real Vessel ACT menu builder: Granite Blast is a dedicated
+-- root submenu; V-Act itself is the party member's normal X-Action.
 local mod_file = assert(io.open("mod.lua", "r"))
 local mod_source = mod_file:read("*a")
 mod_file:close()
-assert(mod_source:find('{"V-ACT"', 1, true),
-    "Vessel's V-ACT submenu is always registered")
+assert(mod_source:find('{"GRANITE BLAST"', 1, true),
+    "Vessel has a dedicated Granite Blast submenu")
+assert(not mod_source:find('{"V-ACT"', 1, true),
+    "V-Act must not be nested in the ACT menu")
 assert(mod_source:find('{"ULTIMATE BEAM"', 1, true),
-    "Vessel's V-ACT submenu contains the ultimate beam")
+    "Granite Blast submenu contains the ultimate beam")
 Mod = {}
 dofile("mod.lua")
 
@@ -171,18 +173,17 @@ end
 
 local function checkVesselMenu(domain_active)
     local battle, target_enemy = buildVesselMenu(domain_active)
-    local vact
-    for _, item in ipairs(battle.menu_items) do
-        if item.name == "V-ACT" then vact = item end
-    end
-    assert(vact, "V-ACT appears regardless of Fusion Domain state")
-    vact.callback()
+    local root = {}
+    for _, item in ipairs(battle.menu_items) do root[item.name] = item end
+    assert(root["GRANITE BLAST"], "Granite Blast is a root ACT option")
+    assert(root["VESSEL DOMAIN"], "independent Vessel Domain is a separate root ACT option")
+    expect(root["VESSEL DOMAIN"].tp, 60, "Vessel Domain costs 60 TP")
+    assert(root["V-ACT"] == nil, "V-Act is not an ACT menu option")
+    root["GRANITE BLAST"].callback()
     local actions = {}
     for _, item in ipairs(battle.menu_items) do actions[item.name] = item end
-    assert(actions["VESSEL DOMAIN"], "V-ACT submenu contains independent VESSEL DOMAIN")
-    expect(actions["VESSEL DOMAIN"].tp, 60, "Vessel Domain costs 60 TP")
-    assert(actions["GRANITE BLAST"], "V-ACT submenu contains GRANITE BLAST")
-    assert(actions["ULTIMATE BEAM"], "V-ACT submenu contains ULTIMATE BEAM")
+    assert(actions["GRANITE BLAST"], "Granite Blast submenu contains the blast action")
+    assert(actions["ULTIMATE BEAM"], "Granite Blast submenu contains Ultimate Beam")
     expect(actions["GRANITE BLAST"].tp, 10, "Granite Blast costs 10 TP")
     expect(actions["ULTIMATE BEAM"].tp, 100, "Ultimate Beam costs 100 TP")
     actions["GRANITE BLAST"].callback(actions["GRANITE BLAST"])
