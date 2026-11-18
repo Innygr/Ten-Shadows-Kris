@@ -12,7 +12,7 @@ local function battler(id) return {chara = {id = id}} end
 local b = BossActions.onAct(gaster, battler("berdly"), "B-Action", function()
     error("B-Action must be handled by the custom boss action router")
 end)
-assert(type(b) == "table" and b[1] == "* BERDLY: I HAVE A THEORY!",
+assert(type(b) == "table" and b[2] == "* BERDLY: I HAVE A THEORY!",
     "Berdly should announce his Gaster theory")
 assert(gaster.ten_shadows_exposed_turns == 2, "Berdly's scan still exposes Gaster")
 assert(tension == 8, "Berdly's scan still grants 8 TP")
