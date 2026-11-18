@@ -79,21 +79,24 @@ for volley = 1, 6 do
     local gap = (volley * 2) % 5
     local expected_origin = volley % 2 == 0 and 300 + 14 or 100 - 14
     local direction = volley % 2 == 0 and math.rad(180) or 0
-    local found_gap = false
+    local expected_speed = 3.2 + (volley % 3) * 0.35
+    local seen_lanes = {}
     local volley_bullets = 0
     for _, bullet in ipairs(spawned) do
-        local lane = math.floor((bullet.y - 50) / (140 / 7) + 0.5)
-        if bullet.x == expected_origin then
+        if bullet.x == expected_origin and bullet.direction == direction and bullet.speed == expected_speed then
+            local lane = math.floor((bullet.y - 50) / (140 / 7) + 0.5)
             volley_bullets = volley_bullets + 1
             assert(lane ~= gap + 1, "volley " .. volley .. " must leave its designated safe lane open")
+            seen_lanes[lane] = true
             expect(bullet.id, "gaster_bullet", "Gaster projectile registry ID")
-            expect(bullet.direction, direction, "alternating volley direction")
-            assert(bullet.speed >= 3.2 and bullet.speed <= 3.9, "projectile speed must stay in the configured readable range")
             assert(type(bullet.phase) == "number", "each bullet must receive a stable visual phase")
         end
     end
     expect(volley_bullets, 5, "projectiles emitted per volley")
-    assert(not found_gap, "unused gap lane must stay clear")
+    for lane = 1, 6 do
+        expect(seen_lanes[lane] == true, lane == gap + 1 and false or true,
+            "volley " .. volley .. " lane " .. lane .. " occupancy")
+    end
 end
 
 after_callback()
