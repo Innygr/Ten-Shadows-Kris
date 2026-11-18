@@ -3,6 +3,7 @@ local GasterSecret, super = Class(EnemyBattler)
 function GasterSecret:init()
     super.init(self)
     self.name = "W.D. Gaster"
+    self.ten_shadows_gaster_encounter = true
     self:setActor("gaster_secret")
     self.max_health = 6666 -- PLACEHOLDER: replace after balance design.
     self.health = self.max_health
