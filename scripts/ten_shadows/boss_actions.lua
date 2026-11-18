@@ -49,7 +49,6 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
         end
         enemy.ten_shadows_own_titan_summoned = true
         enemy:hurt(1100, kris_battler)
-        local battle = Game and Game.battle
         local arena = battle and battle.arena
         if arena and arena.mask then
             local Visual = modRequire("scripts/battle/objects/summoned_titan_visual")
@@ -77,7 +76,10 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
         }
     end
 
-    local state = enemy.ten_shadows_state
+    local battle = Game and Game.battle
+    local Abilities = modRequire("scripts/ten_shadows/battle_abilities")
+    local state = enemy.ten_shadows_state or Abilities.get(battle)
+    if state and not enemy.ten_shadows_state then Abilities.syncParty(battle, state) end
     if name == "BRIGHTEN" then
         local Effects = modRequire("scripts/ten_shadows/runtime_spells")
         -- The menu has already charged 4 TP and grouped Kris, Susie, and Ralsei
@@ -90,6 +92,7 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
         if not state or not state:expandVesselDomain(true) then
             return "* Vessel cannot form the Domain right now."
         end
+        if not enemy.ten_shadows_state then Abilities.refreshDomainVisual(battle, state) end
         return {
             "* DOMAIN EXPANSION — VESSEL'S BARRIER.",
             "* The battlefield is sealed inside Vessel's Domain.",
@@ -101,6 +104,7 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
         if not state or not state:expandFusionDomain(true) then
             return "* Kris and Vessel cannot complete the Domain right now."
         end
+        if not enemy.ten_shadows_state then Abilities.refreshDomainVisual(battle, state) end
         return {
             "* DOMAIN EXPANSION — CHIMERA SHADOW GARDEN.",
             "* Vessel closes the barrier as Kris floods it with shadows.",
@@ -113,6 +117,7 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
         if not state or not state:expandChimeraDomain(true) then
             return "* The shadows cannot form the domain again."
         end
+        if not enemy.ten_shadows_state then Abilities.refreshDomainVisual(battle, state) end
         return {
             "* DOMAIN EXPANSION — CHIMERA SHADOW GARDEN.",
             "* The battlefield sinks into a sea of shadows. Ten Shadows are empowered.",
