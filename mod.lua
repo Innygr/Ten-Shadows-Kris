@@ -507,10 +507,11 @@ function Mod:onBattleEnemySelect(reason, selected)
 
     local chara = battler.chara.id
     local root = {}
-    local Abilities = modRequire("scripts/ten_shadows/battle_abilities")
-    local boss_state = enemy.ten_shadows_state or Abilities.get(battle)
-    if boss_state and not enemy.ten_shadows_state then
-        Abilities.syncParty(battle, boss_state)
+    local boss_state = enemy.ten_shadows_state
+    if not boss_state then
+        local Abilities = modRequire("scripts/ten_shadows/battle_abilities")
+        boss_state = Abilities.get(battle)
+        if boss_state then Abilities.syncParty(battle, boss_state) end
     end
 
     if chara == "kris" then
