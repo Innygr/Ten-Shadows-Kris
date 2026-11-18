@@ -1,5 +1,5 @@
 local tension = 0
-Game = {giveTension = function(_, amount) tension = tension + amount end}
+Game = {giveTension = function(first, second) tension = tension + (second or first) end}
 local berdly_actions = dofile("scripts/ten_shadows/berdly_actions.lua")
 modRequire = function(path)
     assert(path == "scripts/ten_shadows/berdly_actions", "unexpected module requested")
