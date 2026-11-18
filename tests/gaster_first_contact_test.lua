@@ -94,7 +94,8 @@ for volley = 1, 6 do
     end
     expect(volley_bullets, 5, "projectiles emitted per volley")
     for lane = 1, 6 do
-        expect(seen_lanes[lane] == true, lane == gap + 1 and false or true,
+        local expected_occupied = lane ~= gap + 1
+        expect(seen_lanes[lane] == true, expected_occupied,
             "volley " .. volley .. " lane " .. lane .. " occupancy")
     end
 end
