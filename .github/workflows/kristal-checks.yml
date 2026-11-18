@@ -346,12 +346,12 @@ jobs:
           assert 'mod._vessel_identity_game_load_hook' in startup_source
           assert 'installSixPartySupport()' in source
           assert 'Game:setPartyMembers(unpack(roster))' in source
-          assert 'assert(#Game.party == 6 and Game.party[6].id == "vessel"' in source
+          assert 'assert(#Game.party == 6 and Game.party[5].id == "berdly" and Game.party[6].id == "vessel"' in source
           assert 'for _, id in ipairs(roster) do' in source
           assert 'assert(Game:getPartyMember(id)' in source
 
           # Regression guard: battle creation iterates the validated complete roster.
-          assert 'for i = 1, #Game.party do' in source
+          assert 'for i, party_member in ipairs(Game.party) do' in source
           assert 'Game:setPartyMembers(unpack(roster))' in source
           assert 'Vessel missing from the battle roster' in source
           assert 'local original_update_selected_boxes = DarkMenu.updateSelectedBoxes' in source
