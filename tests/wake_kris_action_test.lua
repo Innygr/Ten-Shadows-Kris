@@ -77,6 +77,12 @@ expect(kris_chara.health, 1, "a second Wake Kris cannot add extra HP")
 -- The shared boss ACT handler is the live resolution path for both bosses.
 modRequire = function(path)
     if path == "scripts/ten_shadows/runtime_spells" then return Effects end
+    if path == "scripts/ten_shadows/battle_abilities" then
+        return dofile("scripts/ten_shadows/battle_abilities.lua")
+    end
+    if path == "scripts/ten_shadows/combat_state" then
+        return dofile("scripts/ten_shadows/combat_state.lua")
+    end
     error("Unexpected Wake Kris dependency: " .. tostring(path))
 end
 local BossActions = dofile("scripts/ten_shadows/boss_actions.lua")
