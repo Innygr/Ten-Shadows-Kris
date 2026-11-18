@@ -90,6 +90,8 @@ jobs:
 
       - name: Test runtime spell effects
         run: lua5.1 tests/runtime_spells_test.lua
+      - name: Test Ten Shadows abilities in ordinary battles
+        run: lua5.1 tests/battle_abilities_test.lua
 
       - name: Test Titan shield damage routing and spell multipliers
         run: lua5.1 tests/titan_shield_test.lua
