@@ -150,6 +150,8 @@ for _, wall in ipairs({"north_wall", "south_wall", "west_wall", "east_wall"}) do
     assert(test_room:find('name="' .. wall .. '"', 1, true),
         "testing-room_001 is missing perimeter wall " .. wall)
 end
+assert(source:find('Game:setPartyMembers(unpack(roster))\n            local full_roster = {}', 1, true),
+    "overworld spawn must activate the canonical roster before looking up members")
 assert(source:find('local full_roster = {}', 1, true)
     and source:find('original_spawn_party(world, marker, full_roster, extra, facing)', 1, true),
     "overworld spawn must include the full six-member party, including Berdly and Vessel")
