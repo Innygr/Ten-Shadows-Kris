@@ -166,8 +166,8 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
         if (state.fusion_domain and state.fusion_domain.active)
             or (state.vessel_domain and state.vessel_domain.active) then
             entry = {
-                x = math.max(8, math.min(arena.width - 8, arena.width - origin_x)),
-                y = math.max(8, math.min(arena.height - 8, arena.height - origin_y)),
+                x = math.max(8, math.min(arena_width - 8, arena_width - origin_x)),
+                y = math.max(8, math.min(arena_height - 8, arena_height - origin_y)),
             }
             routed, reason = state:routePartySpell(descriptor, entry, {
                 x = origin_x, y = origin_y,
