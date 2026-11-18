@@ -181,6 +181,9 @@ jobs:
           test -f tests/kris_idea_titan_test.lua
           test -f scripts/data/actors/gaster_secret.lua
           test -f scripts/battle/enemies/gaster_secret.lua
+          test -f scripts/battle/waves/gaster_first_contact.lua
+          test -f scripts/battle/bullets/gaster_bullet.lua
+          grep -q 'self.waves = {"gaster_first_contact"}' scripts/battle/enemies/gaster_secret.lua
           test -f scripts/battle/encounters/gaster_secret.lua
           test -f docs/GASTER_SECRET_BOSS_PLAN.md
           grep -q 'Game:encounter("gaster_secret")' scripts/world/scripts/gaster_fight_test.lua
@@ -412,6 +415,8 @@ jobs:
           test -f scripts/data/party/mahoraga.lua
           grep -q 'function Shadows.summonMahoraga' scripts/ten_shadows/runtime_shadows.lua
           grep -q 'WITH THIS TREASURE' scripts/ten_shadows/runtime_shadows.lua
+          grep -q 'rest of the battle' scripts/ten_shadows/runtime_shadows.lua
+          grep -q 'self.health = 999' scripts/data/party/mahoraga.lua
           if grep -Eq 'registerActFor\("(susie|ralsei|noelle|berdly)"' scripts/battle/enemies/runtime_dummy.lua; then exit 1; fi
           grep -q 'function Mod:onBattleEnemySelect' mod.lua
           grep -q 'TEN SHADOWS' mod.lua
