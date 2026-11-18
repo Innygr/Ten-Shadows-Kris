@@ -48,7 +48,8 @@ assert(Startup.installGameLoadHook(hook_mod, game_class, {"kris", "vessel"}))
 local installed_load = game_class.load
 assert(Startup.installGameLoadHook(hook_mod, game_class, {"wrong"}))
 assert(game_class.load == installed_load, "Repeated Mod:init must not wrap Game:load again")
-assert(game_class.load({}, nil) == "new")
+local game_instance = setmetatable({}, {__index = game_class})
+assert(game_class.load(game_instance, nil) == "new")
 assert(#loaded_party == 2 and loaded_party[1] == "kris" and loaded_party[2] == "vessel",
     "New files must receive the complete canonical roster after engine initialization")
 assert(load_observed_encounter == nil, "The default encounter must be hidden during Game:load")
@@ -57,7 +58,7 @@ assert(hook_mod.info.encounter == "first_run_preview",
 assert(hook_mod._pending_first_run_encounter == "first_run_preview")
 
 local saved_data = {party = {"kris"}}
-assert(game_class.load({}, saved_data) == "saved")
+assert(game_class.load(game_instance, saved_data) == "saved")
 assert(#loaded_party == 2 and loaded_party[1] == "kris" and loaded_party[2] == "vessel",
     "Existing saves must also receive the complete canonical runtime roster")
 assert(#saved_data.party == 2 and saved_data.party[1] == "kris" and saved_data.party[2] == "vessel",
