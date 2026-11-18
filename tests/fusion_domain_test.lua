@@ -123,8 +123,10 @@ expect(direct_blast.redirected_by_shadow_portal, false,
 local menu_file = assert(io.open("mod.lua", "r"))
 local menu_source = menu_file:read("*a")
 menu_file:close()
-assert(menu_source:find('{"V%-ACT"', 1) or menu_source:find('{"V%-ACT"', 1, true)
-    or menu_source:find('{"V-ACT"', 1, true), "Vessel must have a dedicated V-ACT submenu")
+assert(menu_source:find('{"GRANITE BLAST"', 1, true),
+    "Vessel must have a dedicated Granite Blast submenu")
+assert(menu_source:find('{"V-ACT"', 1, true) == nil,
+    "V-Act must be an X-Action, not an ACT submenu")
 assert(menu_source:find('"FUSION DOMAIN"', 1, true),
     "Kris's ACT menu must expose the fusion Domain when Vessel is available")
 
