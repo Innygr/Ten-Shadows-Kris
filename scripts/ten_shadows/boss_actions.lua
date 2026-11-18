@@ -3,6 +3,10 @@
 -- boss's independent health pool, including when only one survivor remains.
 local BossActions = {}
 
+local function isGasterFight(enemy)
+    return enemy ~= nil and enemy.ten_shadows_gaster_encounter == true
+end
+
 local SOUL_MODE_ACTIONS = {
     ["RED SOUL"] = "red", -- Red restores the ordinary attack pool.
     ["BLUE SOUL"] = "blue",
@@ -26,6 +30,9 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
     -- X-Actions through this handler, so return battle text for both names.
     if battler and battler.chara and battler.chara.id == "susie"
         and (name == "Standard" or name == "S-Action") then
+        if isGasterFight(enemy) then
+            return "* SUSIE: He looks like he hasn't slept in a thousand years."
+        end
         return "* SUSIE swings her axe with all her strength!"
     end
 
@@ -35,17 +42,34 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
     local character_id = battler and battler.chara and battler.chara.id
     if character_id == "vessel" and (name == "V-Act" or name == "Standard") then
         if Game and Game.giveTension then Game:giveTension(8) end
+        if isGasterFight(enemy) then
+            return "* VESSEL: Gaster is green! (+8 TP)"
+        end
         return "* VESSEL steadies the SOUL. (+8 TP)"
     end
     if character_id == "berdly" and (name == "B-Action" or name == "Standard") then
         local BerdlyActions = modRequire("scripts/ten_shadows/berdly_actions")
-        return BerdlyActions.perform(enemy, battler)
+        local result = BerdlyActions.perform(enemy, battler)
+        if isGasterFight(enemy) then
+            return {
+                "* BERDLY: I HAVE A THEORY!",
+                "* GASTER IS GREEN because... well, look at him!",
+                "* BERDLY: I will require further research.",
+            }
+        end
+        return result
     elseif character_id == "ralsei" and (name == "R-Action" or name == "Standard") then
         if Game and Game.giveTension then Game:giveTension(8) end
+        if isGasterFight(enemy) then
+            return "* RALSEI: Perhaps we should ask him why he looks like that. (+8 TP)"
+        end
         return "* RALSEI offers a reassuring smile. (+8 TP)"
     elseif character_id == "noelle" and (name == "N-Action" or name == "Standard") then
         if enemy then
             enemy.ten_shadows_exposed_turns = math.max(enemy.ten_shadows_exposed_turns or 0, 1)
+        end
+        if isGasterFight(enemy) then
+            return "* NOELLE: Is green his natural colour? His guard is exposed."
         end
         return "* NOELLE focuses her magic. The target's guard is exposed."
     end
