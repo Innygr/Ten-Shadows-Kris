@@ -12,7 +12,10 @@ function GasterBullet:init(x, y, direction, speed, phase)
 end
 
 function GasterBullet:draw()
-    local pulse = 0.82 + 0.18 * math.sin((Game and Game.battle and Game.battle.timer or 0) * 8 + self.phase)
+    -- Game.battle.timer is a Kristal Timer object, not a numeric clock.
+    -- Use LÖVE's monotonic clock for this purely visual pulse instead.
+    local phase = type(self.phase) == "number" and self.phase or 0
+    local pulse = 0.82 + 0.18 * math.sin(love.timer.getTime() * 8 + phase)
     love.graphics.push("all")
     love.graphics.setColor(0.42, 0.18, 0.72, 0.28)
     love.graphics.circle("fill", 0, 0, 9 * pulse)
