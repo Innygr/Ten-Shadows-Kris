@@ -12,7 +12,7 @@ function GasterSecret:init()
     self.money, self.experience, self.spare_points = 0, 0, 0
     self.tired_percentage = 0
     self.can_freeze = false
-    self.disable_mercy = true
+    self.disable_mercy = false
     self.auto_spare = false
     self.mercy = 0
     self.waves = {"gaster_first_contact"}
