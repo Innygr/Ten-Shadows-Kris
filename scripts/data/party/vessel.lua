@@ -15,9 +15,10 @@ function character:init()
     self.title = "SOUL BEARER"
     self.soul_priority = 3
     self.soul_color = {0.95, 0.035, 0.08}
-    self.has_act = true
+    self.has_act = false
     self.has_spells = false
-    self.has_xact = false
+    self.has_xact = true
+    self.xact_name = "V-Act"
     self.health = 240
     self.stats = {health = 240, attack = 12, defense = 2, magic = 0}
     self.max_stats = {health = 240}
