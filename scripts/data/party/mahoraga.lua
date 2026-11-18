@@ -3,8 +3,9 @@ local character, super = Class(PartyMember, "mahoraga")
 function character:init()
     super.init(self)
     self.name = "Mahoraga"
-    -- Temporary actor fallback until dedicated Mahoraga battle sprites are authored.
-    self:setActor("kris")
+    -- A dedicated actor identity keeps future sprite work separate from Kris.
+    -- The actor currently falls back to Kris's known-good runtime frames.
+    self:setActor("mahoraga")
     self.level = Game.chapter
     self.title = "ADAPTIVE SHIKIGAMI"
     self.has_act = false
@@ -15,6 +16,8 @@ function character:init()
     -- White is used by the party UI for Mahoraga's name and HP presentation.
     self.color = {1, 1, 1}
     self.dmg_color = {1, 1, 1}
+    -- Portrait/name paths remain on Kris until Mahoraga's dedicated icon art
+    -- is ready, avoiding missing-texture warnings during the battle takeover.
     self.menu_icon = "party/kris/head"
     self.head_icons = "party/kris/icon"
     self.name_sprite = "party/kris/name"
