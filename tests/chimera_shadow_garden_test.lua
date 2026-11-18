@@ -151,5 +151,13 @@ assert(fusion_rectangles >= 4,
     "fusion Domain must draw two extra enclosing barrier outlines")
 assert(fusion_nodes >= 6,
     "fusion Domain must draw six animated barrier nodes")
+local fusion_polygons = 0
+for _, call in ipairs(draw_calls) do
+    if call.name == "polygon" then fusion_polygons = fusion_polygons + 1 end
+end
+assert(fusion_polygons >= 2,
+    "fusion Domain must draw its distinct six-gate blue barrier")
+assert((counts.circle or 0) > 0,
+    "fusion Domain must retain the garden's central shadow seal")
 
 print("Chimera Shadow Garden visual and Wave integration tests passed.")
