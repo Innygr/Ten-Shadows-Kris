@@ -29,6 +29,22 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
         return "* SUSIE swings her axe with all her strength!"
     end
 
+    -- Character X-Actions are shown with custom labels in the party UI,
+    -- but custom enemy classes call this handler directly instead of the
+    -- base EnemyBattler:onAct implementation. Resolve all three here too.
+    local character_id = battler and battler.chara and battler.chara.id
+    if character_id == "berdly" and (name == "B-Action" or name == "Standard") then
+        local BerdlyActions = modRequire("scripts/ten_shadows/berdly_actions")
+        return BerdlyActions.perform(enemy, battler)
+    elseif character_id == "ralsei" and (name == "R-Action" or name == "Standard") then
+        return "* RALSEI offers a reassuring smile. (+8 TP)"
+    elseif character_id == "noelle" and (name == "N-Action" or name == "Standard") then
+        if enemy then
+            enemy.ten_shadows_exposed_turns = math.max(enemy.ten_shadows_exposed_turns or 0, 1)
+        end
+        return "* NOELLE focuses her magic. The target's guard is exposed."
+    end
+
     if name == "Inspect" or name == "Check" or name == "CHECK" then
         return enemy:getCheckText(battler)
     end
