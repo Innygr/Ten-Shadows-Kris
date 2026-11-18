@@ -69,7 +69,8 @@ assert(mod_source:find("Abilities.tickEnemyTurn(Game.battle)", 1, true),
 local actions_file = assert(io.open("scripts/ten_shadows/boss_actions.lua", "r"))
 local actions_source = actions_file:read("*a")
 actions_file:close()
-assert(actions_source:find("enemy.ten_shadows_state or Abilities.get(battle)", 1, true),
+assert(actions_source:find("if not state then", 1, true)
+    and actions_source:find("state = Abilities.get(battle)", 1, true),
     "custom actions must fall back to battle-wide state outside boss encounters")
 
 print("Battle-wide Ten Shadows ability tests passed.")
