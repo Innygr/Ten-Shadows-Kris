@@ -77,9 +77,13 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
     end
 
     local battle = Game and Game.battle
-    local Abilities = modRequire("scripts/ten_shadows/battle_abilities")
-    local state = enemy.ten_shadows_state or Abilities.get(battle)
-    if state and not enemy.ten_shadows_state then Abilities.syncParty(battle, state) end
+    local state = enemy.ten_shadows_state
+    local Abilities = nil
+    if not state then
+        Abilities = modRequire("scripts/ten_shadows/battle_abilities")
+        state = Abilities.get(battle)
+        if state then Abilities.syncParty(battle, state) end
+    end
     if name == "BRIGHTEN" then
         local Effects = modRequire("scripts/ten_shadows/runtime_spells")
         -- The menu has already charged 4 TP and grouped Kris, Susie, and Ralsei
