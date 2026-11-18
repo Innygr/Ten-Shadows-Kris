@@ -90,11 +90,11 @@ function Abilities.tickEnemyTurn(battle)
         local origin_y = soul and soul.y or ((arena and arena.y or 0) + ((arena and arena.height) or 142) * 0.5)
         local target_x = (target and target.x or 0) + (target and target.width or 0) * 0.5
         local target_y = (target and target.y or 0) + (target and target.height or 0) * 0.5
-        local Beam = modRequire("scripts/battle/objects/ultimate_beam")
-        local visual = Beam(origin_x, origin_y, target_x, target_y)
         local parent = battle.addChild and battle
             or (Game.stage and Game.stage.addChild and Game.stage)
         if parent then
+            local Beam = modRequire("scripts/battle/objects/ultimate_beam")
+            local visual = Beam(origin_x, origin_y, target_x, target_y)
             parent:addChild(visual)
             visual:release(hit == true)
         end
