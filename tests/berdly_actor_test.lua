@@ -6,6 +6,11 @@ local function read(path)
 end
 
 -- Berdly is a Dark World-only playable character in this project.
+-- Some actor revisions load the shared fallback helper through modRequire.
+modRequire = function(path)
+    assert(path == "scripts/ten_shadows/actor_fallback", "unexpected actor helper")
+    return dofile(path .. ".lua")
+end
 local kris = {
     id = "kris",
     name = "Kris",
