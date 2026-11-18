@@ -1,7 +1,6 @@
 -- Runtime effects for Kris's Ten Shadows ACT submenu.
 local Shadows = {}
 local summon_state = nil
-local SUMMON_TURNS = 3
 
 local DAMAGE_SCALE = {
     NUE = 1.5,
@@ -119,11 +118,10 @@ function Shadows.summonMahoraga()
         index = index,
         kris = Game.party[index],
         battler = battler,
-        turns = SUMMON_TURNS,
     }
     Game.party[index] = mahoraga
     battler.chara = mahoraga
-    mahoraga.health = 520
+    mahoraga.health = 999
     return true
 end
 
@@ -195,7 +193,7 @@ function Shadows.use(name, user, target)
         if not summoned then
             return "* The wheel turns, but Mahoraga could not manifest: "..tostring(reason)
         end
-        return "* WITH THIS TREASURE... MAHORAGA IS SUMMONED! Kris is withdrawn for 3 turns."
+        return "* WITH THIS TREASURE... MAHORAGA IS SUMMONED! Kris is withdrawn for the rest of the battle."
     end
     return nil
 end
@@ -220,17 +218,6 @@ function Shadows.onEnemyTurnStart(enemy)
 end
 
 function Shadows.onEnemyTurnEnd(enemy)
-    local battle = Game and Game.battle
-    local active_enemies = battle and battle.getActiveEnemies and battle:getActiveEnemies()
-    local first_enemy = active_enemies and active_enemies[1]
-        or (battle and battle.enemies and battle.enemies[1])
-    local tick_summon = not first_enemy or first_enemy == enemy
-    if summon_state and tick_summon then
-        summon_state.turns = summon_state.turns - 1
-        if summon_state.turns <= 0 then
-            Shadows.dismissMahoraga()
-        end
-    end
     if enemy.ten_shadows_saved_waves then
         enemy.waves = enemy.ten_shadows_saved_waves
         enemy.ten_shadows_saved_waves = nil
