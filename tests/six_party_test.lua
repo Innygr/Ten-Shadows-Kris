@@ -118,18 +118,24 @@ assert(berdly_actor:find('Registry.getActor("kris")', 1, true), "Berdly fallback
 -- and a fully enclosed perimeter. The mod's spawnParty hook supplies all
 -- six overworld followers, including Berdly and Vessel.
 local test_room = read("scripts/world/maps/testing-room_001.lua")
-for _, station in ipairs({"gaster_fight_test", "final_fight_test", "runtime_test", "gaster_dialogue_test", "room_help"}) do
-    assert(test_room:find('script="' .. station .. '"', 1, true),
-        "testing-room_001 is missing interactable " .. station)
+local station_event = read("scripts/world/events/station.lua")
+for _, station in ipairs({
+    {6, "gaster_fight_test"},
+    {7, "final_fight_test"},
+    {8, "runtime_test"},
+    {10, "gaster_dialogue_test"},
+    {11, "room_help"},
+}) do
+    local id, script = station[1], station[2]
+    assert(test_room:find("{id=" .. id .. ',name="station",class="station"', 1, true),
+        "testing-room_001 is missing visible station " .. id)
+    assert(test_room:find('script="' .. script .. '"', 1, true),
+        "testing-room_001 station " .. id .. " is missing script " .. script)
 end
-for _, station_id in ipairs({6, 7, 8, 10, 11}) do
-    assert(test_room:find("{id=" .. station_id .. ',name="interactable"', 1, true),
-        "testing-room_001 is missing visible station " .. station_id)
-end
-assert(select(2, test_room:gsub("usetile=true", "")) == 5,
-    "all five interactables must render their tileset artwork with usetile=true")
-assert(select(2, test_room:gsub("gid=4", "")) >= 5,
-    "all five station interactables must reference the cyan station tile")
+assert(station_event:find("Class(Interactable)", 1, true),
+    "test stations must use the custom Interactable event")
+assert(station_event:find("function Station:draw()", 1, true),
+    "test stations must draw their own visible labels and colors")
 
 assert(test_room:find('name="savepoint"', 1, true)
     and test_room:find('heals=true', 1, true),
