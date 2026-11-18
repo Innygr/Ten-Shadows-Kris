@@ -14,6 +14,12 @@ local SOUL_MODE_ACTIONS = {
 }
 
 function BossActions.onAct(enemy, battler, name, base_on_act)
+    -- Safe no-op used by the character ACT fallback. It intentionally
+    -- resolves as a normal ACT so Kristal can advance the six-member queue.
+    if name == "Nothing Happens" then
+        return "* Nothing happens."
+    end
+
     if name == "Inspect" or name == "Check" or name == "CHECK" then
         return enemy:getCheckText(battler)
     end
