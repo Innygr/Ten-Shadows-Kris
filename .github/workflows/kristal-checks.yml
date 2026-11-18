@@ -53,6 +53,8 @@ jobs:
 
       - name: Test Gaster first-contact attack wave
         run: lua5.1 tests/gaster_first_contact_test.lua
+      - name: Test Gaster-specific party X-Actions
+        run: lua5.1 tests/gaster_xactions_test.lua
       - name: Test character ACT softlock fallback
         run: lua5.1 tests/act_fallback_test.lua
       - name: Test Susie S-Action softlock fallback
