@@ -304,6 +304,24 @@ installSixPartySupport = function()
 
         -- Keep the action boxes full-size and readable. Show three at a time:
         -- Kris/Susie/Ralsei first, then Noelle/Berdly/Vessel after Ralsei confirms.
+        -- Kristal stacks attack timing lanes vertically at 38px per party
+        -- member. With six members, lanes 4-6 fall below the 480px viewport.
+        -- Reflow them into two columns of three while preserving the engine's
+        -- timing logic, hit windows, and randomized attack order.
+        local original_battle_ui_begin_attack = BattleUI.beginAttack
+        BattleUI.beginAttack = function(ui, ...)
+            local result = original_battle_ui_begin_attack(ui, ...)
+            if #Game.battle.party == 6 then
+                for _, attack_box in ipairs(ui.attack_boxes) do
+                    local index = attack_box.index
+                    local column = math.floor((index - 1) / 3)
+                    local row = (index - 1) % 3
+                    attack_box:setPosition(column * 320, 40 + row * 38)
+                end
+            end
+            return result
+        end
+
         local original_battle_ui_init = BattleUI.init
         BattleUI.init = function(ui, ...)
             original_battle_ui_init(ui, ...)
