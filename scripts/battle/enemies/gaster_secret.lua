@@ -14,8 +14,7 @@ function GasterSecret:init()
     self.disable_mercy = true
     self.auto_spare = false
     self.mercy = 0
-    -- No attack wave yet: this is a safe encounter shell, not the finished fight.
-    self.waves = {}
+    self.waves = {"gaster_first_contact"}
     self:registerAct("KRIS'S IDEA", "Kris and Vessel summon their own Titan.")
     self.dialogue = {
         "* ...",
@@ -30,7 +29,7 @@ function GasterSecret:init()
         "AT 30 DF 0",
         "HP: 6,666 / 6,666.",
         "* SECRET BOSS SCAFFOLD — stats are provisional.",
-        "* Its battle mechanics have not been implemented.",
+        "* Its first attack is only a prototype.",
     }
 end
 
@@ -44,7 +43,7 @@ function GasterSecret:getCheckText(battler)
         "AT " .. tostring(self.attack) .. " DF " .. tostring(self.defense),
         "HP: " .. tostring(self.health) .. " / " .. tostring(self.max_health) .. ".",
         "* SECRET BOSS SCAFFOLD — stats are provisional.",
-        "* Its battle mechanics have not been implemented.",
+        "* Its first attack is only a prototype.",
     }
     return super.getCheckText(self, battler)
 end
