@@ -129,6 +129,28 @@ installSixPartySupport = function()
     if not Mod._six_party_battle_patch then
         Mod._six_party_battle_patch = true
 
+        -- Ordinary enemies use the same party techniques as the custom bosses.
+        -- Keep a battle-owned state for those encounters; boss enemies retain
+        -- their existing coordinated Knight/Titan state.
+        local Abilities = modRequire("scripts/ten_shadows/battle_abilities")
+        local original_enemy_on_act = EnemyBattler.onAct
+        EnemyBattler.onAct = function(enemy, battler, name, ...)
+            local BossActions = modRequire("scripts/ten_shadows/boss_actions")
+            return BossActions.onAct(enemy, battler, name, original_enemy_on_act)
+        end
+
+        -- Wave completion is the common enemy-turn boundary in Kristal.
+        -- Tick the standalone Domain upkeep once when an ordinary encounter's
+        -- defending Wave ends, then refresh/remove its arena visual.
+        local original_wave_on_end = Wave.onEnd
+        Wave.onEnd = function(wave_object, death, ...)
+            local result = original_wave_on_end(wave_object, death, ...)
+            if not death and Game and Game.battle then
+                Abilities.tickEnemyTurn(Game.battle)
+            end
+            return result
+        end
+
         -- Every encounter passes through TRANSITIONOUT when it ends. Hook the
         -- engine lifecycle here so temporary summons are cleaned up even when
         -- a future encounter does not define its own onBattleEnd callback.
@@ -136,6 +158,7 @@ installSixPartySupport = function()
         Battle.onTransitionOutState = function(battle, ...)
             local Shadows = modRequire("scripts/ten_shadows/runtime_shadows")
             Shadows.onBattleEnd()
+            Abilities.endBattle(battle)
             return original_battle_transition_out(battle, ...)
         end
 
@@ -484,7 +507,11 @@ function Mod:onBattleEnemySelect(reason, selected)
 
     local chara = battler.chara.id
     local root = {}
-    local boss_state = enemy.ten_shadows_state
+    local Abilities = modRequire("scripts/ten_shadows/battle_abilities")
+    local boss_state = enemy.ten_shadows_state or Abilities.get(battle)
+    if boss_state and not enemy.ten_shadows_state then
+        Abilities.syncParty(battle, boss_state)
+    end
 
     if chara == "kris" then
         root[#root + 1] = {"TEN SHADOWS", "Open Kris's Ten Shadows techniques.", 0, function()
