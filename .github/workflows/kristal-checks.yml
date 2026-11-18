@@ -51,6 +51,9 @@ jobs:
       - name: Test station nested cutscene protection
         run: lua5.1 tests/station_cutscene_test.lua
 
+      - name: Test Gaster first-contact attack wave
+        run: lua5.1 tests/gaster_first_contact_test.lua
+
       - name: Test TOASTER translator and missing-translator fallback
         run: |
           python3 tests/fpp_transpiler_test.py
