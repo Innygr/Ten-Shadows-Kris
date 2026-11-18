@@ -13,7 +13,7 @@ local function makeWorld(active)
     }
 end
 
-local Interactable = {
+Interactable = {
     init = function(self, x, y, shape, properties)
         self.x, self.y = x, y
         self.shape, self.properties = shape, properties or {}
