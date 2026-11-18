@@ -8,6 +8,21 @@ local COLORS = {
     gold = {0.82, 0.58, 0.12},
 }
 
+local function hasActiveCutscene(world)
+    if not world then
+        return false
+    end
+
+    if type(world.hasCutscene) == "function" and world:hasCutscene() then
+        return true
+    end
+
+    -- Keep the direct state check as a fallback for event instances whose
+    -- world reference is not the canonical Game.world object.
+    local cutscene = world.cutscene
+    return cutscene ~= nil and cutscene.ended ~= true
+end
+
 function Station:init(data)
     data = data or {}
     local properties = data.properties or {}
@@ -19,11 +34,12 @@ function Station:init(data)
     self.solid = false
 end
 
--- Interactable:onInteract starts a new cutscene unconditionally. A repeated
--- interaction while the previous text/cutscene is still active would attempt
--- to nest a second cutscene and crash the world. Ignore that extra input.
+-- Interactable:onInteract always creates a text/script cutscene. Check both
+-- the event's world and Game.world so a stale/missing event reference cannot
+-- start a second cutscene while the current dialogue is still active.
 function Station:onInteract(player, dir)
-    if self.world and self.world.hasCutscene and self.world:hasCutscene() then
+    local game_world = Game and Game.world or nil
+    if hasActiveCutscene(game_world) or hasActiveCutscene(self.world) then
         return false
     end
     return super.onInteract(self, player, dir)
