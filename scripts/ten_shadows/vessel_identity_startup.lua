@@ -44,6 +44,16 @@ function Startup.installGameLoadHook(mod, game_class, roster)
 
         local deferred_encounter = Startup.deferEncounter(mod, data == nil)
         local result = original_game_load(game, data, index, fade)
+
+        -- Reassert the complete roster after Kristal has initialized party_data
+        -- and loaded save state. This covers new files and older saves whose
+        -- stored party was shorter than this mod's canonical six-member roster.
+        for _, id in ipairs(roster) do
+            assert(game:getPartyMember(id),
+                "Ten Shadows Kris: party member '" .. id .. "' was not initialized")
+        end
+        game:setPartyMembers(unpack(roster))
+
         Startup.restoreEncounter(mod, deferred_encounter)
         return result
     end
