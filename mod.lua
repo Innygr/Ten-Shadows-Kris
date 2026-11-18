@@ -114,6 +114,10 @@ installSixPartySupport = function()
         Mod._six_party_overworld_spawn_patch = true
         local original_spawn_party = World.spawnParty
         World.spawnParty = function(world, marker, party, extra, facing)
+            -- getPartyMember resolves the active roster, not arbitrary registry
+            -- entries. A story/map call can pass only three members, so first
+            -- activate all six before looking up Berdly and Vessel.
+            Game:setPartyMembers(unpack(roster))
             local full_roster = {}
             for i, id in ipairs(roster) do
                 full_roster[i] = Game:getPartyMember(id)
@@ -570,19 +574,20 @@ function Mod:onBattleEnemySelect(reason, selected)
                 battle:pushAction("ACT", enemy, item)
             end}
         end
-        root[#root + 1] = {"V-ACT", "Vessel's unique techniques.", 0, function()
-            local entries = {}
-            if boss_state and boss_state.vessel_domain and not boss_state.vessel_domain.used then
-                entries[#entries + 1] = {"VESSEL DOMAIN", "Open Vessel's barrier independently; drains 2 TP each enemy turn.", 60, function(item)
+        if boss_state and boss_state.vessel_domain and not boss_state.vessel_domain.used then
+            root[#root + 1] = {"VESSEL DOMAIN", "Open Vessel's barrier independently; drains 2 TP each enemy turn.", 60, function(item)
+                battle:pushAction("ACT", enemy, item)
+            end}
+        end
+        root[#root + 1] = {"GRANITE BLAST", "Open Vessel's Granite Blast techniques.", 0, function()
+            local entries = {
+                {"GRANITE BLAST", "A quick 100% output blast; portals enhance it inside either Domain.", 10, function(item)
                     battle:pushAction("ACT", enemy, item)
-                end}
-            end
-            entries[#entries + 1] = {"GRANITE BLAST", "A quick 100% output blast; portals enhance it inside either Domain.", 10, function(item)
-                battle:pushAction("ACT", enemy, item)
-            end}
-            entries[#entries + 1] = {"ULTIMATE BEAM", "Charge for one enemy turn, then unleash a 580-damage beam.", 100, function(item)
-                battle:pushAction("ACT", enemy, item)
-            end}
+                end},
+                {"ULTIMATE BEAM", "Charge for one enemy turn, then unleash a 580-damage beam.", 100, function(item)
+                    battle:pushAction("ACT", enemy, item)
+                end},
+            }
             addMenu(battle, enemy, entries, function()
                 addMenu(battle, enemy, root, nil)
             end)
