@@ -13,6 +13,8 @@ function Station:init(data)
     local properties = data.properties or {}
     super.init(self, data.x or 0, data.y or 0, {data.width or 40, data.height or 40}, properties)
     self.label = properties.label or "TEST STATION"
+    self.station_width = data.width or 40
+    self.station_height = data.height or 40
     self.station_color = COLORS[properties.color] or COLORS.cyan
     self.solid = false
 end
@@ -21,12 +23,12 @@ function Station:draw()
     love.graphics.push("all")
     local color = self.station_color
     love.graphics.setColor(color[1], color[2], color[3], 1)
-    love.graphics.rectangle("fill", 0, 0, self.width, self.height)
+    love.graphics.rectangle("fill", 0, 0, self.station_width, self.station_height)
     love.graphics.setColor(0.92, 0.96, 1, 1)
     love.graphics.setLineWidth(3)
-    love.graphics.rectangle("line", 1.5, 1.5, math.max(0, self.width - 3), math.max(0, self.height - 3))
+    love.graphics.rectangle("line", 1.5, 1.5, math.max(0, self.station_width - 3), math.max(0, self.station_height - 3))
     love.graphics.setColor(1, 1, 1, 1)
-    love.graphics.printf(self.label, 4, math.max(2, self.height / 2 - 7), math.max(1, self.width - 8), "center")
+    love.graphics.printf(self.label, 4, math.max(2, self.station_height / 2 - 7), math.max(1, self.station_width - 8), "center")
     love.graphics.pop()
     super.draw(self)
 end
