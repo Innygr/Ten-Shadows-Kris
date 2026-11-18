@@ -36,6 +36,9 @@ function actor:init()
 
     self.name = "Berdly"
     self.color = {0.12, 0.32, 0.78}
+    -- Reserved destination for dedicated art; the live path remains Kris's
+    -- proven sprite set until Berdly's mapped frames are ready.
+    self.ten_shadows_asset_path = "party/berdly/dark"
 end
 
 function actor:onSpriteInit(sprite)
