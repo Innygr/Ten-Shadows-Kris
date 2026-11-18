@@ -23,6 +23,8 @@ assert(startup:find("local original_game_load = game_class.load", 1, true),
     "the startup helper must wrap Game:load exactly once")
 assert(startup:find("data.party[i] = id", 1, true),
     "existing saves must be migrated to the complete six-member roster")
+assert(startup:find("game:setPartyMembers(unpack(roster))", 1, true),
+    "new and existing saves must be forced onto the complete six-member roster after load")
 assert(startup:find("mod._vessel_identity_game_load_hook", 1, true),
     "the Game:load wrapper must be guarded against repeated Mod:init calls")
 assert(source:find("installSixPartySupport()", 1, true),
