@@ -115,16 +115,32 @@ function ChimeraShadowGarden:draw()
         color(0.38, 0.72, 1.0, (0.48 + barrier_pulse * 0.20) * fade)
         graphics.setLineWidth(1)
         graphics.rectangle("line", bx + 4, by + 4, math.max(0, bw - 8), math.max(0, bh - 8), 6, 6)
+        -- Fusion's six blue gates bridge the shadow garden and Vessel's seal.
+        local fusion_radius = radius * 0.91
+        local fusion_rotation = -spin * 1.6
+        local fusion_points = {}
         for node = 0, 5 do
-            local angle = node * TAU / 6 - math.pi / 2
-            local nx, ny = point(cx, cy, radius * 0.91, angle)
+            local angle = node * TAU / 6 - math.pi / 2 + fusion_rotation
+            local nx, ny = point(cx, cy, fusion_radius, angle)
+            fusion_points[#fusion_points + 1] = nx
+            fusion_points[#fusion_points + 1] = ny
             local node_pulse = 0.5 + 0.5 * math.sin(self.time * 4 + node)
-            color(0.22, 0.12, 0.52, (0.40 + node_pulse * 0.20) * fade)
-            graphics.circle("fill", nx, ny, 5 + node_pulse * 2)
-            color(0.72, 0.88, 1.0, 0.88 * fade)
-            graphics.setLineWidth(1)
-            graphics.circle("line", nx, ny, 4 + node_pulse * 2)
+            color(0.10, 0.34, 0.62, (0.34 + node_pulse * 0.18) * fade)
+            graphics.circle("fill", nx, ny, 7 + node_pulse * 2)
+            color(0.42, 0.82, 1.0, 0.94 * fade)
+            graphics.setLineWidth(1.5)
+            graphics.circle("line", nx, ny, 5 + node_pulse * 2)
+            local ix, iy = point(cx, cy, fusion_radius - 13, angle)
+            color(0.34, 0.72, 1.0, 0.72 * fade)
+            graphics.line(nx, ny, ix, iy)
         end
+        color(0.18, 0.52, 0.82, 0.62 * fade)
+        graphics.setLineWidth(2)
+        graphics.polygon("line", unpack(fusion_points))
+        color(0.42, 0.82, 1.0, 0.38 * fade)
+        graphics.setLineWidth(1)
+        graphics.circle("line", cx, cy, radius * 0.56 + barrier_pulse * 2)
+        graphics.circle("line", cx, cy, radius * 0.49)
     end
 
     -- Ten shadow roots connect the central seal to anchored petal pools.
