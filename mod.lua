@@ -602,7 +602,12 @@ function Mod:onBattleEnemySelect(reason, selected)
             battle:pushAction("ACT", enemy, item)
         end}
     else
-        return false
+        -- Every party member must receive a valid ACT menu. A missing or
+        -- newly-added character-specific menu must never leave ACTIONSELECT
+        -- waiting on a character that has no selectable action.
+        root[#root + 1] = {"Nothing Happens", "Nothing happens.", 0, function(item)
+            battle:pushAction("ACT", enemy, item)
+        end}
     end
 
     addMenu(battle, enemy, root, nil)
