@@ -1,14 +1,48 @@
+-- Berdly currently borrows Kris's working sprite configuration as a safe
+-- fallback. Keep a distinct Actor registry entry so dedicated art can be
+-- added later without changing Kris.
 local actor, super = Class(Actor, "berdly")
-local ActorFallback = modRequire("scripts/ten_shadows/actor_fallback")
+
+local function copyActorValue(value, seen)
+    if type(value) ~= "table" then
+        return value
+    end
+
+    seen = seen or {}
+    if seen[value] then
+        return seen[value]
+    end
+
+    local copied = {}
+    seen[value] = copied
+    for key, child in pairs(value) do
+        copied[copyActorValue(key, seen)] = copyActorValue(child, seen)
+    end
+    return copied
+end
 
 function actor:init()
     super.init(self)
-    ActorFallback.copyKrisConfiguration(self, "Berdly", "party/berdly/dark")
+
+    local kris = Registry.getActor("kris")
+    if kris then
+        local copied_tables = {}
+        for key, value in pairs(kris) do
+            if key ~= "id" then
+                self[key] = copyActorValue(value, copied_tables)
+            end
+        end
+    end
+
+    self.name = "Berdly"
     self.color = {0.12, 0.32, 0.78}
 end
 
 function actor:onSpriteInit(sprite)
-    ActorFallback.forwardKrisSpriteInit(sprite)
+    local kris = Registry.getActor("kris")
+    if kris and kris.onSpriteInit then
+        kris:onSpriteInit(sprite)
+    end
 end
 
 return actor
