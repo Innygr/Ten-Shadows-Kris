@@ -153,57 +153,42 @@ installSixPartySupport = function()
         end
 
         Battle.createPartyBattlers = function(battle)
-            -- Story setup can replace Game.party after Mod:postInit. Rebuild the
-            -- intended roster at battle construction time, before Kristal creates
-            -- battlers or the action boxes are initialized.
+            -- Rebuild the canonical roster before creating battlers or action boxes.
             Game:setPartyMembers(unpack(roster))
-            assert(#Game.party == 6 and Game.party[6].id == "vessel",
-                "Ten Shadows Kris: Vessel missing from the battle roster")
+            assert(#Game.party == 6 and Game.party[5].id == "berdly" and Game.party[6].id == "vessel",
+                "Ten Shadows Kris: Berdly or Vessel missing from the battle roster")
 
-            for i = 1, #Game.party do
-                local party_member = Game.party[i]
-                local created = false
+            for i, party_member in ipairs(Game.party) do
+                -- Preserve the matching overworld character for the return transition,
+                -- but never use its map coordinates as a battle spawn position.
+                local world_character = nil
+                local actor_id = party_member:getActor().id
 
                 if Game.world.player and Game.world.player.visible
-                    and Game.world.player.actor.id == party_member:getActor().id then
-                    local x, y = Game.world.player:getScreenPos()
-                    local battler = PartyBattler(party_member, x, y)
-                    battler:setAnimation("battle/transition")
-                    battle:addChild(battler)
-                    table.insert(battle.party, battler)
-                    table.insert(battle.party_beginning_positions, {x, y})
-                    battle.party_world_characters[party_member.id] = Game.world.player
-                    Game.world.player.visible = false
-                    created = true
+                    and Game.world.player.actor.id == actor_id then
+                    world_character = Game.world.player
                 else
-                    for _, follower in ipairs(Game.world.followers) do
-                        if follower.visible and follower.actor.id == party_member:getActor().id then
-                            local x, y = follower:getScreenPos()
-                            local battler = PartyBattler(party_member, x, y)
-                            battler:setAnimation("battle/transition")
-                            battle:addChild(battler)
-                            table.insert(battle.party, battler)
-                            table.insert(battle.party_beginning_positions, {x, y})
-                            battle.party_world_characters[party_member.id] = follower
-                            follower.visible = false
-                            created = true
+                    for _, follower in ipairs(Game.world.followers or {}) do
+                        if follower.visible and follower.actor.id == actor_id then
+                            world_character = follower
                             break
                         end
                     end
                 end
 
-                if not created then
-                    -- Missing overworld followers must not all spawn at the
-                    -- same center point. Give each one its own formation slot.
-                    local actor = party_member:getActor()
-                    local ox, oy = party_member:getBattleOffset()
-                    local x, y = BattleFormation.partyPosition(i, SCREEN_WIDTH, SCREEN_HEIGHT,
-                        actor:getWidth(), actor:getHeight(), ox, oy)
-                    local battler = PartyBattler(party_member, x, y)
-                    battler:setAnimation("battle/transition")
-                    battle:addChild(battler)
-                    table.insert(battle.party, battler)
-                    table.insert(battle.party_beginning_positions, {x, y})
+                local actor = party_member:getActor()
+                local ox, oy = party_member:getBattleOffset()
+                local x, y = BattleFormation.partyPosition(i, SCREEN_WIDTH, SCREEN_HEIGHT,
+                    actor:getWidth(), actor:getHeight(), ox, oy)
+                local battler = PartyBattler(party_member, x, y)
+                battler:setAnimation("battle/transition")
+                battle:addChild(battler)
+                table.insert(battle.party, battler)
+                table.insert(battle.party_beginning_positions, {x, y})
+
+                if world_character then
+                    battle.party_world_characters[party_member.id] = world_character
+                    world_character.visible = false
                 end
             end
         end
@@ -503,6 +488,14 @@ function Mod:onBattleEnemySelect(reason, selected)
         root[#root + 1] = {"BRIGHTEN", "Kris strengthens the party.", 4, function(item)
             battle:pushAction("ACT", enemy, item)
         end, {"kris", "susie", "ralsei"}}
+
+        if (enemy.ten_shadows_role == "knight" or enemy.ten_shadows_role == "titan")
+            and enemy.health <= enemy.max_health * 0.5
+            and not enemy.ten_shadows_own_titan_summoned then
+            root[#root + 1] = {"KRIS'S IDEA", "Kris and Vessel summon their own Titan.", 0, function(item)
+                battle:pushAction("ACT", enemy, item)
+            end, {"kris", "vessel"}}
+        end
         if boss_state and boss_state.boss.counter_ready and knight_enemy then
             root[#root + 1] = {"EXECUTION COUNTER", "Strike while the Knight is staggered.", 0, function(item)
                 battle:pushAction("ACT", knight_enemy, item)
@@ -544,13 +537,6 @@ function Mod:onBattleEnemySelect(reason, selected)
             entries[#entries + 1] = {"ULTIMATE BEAM", "Charge for one enemy turn, then unleash a 580-damage beam.", 100, function(item)
                 battle:pushAction("ACT", enemy, item)
             end}
-            if (enemy.ten_shadows_role == "knight" or enemy.ten_shadows_role == "titan")
-                and enemy.health <= enemy.max_health * 0.5
-                and not enemy.ten_shadows_own_titan_summoned then
-                entries[#entries + 1] = {"KRIS'S IDEA", "Kris and Vessel summon their own Titan.", 0, function(item)
-                    battle:pushAction("ACT", enemy, item)
-                end}
-            end
             addMenu(battle, enemy, entries, function()
                 addMenu(battle, enemy, root, nil)
             end)

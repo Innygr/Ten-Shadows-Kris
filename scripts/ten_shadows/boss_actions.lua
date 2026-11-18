@@ -19,19 +19,28 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
     end
 
     if name == "KRIS'S IDEA" then
-        if not battler or not battler.chara or battler.chara.id ~= "vessel" then
+        if not battler or not battler.chara
+            or (battler.chara.id ~= "kris" and battler.chara.id ~= "vessel") then
             return "* This idea needs both Kris and Vessel."
         end
-        local kris_alive = false
+        local kris_battler, vessel_battler = nil, nil
         for _, ally in ipairs(Game and Game.battle and Game.battle.party or {}) do
             local chara = ally and ally.chara
             if chara and chara.id == "kris" then
-                local hp = chara.getHealth and chara:getHealth() or chara.health or 0
-                kris_alive = hp > 0 and not ally.is_down
-                break
+                kris_battler = ally
+            elseif chara and chara.id == "vessel" then
+                vessel_battler = ally
             end
         end
-        if not kris_alive then return "* Kris needs to be standing for this idea." end
+        local function isStanding(ally)
+            if not ally or ally.is_down then return false end
+            local chara = ally.chara
+            local hp = chara and (chara.getHealth and chara:getHealth() or chara.health) or 0
+            return hp > 0
+        end
+        if not isStanding(kris_battler) or not isStanding(vessel_battler) then
+            return "* Kris and Vessel both need to be standing for this idea."
+        end
         if enemy.ten_shadows_own_titan_summoned then
             return "* Their Titan has already answered the call."
         end
@@ -39,7 +48,7 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
             return "* Kris is still working on the idea..."
         end
         enemy.ten_shadows_own_titan_summoned = true
-        enemy:hurt(1100, battler)
+        enemy:hurt(1100, kris_battler)
         local battle = Game and Game.battle
         local arena = battle and battle.arena
         if arena and arena.mask then
