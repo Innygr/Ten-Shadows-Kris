@@ -37,6 +37,7 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
         local BerdlyActions = modRequire("scripts/ten_shadows/berdly_actions")
         return BerdlyActions.perform(enemy, battler)
     elseif character_id == "ralsei" and (name == "R-Action" or name == "Standard") then
+        if Game and Game.giveTension then Game:giveTension(8) end
         return "* RALSEI offers a reassuring smile. (+8 TP)"
     elseif character_id == "noelle" and (name == "N-Action" or name == "Standard") then
         if enemy then
