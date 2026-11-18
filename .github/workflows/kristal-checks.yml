@@ -115,6 +115,9 @@ jobs:
       - name: Test independent Vessel Domain and upkeep
         run: lua5.1 tests/vessel_domain_test.lua
 
+      - name: Test Vessel Domain barrier visuals
+        run: lua5.1 tests/vessel_domain_visual_test.lua
+
       - name: Test grouped BRIGHTEN ACT
         run: lua5.1 tests/brighten_act_test.lua
 
