@@ -113,7 +113,12 @@ local berdly_party = read("scripts/data/party/berdly.lua")
 local berdly_actor = read("scripts/data/actors/berdly.lua")
 assert(berdly_party:find('self:setActor("berdly")', 1, true), "Berdly must use his dedicated actor registry entry")
 assert(berdly_actor:find('Class(Actor, "berdly")', 1, true), "Berdly actor must be registered independently from Kris")
-assert(berdly_actor:find('Registry.getActor("kris")', 1, true), "Berdly fallback must preserve working animation definitions until dedicated frames exist")
+assert(berdly_actor:find('ActorFallback.copyKrisConfiguration', 1, true),
+    "Berdly must use the shared Kris sprite/animation fallback")
+assert(berdly_actor:find('ActorFallback.forwardKrisSpriteInit', 1, true),
+    "Berdly must forward Kris sprite initialization")
+assert(read("scripts/ten_shadows/actor_fallback.lua"):find('Registry.getActor("kris")', 1, true),
+    "the shared fallback must copy Kris's working actor configuration")
 
 
 -- The primary test room must expose every station, a healing save point,
