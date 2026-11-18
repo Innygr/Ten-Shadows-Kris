@@ -19,6 +19,16 @@ function Station:init(data)
     self.solid = false
 end
 
+-- Interactable:onInteract starts a new cutscene unconditionally. A repeated
+-- interaction while the previous text/cutscene is still active would attempt
+-- to nest a second cutscene and crash the world. Ignore that extra input.
+function Station:onInteract(player, dir)
+    if self.world and self.world.hasCutscene and self.world:hasCutscene() then
+        return false
+    end
+    return super.onInteract(self, player, dir)
+end
+
 function Station:draw()
     love.graphics.push("all")
     local color = self.station_color
