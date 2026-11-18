@@ -17,7 +17,7 @@ modRequire = function(path)
 end
 local target = {name="W.D. Gaster",health=3000,max_health=6666}
 function target:hurt(amount) self.health = self.health - amount end
-local message = BossActions.onAct(target,vessel,"KRIS'S IDEA",function() return "base" end)
+local message = BossActions.onAct(target,kris,"KRIS'S IDEA",function() return "base" end)
 assert(target.health == 1900, "Kris's Idea must deal 1,100 damage")
 assert(target.ten_shadows_own_titan_summoned, "summon must be marked used")
 assert(spawned == 1 and arena.mask.child.kind == "titan_visual", "Titan visual must spawn")
@@ -30,5 +30,9 @@ assert(BossActions.onAct(early,vessel,"KRIS'S IDEA",function() return "base" end
 kris.chara.health = 0
 local down = {name="W.D. Gaster",health=3000,max_health=6666}
 assert(BossActions.onAct(down,vessel,"KRIS'S IDEA",function() return "base" end)
-    == "* Kris needs to be standing for this idea.", "Kris must be standing")
+    == "* Kris and Vessel both need to be standing for this idea.", "Kris must be standing")
+vessel.chara.health = 0
+local downVessel = {name="W.D. Gaster",health=3000,max_health=6666}
+assert(BossActions.onAct(downVessel,kris,"KRIS'S IDEA",function() return "base" end)
+    == "* Kris and Vessel both need to be standing for this idea.", "Vessel must be standing")
 print("Kris's Idea combined Titan summon tests passed.")
