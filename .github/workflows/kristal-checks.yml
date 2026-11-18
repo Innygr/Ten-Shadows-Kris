@@ -59,6 +59,8 @@ jobs:
         run: lua5.1 tests/susie_saction_test.lua
       - name: Test Ralsei, Noelle, and Berdly X-Actions
         run: lua5.1 tests/party_xactions_test.lua
+      - name: Test Vessel menus, party fallback, and Gaster scale
+        run: lua5.1 tests/vessel_party_gaster_test.lua
 
       - name: Test TOASTER translator and missing-translator fallback
         run: |
@@ -229,7 +231,8 @@ jobs:
           test -f tests/granite_blast_test.lua
           grep -q 'state:routePartySpell(descriptor, entry' scripts/ten_shadows/boss_actions.lua
           grep -q 'GraniteBlast(' scripts/ten_shadows/boss_actions.lua
-           grep -q 'root\[#root + 1\] = {"V-ACT"' mod.lua
+           grep -q 'self.xact_name = "V-Act"' scripts/data/party/vessel.lua
+           ! grep -q 'root\[#root + 1\] = {"V-ACT"' mod.lua
            grep -q '{"GRANITE BLAST"' mod.lua
            grep -q '{"ULTIMATE BEAM"' mod.lua
           test -f tests/chimera_shadow_garden_test.lua
@@ -241,7 +244,7 @@ jobs:
           grep -q 'name == "GRANITE BLAST"' scripts/ten_shadows/boss_actions.lua
           grep -q 'BossActions.onAct(self, battler, name, super.onAct)' scripts/battle/enemies/roaring_knight_titan.lua
           grep -q 'BossActions.onAct(self, battler, name, super.onAct)' scripts/battle/enemies/roaring_knight.lua
-          grep -q 'V-ACT' mod.lua
+          grep -q 'self.xact_name = "V-Act"' scripts/data/party/vessel.lua
           test -f scripts/battle/bullets/shadow_projectile.lua
           test -f scripts/ten_shadows/attack_wave_patterns.lua
           test -f tests/attack_wave_patterns_test.lua
