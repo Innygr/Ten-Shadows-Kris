@@ -26,7 +26,15 @@ assert(not Startup.startPendingEncounter(mod, game), "The deferred encounter mus
 -- Game:load hooks must be idempotent and preserve encounter deferral ordering.
 local load_observed_encounter
 local hook_mod
+local loaded_party = {}
 local game_class = {
+    getPartyMember = function(_, id)
+        return {id = id}
+    end,
+    setPartyMembers = function(self, ...)
+        loaded_party = {...}
+        self.party = loaded_party
+    end,
     load = function(_, data)
         load_observed_encounter = hook_mod.info.encounter
         return data and "saved" or "new"
@@ -41,6 +49,8 @@ local installed_load = game_class.load
 assert(Startup.installGameLoadHook(hook_mod, game_class, {"wrong"}))
 assert(game_class.load == installed_load, "Repeated Mod:init must not wrap Game:load again")
 assert(game_class.load({}, nil) == "new")
+assert(#loaded_party == 2 and loaded_party[1] == "kris" and loaded_party[2] == "vessel",
+    "New files must receive the complete canonical roster after engine initialization")
 assert(load_observed_encounter == nil, "The default encounter must be hidden during Game:load")
 assert(hook_mod.info.encounter == "first_run_preview",
     "The manifest encounter must be restored immediately after Game:load")
@@ -48,6 +58,8 @@ assert(hook_mod._pending_first_run_encounter == "first_run_preview")
 
 local saved_data = {party = {"kris"}}
 assert(game_class.load({}, saved_data) == "saved")
+assert(#loaded_party == 2 and loaded_party[1] == "kris" and loaded_party[2] == "vessel",
+    "Existing saves must also receive the complete canonical runtime roster")
 assert(#saved_data.party == 2 and saved_data.party[1] == "kris" and saved_data.party[2] == "vessel",
     "Existing saves must receive the canonical party roster")
 
