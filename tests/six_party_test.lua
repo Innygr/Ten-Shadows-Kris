@@ -30,7 +30,7 @@ assert(source:find("installSixPartySupport()", 1, true),
 
 assert(source:find("Game:setPartyMembers(unpack(roster))", 1, true),
     "battle construction must restore the complete intended roster")
-assert(source:find("for i = 1, #Game.party do", 1, true),
+assert(source:find("for i, party_member in ipairs(Game.party) do", 1, true),
     "battle construction must create a battler for every party member")
 assert(source:find("local page_offset = selecting > 3 and 3 or 0", 1, true),
     "battle action boxes must page to the active member")
@@ -123,8 +123,6 @@ for _, station in ipairs({
     {6, "gaster_fight_test"},
     {7, "final_fight_test"},
     {8, "runtime_test"},
-    {10, "gaster_dialogue_test"},
-    {11, "room_help"},
 }) do
     local id, script = station[1], station[2]
     assert(test_room:find("{id=" .. id .. ',name="station",class="station"', 1, true),
@@ -132,6 +130,14 @@ for _, station in ipairs({
     assert(test_room:find('script="' .. script .. '"', 1, true),
         "testing-room_001 station " .. id .. " is missing script " .. script)
 end
+assert(test_room:find('{id=10,name="station",class="station"', 1, true)
+    and test_room:find('label="GASTER STATUE"', 1, true)
+    and test_room:find('text1_1="* You approach the Gaster statue."', 1, true),
+    "testing-room_001 must contain the native-text Gaster statue")
+assert(test_room:find('{id=11,name="station",class="station"', 1, true)
+    and test_room:find('label="FIELD GUIDE"', 1, true)
+    and test_room:find('text1_1="* FIELD GUIDE"', 1, true),
+    "testing-room_001 must contain the native-text Field Guide")
 assert(station_event:find("Class(Interactable)", 1, true),
     "test stations must use the custom Interactable event")
 assert(station_event:find("function Station:draw()", 1, true),
