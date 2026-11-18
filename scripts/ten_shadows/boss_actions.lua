@@ -33,6 +33,10 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
     -- but custom enemy classes call this handler directly instead of the
     -- base EnemyBattler:onAct implementation. Resolve all three here too.
     local character_id = battler and battler.chara and battler.chara.id
+    if character_id == "vessel" and (name == "V-Act" or name == "Standard") then
+        if Game and Game.giveTension then Game:giveTension(8) end
+        return "* VESSEL steadies the SOUL. (+8 TP)"
+    end
     if character_id == "berdly" and (name == "B-Action" or name == "Standard") then
         local BerdlyActions = modRequire("scripts/ten_shadows/berdly_actions")
         return BerdlyActions.perform(enemy, battler)
