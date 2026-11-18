@@ -57,6 +57,8 @@ jobs:
         run: lua5.1 tests/act_fallback_test.lua
       - name: Test Susie S-Action softlock fallback
         run: lua5.1 tests/susie_saction_test.lua
+      - name: Test Ralsei, Noelle, and Berdly X-Actions
+        run: lua5.1 tests/party_xactions_test.lua
 
       - name: Test TOASTER translator and missing-translator fallback
         run: |
