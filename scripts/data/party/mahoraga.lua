@@ -9,10 +9,12 @@ function character:init()
     self.title = "ADAPTIVE SHIKIGAMI"
     self.has_act = false
     self.has_spells = false
-    self.health = 520
-    self.stats = {health = 520, attack = 32, defense = 12, magic = 0}
-    self.max_stats = {health = 520}
-    self.color = {0.8, 0.8, 0.8}
+    self.health = 999
+    self.stats = {health = 999, attack = 32, defense = 12, magic = 0}
+    self.max_stats = {health = 999}
+    -- White is used by the party UI for Mahoraga's name and HP presentation.
+    self.color = {1, 1, 1}
+    self.dmg_color = {1, 1, 1}
     self.menu_icon = "party/kris/head"
     self.head_icons = "party/kris/icon"
     self.name_sprite = "party/kris/name"
