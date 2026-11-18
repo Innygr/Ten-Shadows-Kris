@@ -49,6 +49,7 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
         end
         enemy.ten_shadows_own_titan_summoned = true
         enemy:hurt(1100, kris_battler)
+        local battle = Game and Game.battle
         local arena = battle and battle.arena
         if arena and arena.mask then
             local Visual = modRequire("scripts/battle/objects/summoned_titan_visual")
