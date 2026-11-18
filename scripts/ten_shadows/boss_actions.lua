@@ -7,6 +7,17 @@ local function isGasterFight(enemy)
     return enemy ~= nil and enemy.ten_shadows_gaster_encounter == true
 end
 
+local function addGasterMercy(enemy, amount)
+    if not isGasterFight(enemy) or amount <= 0 then
+        return
+    end
+    if enemy.addMercy then
+        enemy:addMercy(amount)
+    else
+        enemy.mercy = math.min(100, math.max(0, (enemy.mercy or 0) + amount))
+    end
+end
+
 local SOUL_MODE_ACTIONS = {
     ["RED SOUL"] = "red", -- Red restores the ordinary attack pool.
     ["BLUE SOUL"] = "blue",
@@ -43,7 +54,8 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
     if character_id == "vessel" and (name == "V-Act" or name == "Standard") then
         if Game and Game.giveTension then Game:giveTension(8) end
         if isGasterFight(enemy) then
-            return "* VESSEL: Gaster is green! (+8 TP)"
+            addGasterMercy(enemy, 5)
+            return "* VESSEL: Gaster is green! (+5% MERCY, +8 TP)"
         end
         return "* VESSEL steadies the SOUL. (+8 TP)"
     end
@@ -51,7 +63,9 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
         local BerdlyActions = modRequire("scripts/ten_shadows/berdly_actions")
         local result = BerdlyActions.perform(enemy, battler)
         if isGasterFight(enemy) then
+            addGasterMercy(enemy, 15)
             return {
+                "* (BERDLY's theory makes a little sense. +15% MERCY)",
                 "* BERDLY: I HAVE A THEORY!",
                 "* GASTER IS GREEN because... well, look at him!",
                 "* BERDLY: I will require further research.",
@@ -61,7 +75,8 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
     elseif character_id == "ralsei" and (name == "R-Action" or name == "Standard") then
         if Game and Game.giveTension then Game:giveTension(8) end
         if isGasterFight(enemy) then
-            return "* RALSEI: Perhaps we should ask him why he looks like that. (+8 TP)"
+            addGasterMercy(enemy, 20)
+            return "* RALSEI: Perhaps we should ask him why he looks like that. (+20% MERCY, +8 TP)"
         end
         return "* RALSEI offers a reassuring smile. (+8 TP)"
     elseif character_id == "noelle" and (name == "N-Action" or name == "Standard") then
@@ -69,7 +84,8 @@ function BossActions.onAct(enemy, battler, name, base_on_act)
             enemy.ten_shadows_exposed_turns = math.max(enemy.ten_shadows_exposed_turns or 0, 1)
         end
         if isGasterFight(enemy) then
-            return "* NOELLE: Is green his natural colour? His guard is exposed."
+            addGasterMercy(enemy, 15)
+            return "* NOELLE: Is green his natural colour? His guard is exposed. (+15% MERCY)"
         end
         return "* NOELLE focuses her magic. The target's guard is exposed."
     end
