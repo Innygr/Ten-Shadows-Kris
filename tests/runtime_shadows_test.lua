@@ -67,38 +67,31 @@ assert(string.find(summon_message, "SUMMONED"), "Mahoraga ACT must summon")
 assert(Game.party[1] == mahoraga_member, "Mahoraga must replace Kris in the active party")
 assert(kris_battler.chara == mahoraga_member, "Kris's battle slot must become Mahoraga")
 assert(Shadows.isMahoragaSummoned(), "summon state must be active")
-Shadows.onEnemyTurnEnd({})
-Shadows.onEnemyTurnEnd({})
-assert(Game.party[1] == mahoraga_member, "Mahoraga must remain for the first two turns")
-Shadows.onEnemyTurnEnd({})
-assert(Game.party[1] == kris_member, "Kris must return after three turns")
-assert(kris_battler.chara == kris_member, "Kris's battle slot must be restored")
-assert(not Shadows.isMahoragaSummoned(), "summon state must clear on return")
+for _ = 1, 8 do Shadows.onEnemyTurnEnd({}) end
+assert(Game.party[1] == mahoraga_member, "Mahoraga must remain for the entire battle")
+assert(kris_battler.chara == mahoraga_member, "Kris's battle slot must remain Mahoraga")
+assert(Shadows.isMahoragaSummoned(), "Mahoraga must stay summoned until battle end")
 
--- Ending a battle early must also restore Kris immediately, without waiting
--- for all three enemy turns.
-local early_summon = Shadows.use("MAHORAGA", user, target)
-assert(string.find(early_summon, "SUMMONED"), "Mahoraga must be summonable again")
+-- Ending the battle restores Kris immediately, regardless of turn count.
 assert(Shadows.onBattleEnd(), "battle-end cleanup must dismiss Mahoraga")
 assert(Game.party[1] == kris_member, "battle-end cleanup must restore Kris to the party")
 assert(kris_battler.chara == kris_member, "battle-end cleanup must restore Kris's battler")
 assert(not Shadows.isMahoragaSummoned(), "battle-end cleanup must clear summon state")
 
--- A surviving Knight becomes the first active enemy after the Titan is defeated.
+-- A multi-enemy encounter still keeps Mahoraga active until the whole battle ends.
 local surviving_summon = Shadows.use("MAHORAGA", user, target)
-assert(string.find(surviving_summon, "SUMMONED"), "Mahoraga must summon before survivor-turn test")
+assert(string.find(surviving_summon, "SUMMONED"), "Mahoraga must summon before survivor test")
 local defeated_titan = {}
 local surviving_knight = {}
 Game.battle.enemies = {defeated_titan, surviving_knight}
 Game.battle.getActiveEnemies = function() return {surviving_knight} end
 Shadows.onEnemyTurnEnd(defeated_titan)
-assert(Shadows.isMahoragaSummoned(), "a defeated Titan must not consume the survivor's summon turn")
 Shadows.onEnemyTurnEnd(surviving_knight)
 Shadows.onEnemyTurnEnd(surviving_knight)
-assert(Shadows.isMahoragaSummoned(), "Mahoraga must remain for two survivor turns")
-Shadows.onEnemyTurnEnd(surviving_knight)
-assert(not Shadows.isMahoragaSummoned(), "Mahoraga must return after three survivor turns")
-assert(Game.party[1] == kris_member, "survivor-turn cleanup must restore Kris")
+assert(Shadows.isMahoragaSummoned(), "Mahoraga must persist while any encounter enemy remains")
+assert(Game.party[1] == mahoraga_member, "Kris must remain replaced during the surviving enemy fight")
+Shadows.onBattleEnd()
+assert(Game.party[1] == kris_member, "battle-end cleanup must restore Kris after the final enemy")
 
 local enemy = {waves = {"test_wave"}, ten_shadows_disrupted = true}
 assert(Shadows.onEnemyTurnStart(enemy) == true, "disruption must suppress the next wave")
