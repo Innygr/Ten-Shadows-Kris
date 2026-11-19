@@ -154,6 +154,27 @@ counter expiry, and encounter Soul factory. The Knight + Titan preview is now th
 fight available immediately; the runtime smoke-test encounter remains selectable for
 engine diagnostics. Dedicated Knight/Titan art is still outstanding.
 
+## Domain visual implementation
+
+The live battle-wide Domain renderer is managed by `scripts/ten_shadows/battle_abilities.lua`.
+It keeps the existing visual object attached to the arena mask between Wave refreshes, so
+rotations, pulses, and particles continue instead of restarting on every enemy turn. When all
+Domains end, the visual is removed; when the active Domain changes between a garden and a
+standalone barrier, the old visual is removed and the new one receives a transition pulse.
+
+- **Chimera Shadow Garden:** ten animated shadow roots, active-root highlights, a rotating
+  central seal, shadow pools, drifting motes, arena framing, and a one-time outward bloom.
+- **Vessel Domain:** a six-gate crimson barrier with layered hexagonal outlines, animated
+  portal nodes, a central SOUL seal, orbiting sparks, and an outward expansion pulse.
+- **Fusion Domain:** the shadow garden gains a separate blue six-gate portal network.
+  The barrier eases in and out independently, leaving the garden animation running.
+
+The draw-level checks in `tests/chimera_shadow_garden_test.lua`,
+`tests/vessel_domain_visual_test.lua`, and
+`tests/domain_visual_lifecycle_test.lua` verify the geometry contract, activation transitions,
+visual switching, persistence across Wave refreshes, and cleanup. These are automated
+presentation/lifecycle checks; they do not replace a live Kristal playtest.
+
 ## First launch checklist
 
 1. For the standalone route, download and extract `Deltarune-Shadowbender-standalone-Love-11.5`,
