@@ -36,34 +36,55 @@ function Abilities.refreshDomainVisual(battle, state)
     if not battle or not state then return false end
     local arena = battle.arena
     if not arena or not arena.mask then return false end
-    local active = (state.player_domain and state.player_domain.active)
-        or (state.vessel_domain and state.vessel_domain.active)
-        or (state.fusion_domain and state.fusion_domain.active)
+
+    local player_active = state.player_domain and state.player_domain.active == true
+    local vessel_active = state.vessel_domain and state.vessel_domain.active == true
+    local fusion_active = state.fusion_domain and state.fusion_domain.active == true
+    local active = player_active or vessel_active or fusion_active
     local previous = battle.ten_shadows_domain_visual
+    local previous_kind = battle.ten_shadows_domain_visual_kind
+
     if not active then
         if previous and previous.remove then previous:remove() end
         battle.ten_shadows_domain_visual = nil
+        battle.ten_shadows_domain_visual_kind = nil
         return true
     end
+
+    -- A Fusion Domain is built on the garden visual; a standalone Vessel
+    -- Domain uses the six-gate barrier. Preserve the live object between Wave
+    -- ticks so its pulse, rotation, and particle animation never restart.
+    local desired_kind = (player_active or fusion_active) and "garden" or "vessel"
+    local fusion_barrier = fusion_active or vessel_active
+    if previous and previous_kind == desired_kind then
+        if desired_kind == "garden" and previous.setFusionBarrier then
+            previous:setFusionBarrier(fusion_barrier)
+        end
+        return true
+    end
+
     if previous and previous.remove then previous:remove() end
+    battle.ten_shadows_domain_visual = nil
+    battle.ten_shadows_domain_visual_kind = nil
+
     local visual
-    if state.player_domain and state.player_domain.active then
+    if desired_kind == "garden" then
         local Garden = modRequire("scripts/battle/objects/chimera_shadow_garden")
-        local opening = state.player_domain.visual_pending == true
+        local opening = player_active and state.player_domain.visual_pending == true
             or (state.vessel_domain and state.vessel_domain.visual_pending == true)
-        state.player_domain.visual_pending = false
+            or previous_kind == "vessel"
+        if state.player_domain then state.player_domain.visual_pending = false end
         if state.vessel_domain then state.vessel_domain.visual_pending = false end
-        visual = Garden(arena.width or 142, arena.height or 142, opening,
-            (state.fusion_domain and state.fusion_domain.active)
-                or (state.vessel_domain and state.vessel_domain.active))
+        visual = Garden(arena.width or 142, arena.height or 142, opening, fusion_barrier)
     else
         local Barrier = modRequire("scripts/battle/objects/vessel_domain_barrier")
-        local opening = state.vessel_domain.visual_pending == true
+        local opening = state.vessel_domain.visual_pending == true or previous_kind == "garden"
         state.vessel_domain.visual_pending = false
         visual = Barrier(arena.width or 142, arena.height or 142, opening)
     end
     arena.mask:addChild(visual)
     battle.ten_shadows_domain_visual = visual
+    battle.ten_shadows_domain_visual_kind = desired_kind
     return true
 end
 
