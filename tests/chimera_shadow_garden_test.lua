@@ -131,6 +131,7 @@ local fusion_visual = Garden(180, 142, false, true)
 assert(fusion_visual.fusion_barrier == true and fusion_visual.fusion_barrier_alpha == 1,
     "the fusion visual must retain Vessel's barrier state")
 local transitioning = Garden(180, 142)
+DT = 0.05
 transitioning:setFusionBarrier(true)
 assert(transitioning.fusion_barrier == true and transitioning.fusion_barrier_alpha == 0,
     "the Fusion barrier must begin a smooth activation transition")
