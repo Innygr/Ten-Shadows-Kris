@@ -34,9 +34,14 @@ function ChimeraShadowGarden:init(width, height, opening, fusion_barrier)
     self.fade = opening == true and 0 or 1
     self.active_roots = {}
     self.fusion_barrier = fusion_barrier == true
+    self.fusion_barrier_alpha = self.fusion_barrier and 1 or 0
     -- Children of Arena.mask share its visual layer; keep this object at the
     -- parent's local layer so it stays between the arena and live projectiles.
     self.layer = 0
+end
+
+function ChimeraShadowGarden:setFusionBarrier(active)
+    self.fusion_barrier = active == true
 end
 
 function ChimeraShadowGarden:setActiveRoots(roots)
@@ -54,6 +59,12 @@ function ChimeraShadowGarden:update()
     self.time = self.time + delta
     self.opening = math.max(0, self.opening - delta / 0.9)
     self.fade = math.min(1, self.fade + delta * 2.8)
+    local barrier_target = self.fusion_barrier and 1 or 0
+    self.fusion_barrier_alpha = self.fusion_barrier_alpha
+        + (barrier_target - self.fusion_barrier_alpha) * math.min(1, delta * 5)
+    if math.abs(barrier_target - self.fusion_barrier_alpha) < 0.01 then
+        self.fusion_barrier_alpha = barrier_target
+    end
     super.update(self)
 end
 
@@ -104,15 +115,16 @@ function ChimeraShadowGarden:draw()
     -- Vessel's half of the joint Domain: a persistent enclosing barrier.
     -- This is deliberately drawn behind the shadow roots and incoming shots,
     -- keeping the attack telegraphs readable while making the fusion distinct.
-    if self.fusion_barrier then
+    if self.fusion_barrier_alpha > 0.01 then
+        local barrier_alpha = self.fusion_barrier_alpha * fade
         local barrier_pulse = 0.5 + 0.5 * math.sin(self.time * 2.8)
         local inset = math.min(width, height) * 0.075
         local bx, by = inset, inset
         local bw, bh = math.max(0, width - inset * 2), math.max(0, height - inset * 2)
-        color(0.22, 0.12, 0.48, (0.30 + barrier_pulse * 0.10) * fade)
+        color(0.22, 0.12, 0.48, (0.30 + barrier_pulse * 0.10) * barrier_alpha)
         graphics.setLineWidth(3)
         graphics.rectangle("line", bx, by, bw, bh, 8, 8)
-        color(0.38, 0.72, 1.0, (0.48 + barrier_pulse * 0.20) * fade)
+        color(0.38, 0.72, 1.0, (0.48 + barrier_pulse * 0.20) * barrier_alpha)
         graphics.setLineWidth(1)
         graphics.rectangle("line", bx + 4, by + 4, math.max(0, bw - 8), math.max(0, bh - 8), 6, 6)
         -- Fusion's six blue gates bridge the shadow garden and Vessel's seal.
@@ -125,13 +137,13 @@ function ChimeraShadowGarden:draw()
             fusion_points[#fusion_points + 1] = nx
             fusion_points[#fusion_points + 1] = ny
             local node_pulse = 0.5 + 0.5 * math.sin(self.time * 4 + node)
-            color(0.10, 0.34, 0.62, (0.34 + node_pulse * 0.18) * fade)
+            color(0.10, 0.34, 0.62, (0.34 + node_pulse * 0.18) * barrier_alpha)
             graphics.circle("fill", nx, ny, 7 + node_pulse * 2)
-            color(0.42, 0.82, 1.0, 0.94 * fade)
+            color(0.42, 0.82, 1.0, 0.94 * barrier_alpha)
             graphics.setLineWidth(1.5)
             graphics.circle("line", nx, ny, 5 + node_pulse * 2)
             local ix, iy = point(cx, cy, fusion_radius - 13, angle)
-            color(0.34, 0.72, 1.0, 0.72 * fade)
+            color(0.34, 0.72, 1.0, 0.72 * barrier_alpha)
             graphics.line(nx, ny, ix, iy)
         end
         color(0.18, 0.52, 0.82, 0.62 * fade)
