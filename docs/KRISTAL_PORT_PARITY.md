@@ -92,7 +92,11 @@ and has been tested in Kristal.
 - [x] Kristal integration: Kris-only SHADOWS submenu dispatches into the runtime Ten Shadows effects, with the three-turn Mahoraga party-slot swap cleaned up on battle end.
 - [ ] Kristal integration: custom summon animations/presentation and individual summon-specific Wave behaviours.
 - [x] Kristal integration: Chimera Shadow Garden can be activated once from Kris's ACT menu; it reduces Ten Shadows costs and boosts summon damage. The domain lasts three enemy turns.
-- [ ] Kristal integration: final Chimera visual presentation and dedicated end message.
+- [x] Kristal visual integration: animated Chimera Shadow Garden with ten shadow roots, a central seal, expansion bloom, drifting motes, and root activity highlights.
+- [x] Kristal visual integration: standalone Vessel Domain uses a six-gate crimson barrier, portal nodes, a central SOUL seal, and an expansion pulse.
+- [x] Kristal visual integration: Fusion Domain layers a separate animated blue six-gate portal network over the shadow garden; the barrier fades in/out without restarting the garden.
+- [x] Code integration + automated regression: active Domain visual objects persist across Wave refreshes, switch cleanly between garden/barrier variants, and are removed when all Domains end.
+- [ ] Kristal integration: dedicated Domain end messages and in-game visual playtesting.
 - [x] Core rules: Kris can activate CHIMERA SHADOW GARDEN independently for three enemy turns. Vessel can activate a standalone Domain barrier for 60 TP, then 2 TP upkeep per enemy turn; it cancels only the barrier when upkeep fails. Both solo Domains can coexist.
 - [x] Core rules: **Kris + Vessel fusion Domain Expansion** requires both characters standing and both Domain uses unused, costs 60 TP, then drains 2 TP after each complete enemy turn. It has no fixed duration and cancels both the barrier and shadow garden when upkeep cannot be paid. The fused expansion consumes both characters' individual Domain uses.
 - [x] Core rules: shadow-portal spell routing copies a spell descriptor, moves its launch point to a chosen exit portal, and preserves its original target. Portal entry/exit coordinates are arena-local inputs.
