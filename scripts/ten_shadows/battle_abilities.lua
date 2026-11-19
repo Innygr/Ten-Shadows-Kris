@@ -78,7 +78,8 @@ function Abilities.refreshDomainVisual(battle, state)
         visual = Garden(arena.width or 142, arena.height or 142, opening, fusion_barrier)
     else
         local Barrier = modRequire("scripts/battle/objects/vessel_domain_barrier")
-        local opening = state.vessel_domain.visual_pending == true or previous_kind == "garden"
+        local opening = (state.vessel_domain and state.vessel_domain.visual_pending == true)
+            or previous_kind == "garden"
         state.vessel_domain.visual_pending = false
         visual = Barrier(arena.width or 142, arena.height or 142, opening)
     end
